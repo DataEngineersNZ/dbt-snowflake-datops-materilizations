@@ -23,7 +23,7 @@
 
     -- build model
     {%- call statement('main') -%}
-      {{ dbt_dataengineers_utils_materilizations.snowflake_create_stages_statement(target_relation, sql) }}
+      {{ dbt_dataengineers_materilizations.snowflake_create_stages_statement(target_relation, sql) }}
     {%- endcall -%}
 
    --------------------------------------------------------------------------------------------------------------------

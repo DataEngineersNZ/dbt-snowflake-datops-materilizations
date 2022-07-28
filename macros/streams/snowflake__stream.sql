@@ -15,7 +15,7 @@
   -- action statement
 
   {%- call statement('main') -%}
-    {{ dbt_dataengineers_utils_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
+    {{ dbt_dataengineers_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
   {%- endcall -%}
 
 

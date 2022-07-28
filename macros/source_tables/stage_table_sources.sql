@@ -19,9 +19,9 @@
         {% do log('streams to create: ' ~ streams_to_stage|length, info = true) %}
 
         {# Initial run to cater for  #}
-        {% do dbt_dataengineers_utils_materilizations.stage_table_sources_plans(sources_to_stage, true, false) %}
-        {% do dbt_dataengineers_utils_materilizations.stage_table_sources_plans(sources_to_stage, false, false) %}
-        {% do dbt_dataengineers_utils_materilizations.stage_table_sources_plans(streams_to_stage, false, true) %}
+        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, true, false) %}
+        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, false, false) %}
+        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(streams_to_stage, false, true) %}
     {% endif %}
 {% endmacro %}
 
@@ -37,7 +37,7 @@
                 {% do log(loop_label ~ ' START Second Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% endif %}
         {% endif %}
-        {% set run_queue = dbt_dataengineers_utils_materilizations.get_source_build_plan(node, isFirstRun, isStream) %}
+        {% set run_queue = dbt_dataengineers_materilizations.get_source_build_plan(node, isFirstRun, isStream) %}
         {% if isStream %}
             {% do log(loop_label ~ ' SKIP stream on source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
         {% else %}
