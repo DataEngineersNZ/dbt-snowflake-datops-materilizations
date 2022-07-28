@@ -1,8 +1,8 @@
 {% macro get_source_build_plan(source_node, is_first_run, isStream) %}
     {% if isStream %}
-        {{ return(adapter.dispatch('get_stream_build_plan', 'dbt_dataengineers_utils')(source_node)) }}
+        {{ return(adapter.dispatch('get_stream_build_plan', 'dbt_dataengineers_materilizations')(source_node)) }}
     {% else %}
-        {{ return(adapter.dispatch('get_source_build_plan', 'dbt_dataengineers_utils')(source_node, is_first_run)) }}
+        {{ return(adapter.dispatch('get_source_build_plan', 'dbt_dataengineers_materilizations')(source_node, is_first_run)) }}
     {% endif %}    
 {% endmacro %}
 
