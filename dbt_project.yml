@@ -1,0 +1,12 @@
+name: 'dbt_dataengineers_utils_materilizations'
+version: '0.1.0'
+config-version: 2
+
+require-dbt-version: [">=1.0.3", "<2.0.0"]
+
+macro-paths: ["macros"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+    - "target"
+    - "dbt_modules"
