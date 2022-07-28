@@ -17,7 +17,7 @@
   -- `BEGIN` happens here:
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
-  {% set build_sql = snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after, stream_relation, sql) %}
+  {% set build_sql = dbt_dataengineers_materilizations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after, stream_relation, sql) %}
 
   {%- call statement('main') -%}
     {{ build_sql }}
