@@ -1,13 +1,7 @@
 version: 2
 
 macros:
-  - name: snowflake__file_format
-    description: >
-      This materialization is used for creating file format objects.
-      The idea behind this materialization is for ability to define CREATE FILE FORMAT statements and have dbt use the necessary logic
-      of deploying the fileformat in a consistent manner and logic.
-    docs:
-      show: true
+
   
   - name: snowflake_create_fileformat_statement
     docs:

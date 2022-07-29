@@ -1,14 +1,7 @@
 version: 2
 
 macros:
-  - name: snowflake__generic
-    description: >
-      This materialization is used for creating any type of object
-      The idea behind this materialization is for ability to define a DDL statement that needs to be executed but isn't current
-      available based on its own materialisation. This should be used as a last resort.
-    docs:
-      show: true
   
-  - name: snowflake_create_fileformat_statement
+  - name: snowflake_generic_statement
     docs:
       show: false
