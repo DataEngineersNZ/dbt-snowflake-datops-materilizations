@@ -11,7 +11,7 @@ macros:
       Usage within dbt_project.yml:
         ```yml
         on-run-end:
-          - "{{ dbt_dataengineers_materilizations.enable_tasks() }}"
+          - "\{\{ dbt_dataengineers_materilizations.enable_tasks() \}\}"
         ```
     docs:
       show: true
@@ -41,5 +41,9 @@ macros:
       show: false
 
   - name: snowflake_suspend_task_statement
+    docs:
+      show: false
+
+  - name: resume_suspended_tasks
     docs:
       show: false

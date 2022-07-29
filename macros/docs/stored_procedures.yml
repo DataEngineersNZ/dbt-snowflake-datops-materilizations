@@ -2,7 +2,6 @@ version: 2
 
 macros:
 
-  
   - name: snowflake_create_stored_procedure_statement
     docs:
       show: false

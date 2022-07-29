@@ -1,10 +1,17 @@
 version: 2
 
 macros:
-
-  
+ 
   - name: get_source_build_plan
     description: Creates a build execution plan to action
+    docs:
+      show: false
+
+  - name: snowflake_create_or_replace_table
+    docs:
+      show: false
+
+  - name: stage_table_sources_plans
     docs:
       show: false
 
