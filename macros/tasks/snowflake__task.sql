@@ -5,6 +5,7 @@
   {%- set task_schedule = config.get('schedule') -%}
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
+  {%- set is_enabled = config.get('is_enabled', default=true) -%}
 
   {% set target_relation = this %}
   {% set existing_relation = load_relation(this) %}
@@ -32,6 +33,7 @@
     {% set top_parent = dbt_dataengineers_materilizations.snowflake_get_task_top_parent_node(model) %}
     {% if top_parent %}
       {% set top_parent_relation = api.Relation.create(database=top_parent.database, schema=top_parent.schema, identifier=top_parent.name) %}
+      {{ log('suspending '~ top_parent_relation, info=True) }}
       {% do dbt_dataengineers_materilizations.snowflake_suspend_task_statement(top_parent_relation) %}
     {% endif %}
   {% endif %}
@@ -43,11 +45,16 @@
   {%- endcall -%}
 
   -- Third, resume the new task and the top parent task --
-  {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(target_relation) %}
-  {% if top_parent %}
-    {% dbt_dataengineers_materilizations.do snowflake_resume_task_statement(top_parent_relation) %}    
+  {% if is_enabled %}
+    {{ log('resuming '~ target_relation, info=True) }}
+    {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(target_relation) %}
   {% endif %}
-
+  {% if top_parent %}
+    {% if top_parent.config.is_enabled %}
+      {{ log('resuming '~ top_parent_relation, info=True) }}
+      {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(top_parent_relation) %}    
+    {% endif %}
+  {% endif %}
 
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
