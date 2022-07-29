@@ -1,0 +1,76 @@
+version: 2
+
+macros:
+  - name: stage_table_sources
+    description: >
+      This macro should be added to the `on-run-start` hook. It will create a table in the appropriate schema that will be used to store the source data.
+      You specify the `auto_create_table` option to create the table if you want it managed by dbt within the `external` node of the schema.yml file.
+      Usage within dbt_project.yml:
+        ```yml
+        on-run-start:
+          - "{{ dbt_dataengineers_materilizations.stage_table_sources() }}"
+        ```
+      Usage within schema.yml
+      ```yml
+          tables:
+            - name: raw_customers
+              description: Customer Information
+              external:
+                auto_create_table: true
+                auto_create_stream: false
+      ```
+    docs:
+      show: true
+  
+  - name: get_source_build_plan
+    description: Creates a build execution plan to action
+    docs:
+      show: false
+
+  - name: default__get_source_build_plan
+    docs:
+      show: false
+      
+  - name: default__get_stream_build_plan
+    docs:
+      show: false
+
+  - name: snowflake__get_source_build_plan
+    docs:
+      show: false
+
+  - name: snowflake__get_stream_build_plan
+    docs:
+      show: false
+
+  - name: snowflake_alter_table_add_column
+    docs:
+      show: false
+
+  - name: snowflake_alter_table_alter_column
+    docs:
+      show: false
+
+  - name: snowflake_alter_table_drop_column
+    docs:
+      show: false
+
+  - name: snowflake_clone_table_relation_if_exists
+    docs:
+      show: false
+
+  - name: snowflake_drop_table
+    docs:
+      show: false
+
+  - name: snowflake_drop_view
+    docs:
+      show: false
+
+  - name: snowflake_get_stream_name
+    docs:
+      show: false
+
+  - name: snowflake_migrate_data
+    docs:
+      show: false

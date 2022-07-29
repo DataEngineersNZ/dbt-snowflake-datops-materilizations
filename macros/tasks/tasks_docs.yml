@@ -1,0 +1,51 @@
+version: 2
+
+macros:
+  - name: snowflake__task
+    description: >
+      This materialization is used for creating stream objects.
+      The idea behind this materialization is for ability to define tasks ddl and have dbt use the necessary logic
+      of deploying the task in a consistent manner and logic.
+    docs:
+      show: true
+
+  - name: enable_tasks
+    description: >
+      This macro should be added to the `on-run-end` hook after the `dbt_dataengineers_utils.grant_privileges` macro has been run. 
+      It will enable any task defined within dbt.
+
+      Usage within dbt_project.yml:
+        ```yml
+        on-run-end:
+          - "{{ dbt_dataengineers_materilizations.enable_tasks() }}"
+        ```
+    docs:
+      show: true
+
+  - name: get_task_node_by_id
+    docs:
+      show: false
+
+  - name: snowflake_create_task_statement
+    docs:
+      show: false
+
+  - name: snowflake_get_task_parent_node
+    docs:
+      show: false
+
+  - name: snowflake_get_task_top_parent_node
+    docs:
+      show: false
+
+  - name: snowflake_resume_task_statement
+    docs:
+      show: false
+
+  - name: snowflake_resume_task_with_dependants_statement
+    docs:
+      show: false
+
+  - name: snowflake_suspend_task_statement
+    docs:
+      show: false

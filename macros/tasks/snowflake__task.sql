@@ -1,6 +1,12 @@
+/*
+      This materialization is used for creating stream objects.
+      The idea behind this materialization is for ability to define tasks ddl and have dbt use the necessary logic
+      of deploying the task in a consistent manner and logic.
+*/
+
 {%- materialization task, adapter='snowflake' -%}
 
-  {%- set warehouse_name_or_size = config.get('warehouse_name_or_size') -%}
+  {%- set warehouse_name_or_size = config.get('warehouse_name_or_size', default='xsmall') -%}
   {%- set is_serverless = config.get('is_serverless', default=true) -%}
   {%- set task_schedule = config.get('schedule') -%}
   {%- set task_after = config.get('task_after') -%}

@@ -1,0 +1,14 @@
+version: 2
+
+macros:
+  - name: snowflake__stage
+    description: >
+      This materialization is used for creating stage objects.
+      The idea behind this materialization is for ability to define CREATE STAGE statements and have dbt use the necessary logic
+      of deploying the stage in a consistent manner and logic.
+    docs:
+      show: true
+  
+  - name: snowflake_create_stages_statement
+    docs:
+      show: false

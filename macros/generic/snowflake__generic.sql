@@ -1,15 +1,12 @@
 /*
-  This materialization is used for creating stage objects.
-  The idea behind this materialization is for ability to define CREATE STAGE statements and have dbt use the necessary logic
-  of deploying the stage in a consistent manner and logic.
+  This materialization is used for creating any type of object
+  The idea behind this materialization is for ability to define a DDL statement that needs to be executed but isn't current
+  available based on its own materialisation.
+  This should be used as a last resort.
   Adapted from https://github.com/venkatra/dbt_hacks
 
 */
-{% macro snowflake__stage() %}
-    {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
-    {%- set identifier = model['alias'] -%}
-    {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
-
+{%- materialization generic, adapter='snowflake' -%}
     --------------------------------------------------------------------------------------------------------------------
 
     -- setup
@@ -18,16 +15,16 @@
     -- `BEGIN` happens here:
     {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
-
     --------------------------------------------------------------------------------------------------------------------
 
     -- build model
     {%- call statement('main') -%}
-      {{ dbt_dataengineers_materilizations.snowflake_create_stages_statement(target_relation, sql) }}
+      {{ dbt_dataengineers_materilizations.snowflake_generic_statement(sql) }}
     {%- endcall -%}
 
    --------------------------------------------------------------------------------------------------------------------
     {{ run_hooks(post_hooks, inside_transaction=True) }}
+
     -- `COMMIT` happens here
     {{ adapter.commit() }}
 
@@ -36,4 +33,4 @@
     -- return
     {{ return({'relations': [target_relation]}) }}
 
-{%- endmacro %}
+{%- endmaterialization -%}

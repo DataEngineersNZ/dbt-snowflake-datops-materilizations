@@ -1,0 +1,14 @@
+version: 2
+
+macros:
+  - name: snowflake__stored_procedure
+    description: >
+      This materialization is used for creating stored procedure objects.
+      The idea behind this materialization is for ability to define CREATE STORED PROCEDURE statements and have dbt use the necessary logic
+      of deploying the stored procedure in a consistent manner and logic.
+    docs:
+      show: true
+  
+  - name: snowflake_create_stored_procedure_statement
+    docs:
+      show: false
