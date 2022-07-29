@@ -9,19 +9,46 @@
   {% set target_relation = this %}
   {% set existing_relation = load_relation(this) %}
 
-  {%- set stream_relation = api.Relation.create( identifier=stream_name, schema=schema, database=database) -%}  
+  {% if stream_name %}
+    {% set stream_relation = api.Relation.create( identifier=stream_name, schema=schema, database=database) %}
+  {% else %}
+    {% set stream_name = none %}
+  {% endif %}
 
+  {% if task_after %}
+    {% set task_after_relation = api.Relation.create(database=database, schema=schema, identifier=task_after) %}
+  {% else %}
+    {% set task_after_relation = none %}
+  {% endif %}
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 
   -- `BEGIN` happens here:
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
-  {% set build_sql = dbt_dataengineers_materilizations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after, stream_relation, sql) %}
+  
+  {% if task_after %}
+    -- First, suspend the top parent task if there is one
+    {% set top_parent = dbt_dataengineers_materilizations.snowflake_get_task_top_parent_node(model) %}
+    {% if top_parent %}
+      {% set top_parent_relation = api.Relation.create(database=top_parent.database, schema=top_parent.schema, identifier=top_parent.name) %}
+      {% do dbt_dataengineers_materilizations.snowflake_suspend_task_statement(top_parent_relation) %}
+    {% endif %}
+  {% endif %}
+
+  {% set build_sql = dbt_dataengineers_materilizations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, sql) %}
 
   {%- call statement('main') -%}
     {{ build_sql }}
   {%- endcall -%}
+
+  -- Third, resume the new task and the top parent task --
+  {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(target_relation) %}
+  {% if top_parent %}
+    {% dbt_dataengineers_materilizations.do snowflake_resume_task_statement(top_parent_relation) %}    
+  {% endif %}
+
+
 
   {{ run_hooks(post_hooks, inside_transaction=True) }}
 
