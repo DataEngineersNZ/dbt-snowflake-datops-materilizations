@@ -1,8 +1,7 @@
 version: 2
 
 macros:
-
-  
+ 
   - name: snowflake_create_fileformat_statement
     docs:
       show: false
