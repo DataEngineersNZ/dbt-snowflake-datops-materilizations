@@ -10,7 +10,6 @@ Conatins the following materializations for Snowflake:
 * Streams
 * Tables
 * Generic
-* User Defined Functions
 
 Adds the ability to create the raw tables based on the yml file
 
@@ -35,6 +34,35 @@ Usage
 | `override_name`      | specifies the name of the stored procedure if this is an overrider stored procedure | no       | `model['alias']`   |
 | `parameters`         | specifes the parameters that needs to be passed when calling the stored procedure   | no       |                    |
 | `return_type`        | specifies the stored procedure return type                                          | no       | `varchar`          |
+
+## File Formats
+
+Usage
+
+```sql
+{{
+    config(materialized='user_defined_function',')
+}}
+```
+
+| property             | description                                       | required | default       |
+| -------------------- | ------------------------------------------------- | -------- | ------------- |
+| `materialized`       | specifies the type of materialisation to run      | yes      | `file_format` |
+| `preferred_language` | describes the language the function is written in | no       | `sql`         |
+
+View [Snowflake `create file format` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html) for more information on the available options.
+
+example
+
+```sql
+{{ config(materialized='file_format') }}
+
+    type = json
+    null_if = ()
+    compression = none
+    ignore_utf8_errors = true
+```
+
 
 ## Tasks
 
