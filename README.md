@@ -10,6 +10,7 @@ Conatins the following materializations for Snowflake:
 * Streams
 * Tables
 * Generic
+* User Defined Functions
 
 Adds the ability to create the raw tables based on the yml file
 
@@ -187,3 +188,105 @@ CREATE OR REPLACE api integration SnowWatch_Prod_API
     API_KEY = 'xxxxxxxxxxxxxxxxxxxx'
     enabled = true; 
 ```
+
+## User Defined Functions
+
+Usage for Java UDF
+
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'java',
+    is_secure = false,
+    handler_name = "'testfunction.echoVarchar'",
+    target_path = "'@~/testfunction.jar'",
+    return_type = 'varchar',
+    parameters = 'my_string varchar')
+}}
+
+```
+
+| property                 | description                                                                           | required | default  |
+| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
+| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
+| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
+| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
+| `handler_name`           | specifies the combination of class and the function name                              | yes      |          |
+| `target_path`            | specifies the path for the jar file                                                   | yes      |          |
+| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
+| `parameters`             | specifies the parameter for the function                                              | no       |          |
+
+Usage for Javascript UDF
+
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'javascript',
+    is_secure = True,
+    immutable = false,
+    return_type = 'float')
+}}
+
+
+```
+
+| property                 | description                                                                           | required | default  |
+| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
+| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
+| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
+| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
+| `immutable`              | specifies the function is mutable or immutable                                        | no       |          |
+| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
+| `parameters`             | specifies the parameter for the function                                              | no       |          |
+
+Usage for SQL UDF
+
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'sql',
+    is_secure= false,
+    immutable=false,
+    return_type = 'float')
+}}
+
+
+```
+
+| property                 | description                                                                           | required | default  |
+| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
+| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
+| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
+| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
+| `immutable`              | specifies the function is mutable or immutable                                        | no       |          |
+| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
+| `parameters`             | specifies the parameter for the function                                              | no       |          |
+
+Usage for python UDF
+
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'python',
+    is_secure= false,
+    immutable=false,
+    runtime_version = '3.8',
+    packages = "('numpy','pandas','xgboost==1.5.0')",
+    handler_name = 'udf',
+    return_type = 'variant')
+}}
+
+```
+
+| property                 | description                                                                           | required | default  |
+| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
+| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
+| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
+| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
+| `immutable`              | specifies the function is mutable or immutable                                        | no       |          |
+| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
+| `parameters`             | specifies the parameter for the function                                              | no       |          |
+| `runtime_version`        | specifies the version of python                                                       | yes      |          |
+| `packages`               | specifies the packages required for the python function                               | yes      |          |
+| `handler_name`           | specifies the handler name for the function                                           | yes      |  `UDF`   |
+
