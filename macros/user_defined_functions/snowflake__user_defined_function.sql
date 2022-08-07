@@ -1,7 +1,7 @@
 /*
-  This materialization is used for creating stored procedure objects.
-  The idea behind this materialization is for ability to define CREATE STORED PROCEDURE statements and have dbt use the necessary logic
-  of deploying the stored procedure in a consistent manner and logic.
+  This materialization is used for creating user defined function objects.
+  The idea behind this materialization is for ability to define CREATE user defined function statements and have dbt use the necessary logic
+  of deploying the user defined function in a consistent manner and logic.
   Adapted from https://github.com/venkatra/dbt_hacks
 
 */
