@@ -5,3 +5,4 @@ macros:
   - name: snowflake_user_defined_functions
     docs:
       show: false
+      
