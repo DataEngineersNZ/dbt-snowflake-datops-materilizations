@@ -191,7 +191,57 @@ CREATE OR REPLACE api integration SnowWatch_Prod_API
 
 ## User Defined Functions
 
-Usage for Java UDF
+When creating a user defined function, you can use a number of different languages. The following are the supported languages:
+
+### SQL
+
+To create a user defined function using SQL, you need to add the following config to the top of your model:
+
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'sql',
+    is_secure= false,
+    immutable=false,
+    return_type = 'float')
+}}
+```
+
+| property             | description                                         | required | default                 |
+| -------------------- | --------------------------------------------------- | -------- | ----------------------- |
+| `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
+| `preferred_language` | specifies the landuage for the UDF function         | no       | `sql`                   |
+| `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
+| `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
+| `return_type`        | specifies the datatype for the return value         | yes      |                         |
+| `parameters`         | specifies the parameter for the function            | no       |                         |
+
+### Javascript
+
+To create a user defined function using Javascript, you need to add the following config to the top of your model:
+
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'javascript',
+    is_secure = True,
+    immutable = false,
+    return_type = 'float')
+}}
+```
+
+| property             | description                                         | required | default                 |
+| -------------------- | --------------------------------------------------- | -------- | ----------------------- |
+| `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
+| `preferred_language` | specifies the landuage for the UDF function         | yes      | `javascript`            |
+| `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
+| `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
+| `return_type`        | specifies the datatype for the return value         | yes      |                         |
+| `parameters`         | specifies the parameter for the function            | no       |                         |
+
+### Java
+
+To create a user defined function using Java, you need to add the following config to the top of your model:
 
 ```sql
 {{ 
@@ -203,66 +253,22 @@ Usage for Java UDF
     return_type = 'varchar',
     parameters = 'my_string varchar')
 }}
-
 ```
 
-| property                 | description                                                                           | required | default  |
-| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
-| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
-| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
-| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
-| `handler_name`           | specifies the combination of class and the function name                              | yes      |          |
-| `target_path`            | specifies the path for the jar file                                                   | yes      |          |
-| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
-| `parameters`             | specifies the parameter for the function                                              | no       |          |
+| property             | description                                              | required | default                 |
+| -------------------- | -------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`       | specifies the type of materialisation to run             | yes      | `user_defined_function` |
+| `preferred_language` | specifies the landuage for the UDF function              | yes      | `java`                  |
+| `is_secure`          | specifies the function whether it is secure or not?      | no       | `false`                 |
+| `immutable`          | specifies the function is mutable or immutable           | no       | `false`                 |
+| `handler_name`       | specifies the combination of class and the function name | yes      |                         |
+| `target_path`        | specifies the path for the jar file                      | yes      |                         |
+| `return_type`        | specifies the datatype for the return value              | yes      |                         |
+| `parameters`         | specifies the parameter for the function                 | no       |                         |
 
-Usage for Javascript UDF
+### Python
 
-```sql
-{{ 
-    config(materialized='user_defined_function',
-    preferred_language = 'javascript',
-    is_secure = True,
-    immutable = false,
-    return_type = 'float')
-}}
-
-
-```
-
-| property                 | description                                                                           | required | default  |
-| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
-| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
-| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
-| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
-| `immutable`              | specifies the function is mutable or immutable                                        | no       |          |
-| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
-| `parameters`             | specifies the parameter for the function                                              | no       |          |
-
-Usage for SQL UDF
-
-```sql
-{{ 
-    config(materialized='user_defined_function',
-    preferred_language = 'sql',
-    is_secure= false,
-    immutable=false,
-    return_type = 'float')
-}}
-
-
-```
-
-| property                 | description                                                                           | required | default  |
-| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
-| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
-| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
-| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
-| `immutable`              | specifies the function is mutable or immutable                                        | no       |          |
-| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
-| `parameters`             | specifies the parameter for the function                                              | no       |          |
-
-Usage for python UDF
+To create a user defined function using Python, you need to add the following config to the top of your model:
 
 ```sql
 {{ 
@@ -275,18 +281,16 @@ Usage for python UDF
     handler_name = 'udf',
     return_type = 'variant')
 }}
-
 ```
 
-| property                 | description                                                                           | required | default  |
-| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
-| `materialized`           | specifies the type of materialisation to run                                          | yes      | `UDF`    |
-| `preferred_language`     | specifies the landuage for the UDF function                                           | no       | `sql`    |
-| `is_secure`              | specifies the function whether it is secure or not?                                   | no       |          |
-| `immutable`              | specifies the function is mutable or immutable                                        | no       |          |
-| `return_type`            | specifies the datatype for the return value                                           | yes      |          |
-| `parameters`             | specifies the parameter for the function                                              | no       |          |
-| `runtime_version`        | specifies the version of python                                                       | yes      |          |
-| `packages`               | specifies the packages required for the python function                               | yes      |          |
-| `handler_name`           | specifies the handler name for the function                                           | yes      |  `UDF`   |
-
+| property             | description                                             | required | default                 |
+| -------------------- | ------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`       | specifies the type of materialisation to run            | yes      | `user_defined_function` |
+| `preferred_language` | specifies the landuage for the UDF function             | yes      | `python`                |
+| `is_secure`          | specifies the function whether it is secure or not?     | no       | `false`                 |
+| `immutable`          | specifies the function is mutable or immutable          | no       | `false`                 |
+| `return_type`        | specifies the datatype for the return value             | yes      |                         |
+| `parameters`         | specifies the parameter for the function                | no       |                         |
+| `runtime_version`    | specifies the version of python                         | yes      |                         |
+| `packages`           | specifies the packages required for the python function | yes      |                         |
+| `handler_name`       | specifies the handler name for the function             | yes      |                         |
