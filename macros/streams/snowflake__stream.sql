@@ -8,6 +8,7 @@
 
   {%- set source_model = config.get('source_model') -%}
   {%- set source_schema = config.get('source_schema', default=schema) -%}
+  {%- set source_type = config.get('source_type', default='internal') -%}
   
   {% set target_relation = this %}
   {% set existing_relation = load_relation(this) %}
@@ -22,7 +23,10 @@
   -- action statement
 
   {%- call statement('main') -%}
-    {{ dbt_dataengineers_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
+    {% if source_type == 'external' %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_external_stream_statement(target_relation, source_relation) }}
+    {% else %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
   {%- endcall -%}
 
 

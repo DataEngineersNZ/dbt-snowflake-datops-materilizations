@@ -2,12 +2,17 @@
 {% macro stage_table_sources() %}
     {% if flags.WHICH == 'run' %}
         {% set sources_to_stage = [] %}
+        {% set externals_to_stage = [] %}
         {% set streams_to_stage = [] %}
         {% set source_nodes = graph.sources.values() if graph.sources else [] %}
         {% for node in source_nodes %}
             {% if node.external %}
                 {% if node.external.auto_create_table %}
-                    {% do sources_to_stage.append(node) %}
+                    {% if node.external.location != null %}
+                        {% set externals_to_stage.append(node) %}
+                    {% else %}
+                        {% do sources_to_stage.append(node) %}
+                    {% endif %}
                 {% endif %}
                 {% if node.external.auto_create_stream %}
                     {% do streams_to_stage.append(node) %}
@@ -15,6 +20,7 @@
             {% endif %}
         {% endfor %}
 
+        {% do log('external sources to create: ' ~ externals_to_stage|length, info = true) %}
         {% do log('sources to create: ' ~ sources_to_stage|length, info = true) %}
         {% do log('streams to create: ' ~ streams_to_stage|length, info = true) %}
 
