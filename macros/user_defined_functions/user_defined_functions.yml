@@ -2,7 +2,7 @@ version: 2
 
 macros:
 
-  - name: snowflake_user_defined_functions
+  - name: snowflake__user_defined_function
     docs:
       show: false
       
