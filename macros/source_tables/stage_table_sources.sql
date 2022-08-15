@@ -2,50 +2,49 @@
 {% macro stage_table_sources() %}
     {% if flags.WHICH == 'run' %}
         {% set sources_to_stage = [] %}
-        {% set externals_to_stage = [] %}
-        {% set streams_to_stage = [] %}
+        {% set externals_tables_to_stage = [] %}
+        {% set stages_to_stage = [] %}
+
         {% set source_nodes = graph.sources.values() if graph.sources else [] %}
         {% for node in source_nodes %}
             {% if node.external %}
                 {% if node.external.auto_create_table %}
-                    {% if node.external.location != null %}
-                        {% set externals_to_stage.append(node) %}
+                    {% if node.external.location %}
+                        {% do externals_tables_to_stage.append(node) %}
+                        {% do stages_to_stage.append(node.external.stage) %}
                     {% else %}
                         {% do sources_to_stage.append(node) %}
                     {% endif %}
                 {% endif %}
-                {% if node.external.auto_create_stream %}
-                    {% do streams_to_stage.append(node) %}
-                {% endif %}
             {% endif %}
         {% endfor %}
 
-        {% do log('external sources to create: ' ~ externals_to_stage|length, info = true) %}
-        {% do log('sources to create: ' ~ sources_to_stage|length, info = true) %}
-        {% do log('streams to create: ' ~ streams_to_stage|length, info = true) %}
+        {% do log('tables to create: ' ~ sources_to_stage|length, info = true) %}
+        {% do log('stages to create: ' ~ stages_to_stage|length, info = true) %}
+        {% do log('external tables to create: ' ~ externals_tables_to_stage|length, info = true) %}
 
         {# Initial run to cater for  #}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, true, false) %}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, false, false) %}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(streams_to_stage, false, true) %}
+        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, true, 'internal') %}
+        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, false, 'internal') %}
+        
     {% endif %}
 {% endmacro %}
 
-{% macro stage_table_sources_plans(sources_to_stage, isFirstRun, isStream) %}
+{% macro stage_table_sources_plans(sources_to_stage, isFirstRun, table_type) %}
     {% for node in sources_to_stage %}
         {% set loop_label = loop.index ~ ' of ' ~ loop.length %}
         {% if isFirstRun %}
             {% do log(loop_label ~ ' START First Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
         {% else %}
-            {% if isStream %}
-                {% do log(loop_label ~ ' START Streams Creation Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
+            {% if objecttable_type_type == 'external' %}
+                {% do log(loop_label ~ ' START External Table Creation for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% else %}
                 {% do log(loop_label ~ ' START Second Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% endif %}
         {% endif %}
-        {% set run_queue = dbt_dataengineers_materilizations.get_source_build_plan(node, isFirstRun, isStream) %}
-        {% if isStream %}
-            {% do log(loop_label ~ ' SKIP stream on source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
+        {% set run_queue = get_source_build_plan(node, isFirstRun, object_type) %}
+        {% if table_type == 'external' %}
+            {% do log(loop_label ~ ' SKIP external table ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
         {% else %}
             {% do log(loop_label ~ ' SKIP source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
         {% endif %}
@@ -59,8 +58,8 @@
             {% endcall %}
             {% set runner = load_result('runner') %}
             {% set log_msg = runner['response'] if 'response' in runner.keys() else runner['status'] %}
-            {% if isStream %}
-                {% do log(loop_label ~ ' ' ~ log_msg ~ ' stream on source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) %}
+            {% if table_type == 'external' %}
+                {% do log(loop_label ~ ' ' ~ log_msg ~ ' external table ' ~ node.schema ~ '.' ~ node.identifier, info = true) %}
             {% else %}
                 {% do log(loop_label ~ ' ' ~ log_msg ~ ' source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) %}
             {% endif %}

@@ -27,6 +27,7 @@
       {{ dbt_dataengineers_materilizations.snowflake_create_external_stream_statement(target_relation, source_relation) }}
     {% else %}
       {{ dbt_dataengineers_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
+    {% endif %}
   {%- endcall -%}
 
 
