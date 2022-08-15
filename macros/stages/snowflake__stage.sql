@@ -5,7 +5,7 @@
   Adapted from https://github.com/venkatra/dbt_hacks
 
 */
-{% macro snowflake__stage() %}
+{%- materialization stage, adapter='snowflake' -%}
     {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
     {%- set identifier = model['alias'] -%}
     {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
@@ -36,4 +36,4 @@
     -- return
     {{ return({'relations': [target_relation]}) }}
 
-{%- endmacro %}
+{%- endmaterialization %}
