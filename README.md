@@ -119,15 +119,20 @@ Usage
         description: Customer Information
         external:
           auto_create_table: true
-          auto_create_stream: false
 ```
 
 | property               | description                                                      | required | default |
 | ---------------------- | ---------------------------------------------------------------- | -------- | ------- |
 | `auto_create_table`    | specifies if the table should be maintianed by dbt or not        | yes      | `false` |
-| `auto_create_stream` * | specifies if the table should have a stream created on it or not | no       | `false` |
 
 * it's recommended that a separate stream object is created instead of setting up the stream via the table object as the stream doesn't appear on the DAG when created via this method, nor can you reference it using the `ref` macro.
+
+To action the auto-creation of the tables, you need to add the following pre-hook
+
+```yml
+on-run-start:
+  - "{{ dbt_dataengineers_materilizations.stage_table_sources() }}"
+```
 
 ## File Formats
 
@@ -169,6 +174,13 @@ example
 | `materialized` | specifies the type of materialisation to run | yes      | `stage` |
 
 View [Snowflake `create stage` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html) for more information on the available options.
+
+To action the auto-creation of the stages before the tables get created, you need to add the following pre-hook before the `stage_table_sources` pre-hook.
+
+```yml
+on-run-start:
+  - "{{ dbt_dataengineers_materilizations.stage_stages() }}"
+```
 
 [Storage Integrations](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.html) need to be maintained separately as you require `Create integration` privilage on the role you are using to set those up and they are global to snowflake instead of per database.
 
