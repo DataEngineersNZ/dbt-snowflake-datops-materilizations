@@ -3,7 +3,6 @@
     {% if flags.WHICH == 'run' %}
         {% set sources_to_stage = [] %}
         {% set externals_tables_to_stage = [] %}
-        {% set stages_to_stage = [] %}
 
         {% set source_nodes = graph.sources.values() if graph.sources else [] %}
         {% for node in source_nodes %}
@@ -11,7 +10,6 @@
                 {% if node.external.auto_create_table %}
                     {% if node.external.location %}
                         {% do externals_tables_to_stage.append(node) %}
-                        {% do stages_to_stage.append(node.external.stage) %}
                     {% else %}
                         {% do sources_to_stage.append(node) %}
                     {% endif %}
@@ -20,7 +18,6 @@
         {% endfor %}
 
         {% do log('tables to create: ' ~ sources_to_stage|length, info = true) %}
-        {% do log('stages to create: ' ~ stages_to_stage|length, info = true) %}
         {% do log('external tables to create: ' ~ externals_tables_to_stage|length, info = true) %}
 
         {# Initial run to cater for  #}
@@ -36,13 +33,13 @@
         {% if isFirstRun %}
             {% do log(loop_label ~ ' START First Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
         {% else %}
-            {% if objecttable_type_type == 'external' %}
+            {% if table_type == 'external' %}
                 {% do log(loop_label ~ ' START External Table Creation for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% else %}
                 {% do log(loop_label ~ ' START Second Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% endif %}
         {% endif %}
-        {% set run_queue = get_source_build_plan(node, isFirstRun, object_type) %}
+        {% set run_queue = dbt_dataengineers_materilizations.get_source_build_plan(node, isFirstRun, table_type) %}
         {% if table_type == 'external' %}
             {% do log(loop_label ~ ' SKIP external table ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
         {% else %}
