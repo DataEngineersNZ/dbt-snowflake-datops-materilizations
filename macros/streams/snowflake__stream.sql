@@ -11,8 +11,11 @@
   {%- set source_type = config.get('source_type', default='internal') -%}
   
   {% set target_relation = this %}
-  {% set existing_relation = load_relation(this) %}
-  {% set source_relation = adapter.get_relation( identifier=source_model, schema=source_schema, database=database) %} 
+  {% set source_relation = adapter.get_relation(identifier=source_model, schema=source_schema, database=database) %} 
+
+  {% if source_relation == none %}
+    {% set source_relation = api.Relation.create(identifier=source_model, schema=source_schema, database=database) %} 
+  {% endif %}
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
