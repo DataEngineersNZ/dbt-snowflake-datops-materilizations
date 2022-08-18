@@ -7,6 +7,4 @@ require-dbt-version: [">=1.0.3", "<2.0.0"]
 macro-paths: ["macros"]
 
 target-path: "target"  # directory which will store compiled SQL files
-clean-targets:         # directories to be removed by `dbt clean`
-    - "target"
-    - "dbt_modules"
+clean-targets: ["target", "dbt_modules", "dbt_packages"]        # directories to be removed by `dbt clean`

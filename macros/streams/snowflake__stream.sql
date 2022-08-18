@@ -8,10 +8,14 @@
 
   {%- set source_model = config.get('source_model') -%}
   {%- set source_schema = config.get('source_schema', default=schema) -%}
+  {%- set source_type = config.get('source_type', default='internal') -%}
   
   {% set target_relation = this %}
-  {% set existing_relation = load_relation(this) %}
-  {% set source_relation = adapter.get_relation( identifier=source_model, schema=source_schema, database=database) %} 
+  {% set source_relation = adapter.get_relation(identifier=source_model, schema=source_schema, database=database) %} 
+
+  {% if source_relation == none %}
+    {% set source_relation = api.Relation.create(identifier=source_model, schema=source_schema, database=database) %} 
+  {% endif %}
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
@@ -22,7 +26,11 @@
   -- action statement
 
   {%- call statement('main') -%}
-    {{ dbt_dataengineers_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
+    {% if source_type == 'external' %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_external_stream_statement(target_relation, source_relation) }}
+    {% else %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_stream_statement(target_relation, source_relation) }}
+    {% endif %}
   {%- endcall -%}
 
 

@@ -2,8 +2,6 @@
   This materialization is used for creating user defined function objects.
   The idea behind this materialization is for ability to define CREATE user defined function statements and have dbt use the necessary logic
   of deploying the user defined function in a consistent manner and logic.
-
-
 */
 {%- materialization user_defined_function, adapter='snowflake' -%}
   {%- set preferred_language = config.get('preferred_language', default=SQL) -%}
@@ -21,7 +19,6 @@
 
   {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
   {%- set return_type = config.get('return_type', default='varchar' ) -%}
-  
   
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 

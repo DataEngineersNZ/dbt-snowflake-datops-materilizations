@@ -9,7 +9,7 @@
       {% if node.depends_on.nodes|count > 1 %}
         {% for index in range(0, node.depends_on.nodes|count -1) %}
           {% set model_detail = dbt_dataengineers_materilizations.get_task_node_by_id(node.depends_on.nodes[index]) %}4
-          {%if model_detail.config.materialized == "task" %}
+          {%if model_detail and model_detail.config.materialized == "task" %}
             {% set taskCounter = taskCounter + 1 %}
             {% set task_index_number = index %}
             {% do parent_tasks.append(model_detail) %}
