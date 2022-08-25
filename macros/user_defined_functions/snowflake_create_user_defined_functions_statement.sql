@@ -9,6 +9,11 @@ RETURNS {{ return_type }}
 {% if preferred_language != 'sql' %}
 LANGUAGE  {{ preferred_language }}
 {% endif %}
+{% if immutable %}
+    IMMUTABLE
+{% else %}
+   VOLATILE
+{% endif %}
 
 {% if preferred_language == 'python'  %}
 RUNTIME_VERSION = '{{ runtime_version }}'
@@ -22,10 +27,8 @@ target_path = {{ target_path }}
 
 AS
 
-{% if preferred_language != 'python' %}
- '{{ sql }}'
- {% else %}
-{{ sql }}
-{% endif %}
+$$
+ {{ sql }}
+ $$
 ;
 {%- endmacro -%}
