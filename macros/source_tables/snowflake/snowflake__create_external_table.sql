@@ -1,4 +1,4 @@
-{% macro snowflake__create_external_table(source_node) %}
+{% macro snowflake__create_external_table(relation, source_node) %}
     
     {%- set columns = source_node.columns.values() -%}
     {%- set external = source_node.external -%}
@@ -8,7 +8,7 @@
 
 {# https://docs.snowflake.net/manuals/sql-reference/sql/create-external-table.html #}
 {# This assumes you have already created an external stage #}
-    CREATE OR REPLACE EXTERNAL TABLE {{source(source_node.source_name, source_node.name)}}
+    CREATE OR REPLACE EXTERNAL TABLE {{ relation.include(database=(not temporary), schema=(not temporary)) }}
     (
         file_name VARCHAR(500) AS metadata$filename,
         load_date TIMESTAMP_LTZ(7) AS current_timestamp{{- ',' if partitions or columns|length > 0 -}}
