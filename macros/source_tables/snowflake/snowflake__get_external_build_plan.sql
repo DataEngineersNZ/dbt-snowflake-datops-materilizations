@@ -22,7 +22,7 @@
             {% set build_plan = build_plan + [
                 dbt_dataengineers_materilizations.create_external_schema(source_node),
                 dbt_external_tables.snowflake_create_empty_table(target_relation, source_node),
-                dbt_external_tables.snowflake_get_copy_sql(target_relation, source_node, explicit_transaction=true),
+                dbt_dataengineers_materilizations.snowflake__get_inital_copy_sql(target_relation, source_node, explicit_transaction=true),
                 dbt_external_tables.snowflake_create_snowpipe(target_relation, source_node)
             ] %}
         {% else %}
