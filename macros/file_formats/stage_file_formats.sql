@@ -26,7 +26,7 @@
         {% set loop_label = loop.index ~ ' of ' ~ loop.length %}
         {% do log(loop_label ~ ' START file format creation ' ~ node.schema ~ '.' ~ node.name, info = true) -%}
         
-        {% set run_queue = dbt_dataengineers_materilizations.get_stage_build_plan(node) %}
+        {% set run_queue = dbt_dataengineers_materilizations.get_file_format_build_plan(node) %}
         {% do log(loop_label ~ ' SKIP file format ' ~ node.schema ~ '.' ~ node.name, info = true) if run_queue == [] %}
         
         {% set width = flags.PRINTER_WIDTH %}
