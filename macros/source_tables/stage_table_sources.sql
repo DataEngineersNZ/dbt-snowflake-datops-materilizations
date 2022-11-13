@@ -23,6 +23,7 @@
         {# Initial run to cater for  #}
         {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, true, 'internal') %}
         {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, false, 'internal') %}
+        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(externals_tables_to_stage, true, 'external') %}
         {% do dbt_dataengineers_materilizations.stage_table_sources_plans(externals_tables_to_stage, false, 'external') %}
         
     {% endif %}
