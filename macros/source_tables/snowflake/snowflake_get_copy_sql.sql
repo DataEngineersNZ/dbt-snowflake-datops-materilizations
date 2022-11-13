@@ -1,9 +1,9 @@
-{% macro snowflake__get_inital_copy_sql(relation, source_node, explicit_transaction=false) %}
+{% macro snowflake_get_copy_sql(relation, source_node, explicit_transaction=false) %}
 {# This assumes you have already created an external stage #}
 
     {%- set columns = source_node.columns.values() -%}
     {%- set external = source_node.external -%}
-    {%- set is_csv = dbt_external_tables.is_csv(external.file_format, relation.database) %}
+    {%- set is_csv = dbt_dataengineers_materilizations.is_csv(external.file_format, relation.database) %}
     {%- set copy_options = external.snowpipe.get('copy_options', none) -%}
    
     {%- if explicit_transaction -%} begin; {%- endif %}
