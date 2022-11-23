@@ -1,37 +1,64 @@
-{% macro snowflake__get_external_build_plan(source_node) %}
+{% macro snowflake__get_external_build_plan(source_node, is_first_run) %}
 
     {% set build_plan = [] %}
-    
-    {% set old_relation = adapter.get_relation(
-        database = source_node.database,
-        schema = source_node.schema,
-        identifier = source_node.identifier
-    ) %}
-    
-    {% set create_or_replace = (old_relation is none or var('ext_full_refresh', false)) %}
 
-    {% if source_node.external.get('snowpipe', none) is not none %}
-    
-        {% if create_or_replace %}
-            {% set build_plan = build_plan + [
-                dbt_external_tables.snowflake_create_empty_table(source_node),
-                dbt_external_tables.snowflake_get_copy_sql(source_node, explicit_transaction=true),
-                dbt_external_tables.snowflake_create_snowpipe(source_node)
-            ] %}
+    {%- set migration_table_suffix = '_DBT_MIG' -%}
+    {%- set comparison_table_suffix = '_DBT_COMP' -%}
+
+    {%- set current_relation = adapter.get_relation(database=source_node.database, schema=source_node.schema, identifier=source_node.identifier) -%}
+    {%- set target_relation = api.Relation.create(database=source_node.database, schema=source_node.schema, identifier=source_node.name, type='table') -%}
+    {%- set migration_relation = make_temp_relation(target_relation , migration_table_suffix) %}
+    {%- set comparison_relation = make_temp_relation(target_relation , comparison_table_suffix) %}
+
+    {% set create_or_replace = (current_relation is none or var('ext_full_refresh', false)) %}
+    {% if is_first_run %}
+        {% if source_node.external.get('snowpipe', none) is not none %}
+            {% if create_or_replace %}
+                {% set build_plan = build_plan + [
+                    dbt_dataengineers_materilizations.create_external_schema(source_node),
+                    dbt_dataengineers_materilizations.snowflake_create_empty_table(target_relation, source_node),
+                    dbt_dataengineers_materilizations.snowflake_get_copy_sql(target_relation, source_node, explicit_transaction=true),
+                    dbt_dataengineers_materilizations.snowflake_create_snowpipe(target_relation, source_node)
+                ] %}
+            {% else %}
+                {% set build_plan = build_plan + [
+                    dbt_dataengineers_materilizations.snowflake_create_or_replace_table(comparison_relation, source_node),
+                    dbt_dataengineers_materilizations.snowflake_clone_table_relation_if_exists(current_relation, migration_relation)
+                    ] %}
+            {% endif %}
         {% else %}
-            {% set build_plan = build_plan + dbt_external_tables.snowflake_refresh_snowpipe(source_node) %}
+            {% if create_or_replace %}
+                {% set build_plan = build_plan + [dbt_dataengineers_materilizations.snowflake_create_external_table(target_relation, source_node)] %}
+            {% else %}
+                {% set build_plan = build_plan + dbt_dataengineers_materilizations.snowflake_refresh_external_table(target_relation,source_node) %}
+            {% endif %}
         {% endif %}
-            
     {% else %}
-    
-        {% if create_or_replace %}
-            {% set build_plan = build_plan + [dbt_dataengineers_materilizations.snowflake__create_external_table(source_node)] %}
-        {% else %}
-            {% set build_plan = build_plan + dbt_external_tables.refresh_external_table(source_node) %}
-        {% endif %}
-        
-    {% endif %}
+        {% if current_relation is not none and migration_relation is not none %}
+            {%- set new_cols = adapter.get_missing_columns(comparison_relation, current_relation) %}
+            {% if new_cols|length > 0 -%}
+                {% set build_plan = build_plan + [
+                    dbt_dataengineers_materilizations.snowflake_drop_pipe(target_relation),
+                    dbt_dataengineers_materilizations.snowflake_drop_table(current_relation),
+                    dbt_dataengineers_materilizations.snowflake_create_empty_table(target_relation, source_node),
+                    dbt_dataengineers_materilizations.snowflake_migrate_data(migration_relation, target_relation, source_node),
+                    dbt_dataengineers_materilizations.snowflake_create_snowpipe(target_relation, source_node),
+                    dbt_dataengineers_materilizations.snowflake_drop_table(comparison_relation),
+                    dbt_dataengineers_materilizations.snowflake_drop_table(migration_relation)
+                    ] %}
+            {% else %}
+                {% set build_plan = build_plan + [
+                    dbt_dataengineers_materilizations.snowflake_drop_table(comparison_relation),
+                    dbt_dataengineers_materilizations.snowflake_drop_table(migration_relation)] %}
+            {% endif %}
 
+            {% if source_node.external.get('snowpipe', none) is not none %}
+                    {# dont do anythin on second run through #}
+            {% else %}
+                {% set build_plan = build_plan + [dbt_dataengineers_materilizations.snowflake_refresh_snowpipe(target_relation, source_node)] %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
     {% do return(build_plan) %}
 
 {% endmacro %}

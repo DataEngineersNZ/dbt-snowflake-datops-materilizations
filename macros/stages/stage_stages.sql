@@ -22,10 +22,10 @@
 {% macro stage_stages_plans(items_to_stage) %}
     {% for node in items_to_stage %}
         {% set loop_label = loop.index ~ ' of ' ~ loop.length %}
-        {% do log(loop_label ~ ' START stage creation ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
+        {% do log(loop_label ~ ' START stage creation ' ~ node.schema ~ '.' ~ node.name, info = true) -%}
         
         {% set run_queue = dbt_dataengineers_materilizations.get_stage_build_plan(node) %}
-        {% do log(loop_label ~ ' SKIP stage ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
+        {% do log(loop_label ~ ' SKIP stage ' ~ node.schema ~ '.' ~ node.name, info = true) if run_queue == [] %}
         
         {% set width = flags.PRINTER_WIDTH %}
         {% for cmd in run_queue %}
@@ -35,7 +35,7 @@
             {% endcall %}
             {% set runner = load_result('runner') %}
             {% set log_msg = runner['response'] if 'response' in runner.keys() else runner['status'] %}
-            {% do log(loop_label ~ ' ' ~ log_msg ~ ' stage model ' ~ node.schema ~ '.' ~ node.identifier, info = true) %}
+            {% do log(loop_label ~ ' ' ~ log_msg ~ ' stage model ' ~ node.schema ~ '.' ~ node.name, info = true) %}
         {% endfor %}
     {% endfor %}
 {% endmacro %}

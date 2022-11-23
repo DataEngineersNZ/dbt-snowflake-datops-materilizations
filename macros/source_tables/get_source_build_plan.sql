@@ -2,7 +2,7 @@
     {% if object_type == 'stream' %}
         {{ return(adapter.dispatch('get_stream_build_plan', 'dbt_dataengineers_materilizations')(source_node)) }}
     {% elif object_type == 'external' %}
-        {{ return(adapter.dispatch('get_external_build_plan', 'dbt_dataengineers_materilizations')(source_node)) }}
+        {{ return(adapter.dispatch('get_external_build_plan', 'dbt_dataengineers_materilizations')(source_node, is_first_run)) }}
     {% else %}
         {{ return(adapter.dispatch('get_source_build_plan', 'dbt_dataengineers_materilizations')(source_node, is_first_run)) }}
     {% endif %}    

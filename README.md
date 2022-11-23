@@ -41,7 +41,7 @@ Usage
 
 ```sql
 {{
-    config(materialized='user_defined_function',')
+    config(materialized='file_format')
 }}
 ```
 
