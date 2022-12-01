@@ -8,6 +8,14 @@
   {%- set parameters = config.get('parameters', default='') -%}
   {%- set is_secure = config.get('is_secure', default=false) -%}
   {%- set immutable = config.get('immutable', default=false) -%}
+  {%- set is_external = config.get('is_external', default=false) -%}
+  {%- set api_integration = config.get('api_integration_dev', default='unknown') -%}
+  {%- set api_uri = config.get('api_uri_dev', default='unknown') -%}
+
+  {%- if target.name == 'prod' -%}
+    {%- set api_uri = config.get('api_uri_prod', default='unknown') -%}
+    {%- set api_integration = config.get('api_integration_prod', default='unknown') -%}
+  {%- endif -%}
 
   {%- set sdk_version = config.get('sdk_version', default=null) -%}
   {%- set import_Path = config.get('import_Path', default=null) -%}
@@ -34,8 +42,11 @@
   -- build model
 
   {% call statement('main') -%}
-    {{ dbt_dataengineers_materilizations.snowflake_create_user_defined_functions_statement(target_relation, is_secure, preferred_language, immutable, parameters, return_type, sdk_version, import_Path, packages, handler_name, imports, target_path, runtime_version, sql) }}
-
+    {% if is_external %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_external_user_defined_functions_statement(target_relation, is_secure, immutable, parameters, return_type, api_integration, api_uri) }}
+    {% else %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_user_defined_functions_statement(target_relation, is_secure, preferred_language, immutable, parameters, return_type, sdk_version, import_Path, packages, handler_name, imports, target_path, runtime_version, sql) }}
+    {% endif %}
   {%- endcall %}
 
       --------------------------------------------------------------------------------------------------------------------

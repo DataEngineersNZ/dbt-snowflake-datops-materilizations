@@ -5,4 +5,7 @@ macros:
   - name: snowflake_create_user_defined_functions_statement
     docs:
       show: false
-      
+
+  - name: snowflake_create_external_user_defined_functions_statement
+    docs:
+      show: false
