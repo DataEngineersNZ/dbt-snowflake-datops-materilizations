@@ -1,8 +1,5 @@
 version: 2
-
 macros:
-
-
   - name: enable_tasks
     description: >
       This macro should be added to the `on-run-end` hook after the `dbt_dataengineers_utils.grant_privileges` macro has been run. 
@@ -43,5 +40,9 @@ macros:
       show: false
 
   - name: resume_suspended_tasks
+    docs:
+      show: false
+
+  - name: suspended_tasks
     docs:
       show: false
