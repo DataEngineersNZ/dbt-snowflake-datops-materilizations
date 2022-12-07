@@ -14,7 +14,7 @@
             $1::VARIANT AS payload,
         {% else -%}
         {%- for column in columns -%}
-            {%- if column.name not in ["metadata_filename", "metadata_file_row_number", "import_timestamp"] -%}
+            {%- if column.name|lower not in ["metadata_filename", "metadata_file_row_number", "import_timestamp"] -%}
             {%- set col_expression -%}
                 {%- if is_csv -%}nullif(${{loop.index}},''){# special case: get columns by ordinal position #}
                 {%- elif column.name|lower == "payload" -%}$1

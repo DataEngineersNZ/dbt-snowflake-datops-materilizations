@@ -7,7 +7,9 @@
             payload VARIANT,
         {% else -%}
         {%- for column in columns -%}
-            {{column.name}} {{column.data_type}},
+            {%- if column.name|lower not in ["metadata_filename", "metadata_file_row_number", "import_timestamp"] -%}
+            {{column.name}} {{column.data_type}}
+            {%- endif -%}
         {% endfor -%}
         {% endif %}
         metadata_filename VARCHAR,
