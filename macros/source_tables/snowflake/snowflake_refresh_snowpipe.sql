@@ -10,7 +10,7 @@
     {% else %}
     
         {% set ddl %}
-        alter pipe {{ relation.include(database=(not temporary), schema=(not temporary)) }} refresh
+        ALTER PIPE {{ relation.include(database=(not temporary), schema=(not temporary)) }} REFRESH
         {% endset %}
         
         {{ return([ddl]) }}

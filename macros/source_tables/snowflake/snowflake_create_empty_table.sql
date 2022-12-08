@@ -2,17 +2,19 @@
 
     {%- set columns = source_node.columns.values() %}
 
-    create or replace table {{ relation.include(database=(not temporary), schema=(not temporary)) }} (
+    CREATE OR REPLACE TABLE {{ relation.include(database=(not temporary), schema=(not temporary)) }} (
         {% if columns|length == 0 %}
-            value variant,
+            payload VARIANT,
         {% else -%}
         {%- for column in columns -%}
-            {{column.name}} {{column.data_type}},
+            {%- if column.name|lower not in ["metadata_filename", "metadata_file_row_number", "import_timestamp"] -%}
+            {{column.name}} {{column.data_type}}
+            {%- endif -%}
         {% endfor -%}
         {% endif %}
-            metadata_filename varchar,
-            metadata_file_row_number bigint,
-            _dbt_copied_at timestamp
+        metadata_filename VARCHAR,
+        metadata_file_row_number BIGINT,
+        import_timestamp TIMESTAMP
     );
 
 {% endmacro %}

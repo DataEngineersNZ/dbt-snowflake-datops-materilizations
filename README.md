@@ -9,6 +9,7 @@ Conatins the following materializations for Snowflake:
 * Tasks
 * Streams
 * Tables
+* Materialised View
 * Generic
 
 Adds the ability to create the raw tables based on the yml file
@@ -334,3 +335,36 @@ To create a user defined function using Python, you need to add the following co
 | `runtime_version`    | specifies the version of python                         | yes      |                         |
 | `packages`           | specifies the packages required for the python function | yes      |                         |
 | `handler_name`       | specifies the handler name for the function             | yes      |                         |
+
+
+## Materialized View
+To create a Materialized View, you need to add the following config to the top of your model:
+
+
+```sql
+{{ 
+    config(materialized='materialized_view',
+    secure = false,
+    cluster_by="<<your list of fields>>",
+    automatic_clustering = false)
+}}
+```
+
+| property              | description                                                                 | required | default                 |
+| --------------------- | --------------------------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`        | specifies the type of materialisation to run                                | yes      | `materialized_view`     |
+| `secure`              | specifies that the view is secure.                                          | no       | false                   |
+| `cluster_by`          | specifies an expression on which to cluster the materialized view.          | no       | none                    |
+| `automatic_clustering`| specifies if reclustering of the materialized view is automatically resumed | no       | false                   |
+
+
+Supported model configs: secure, cluster_by, automatic_clustering, persist_docs (relation only)
+
+[Snowflake Documentation for Materialized Views](https://docs.snowflake.com/en/user-guide/views-materialized.html)
+
+❗ Note: Snowflake MVs are only enabled on enterprise accounts
+
+❗ Although Snowflake does not have drop ... cascade, if the base table table of a MV is dropped and recreated, the MV also needs to be dropped and recreated, otherwise the following error will appear:
+
+> Failure during expansion of view 'TEST_MV': SQL compilation error: Materialized View TEST_MV is invalid.
+

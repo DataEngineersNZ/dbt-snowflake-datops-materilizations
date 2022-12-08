@@ -11,9 +11,9 @@
     {% if manual_refresh %}
 
         {% set ddl %}
-        begin;
-        alter external table {{ relation.include(database=(not temporary), schema=(not temporary)) }} refresh;
-        commit;
+        BEGIN;
+        ALTER EXTERNAL TABLE {{ relation.include(database=(not temporary), schema=(not temporary)) }} REFRESH;
+        COMMIT;
         {% endset %}
         
         {% do return([ddl]) %}

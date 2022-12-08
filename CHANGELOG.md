@@ -1,5 +1,14 @@
 # dbt_dataengineers_materilizations Changelog
 
+## 0.1.3
+
+Addition of Materialised Views
+Snowpipe - auto generated column for data is now payload instead of value
+
+## 0.1.2.4
+
+Snowpipe Modifications to allow for raw tables in spearate database
+
 ## 0.1.2
 
 Addition of the pre-hooks
