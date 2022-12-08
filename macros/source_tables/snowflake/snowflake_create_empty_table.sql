@@ -8,7 +8,7 @@
         {% else -%}
         {%- for column in columns -%}
             {%- if column.name|lower not in ["metadata_filename", "metadata_file_row_number", "import_timestamp"] -%}
-            {{column.name}} {{column.data_type}}
+            {{column.name}} {{column.data_type}},
             {%- endif -%}
         {% endfor -%}
         {% endif %}
