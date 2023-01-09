@@ -242,8 +242,8 @@ To create a user defined function using SQL, you need to add the following confi
 {{ 
     config(materialized='user_defined_function',
     preferred_language = 'sql',
-    is_secure= false,
-    immutable=false,
+    is_secure = false,
+    immutable = false,
     return_type = 'float')
 }}
 ```
@@ -256,6 +256,20 @@ To create a user defined function using SQL, you need to add the following confi
 | `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
 | `return_type`        | specifies the datatype for the return value         | yes      |                         |
 | `parameters`         | specifies the parameter for the function            | no       |                         |
+
+#### Parameters
+Parameters are placed into the template with no parsing. To include multiple parameters, use the syntax:
+```sql
+{{ 
+    config(materialized='user_defined_function',
+    preferred_language = 'sql',
+    is_secure = false,
+    immutable = false,
+    return_type = 'float'
+    parameters = 'first int, next float, last varchar')
+}}
+```
+... Which is to say: provide all parameters as a single string enclosed in quotes. Use the same format as you would for native SQL.
 
 ### Javascript
 
