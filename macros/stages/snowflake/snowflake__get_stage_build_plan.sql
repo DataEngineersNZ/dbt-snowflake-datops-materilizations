@@ -9,7 +9,7 @@
             identifier = source_node.name
         ) %}
 
-        {% set sql = render(source_node.get('raw_sql')) %}
+        {% set sql = render(source_node.get('raw_code')) %}
         {% set build_plan = build_plan + [dbt_dataengineers_materilizations.snowflake_create_stages_if_not_exist_statement(stage_relation, sql)] %}
         
 
