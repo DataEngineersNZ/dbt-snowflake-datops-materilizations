@@ -11,6 +11,7 @@
   {%- set task_schedule = config.get('schedule') -%}
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
+  {%- set error_integration = config.get('error_integration', default='') -%}
   {%- set is_enabled = config.get('is_enabled', default=true) -%}
 
   {% set target_relation = this %}
@@ -44,7 +45,7 @@
     {% endif %}
   {% endif %}
 
-  {% set build_sql = dbt_dataengineers_materilizations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, sql) %}
+  {% set build_sql = dbt_dataengineers_materilizations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, error_integration, sql) %}
 
   {%- call statement('main') -%}
     {{ build_sql }}
