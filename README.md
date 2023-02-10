@@ -1,8 +1,20 @@
-# dbt-snowflake-datops-materilizations
-Repo contains the materializations for Data Engineers DataOps Framework
+This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that can be (re)used across dbt projects.
 
+> require-dbt-version: [">=1.3.0", "<2.0.0"]
+----
+
+## Installation Instructions
+Add the following to your packages.yml file
+```
+  - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
+    revision: "0.2.1"
+```
+----
+
+## Contents
 Conatins the following materializations for Snowflake:
 
+* Alerts
 * File Format
 * Stages
 * Stored Procedures
@@ -11,9 +23,6 @@ Conatins the following materializations for Snowflake:
 * Tables
 * Materialised View
 * Generic
-* Alerts
-
-Adds the ability to create the raw tables based on the yml file
 
 ## Alerts
 
@@ -138,6 +147,7 @@ Usage
 | `source_model`  | specifies the source table or view model name to add the stream to             | yes      |          |
 
 ## Tables
+Adds the ability to create the raw tables based on the yml file
 
 Usage
 
