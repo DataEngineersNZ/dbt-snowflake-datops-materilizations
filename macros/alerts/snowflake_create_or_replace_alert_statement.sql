@@ -8,6 +8,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
         {{ sql }}
     ))
     THEN
+
         {%- if action == "snowwatch" -%}
             CALL snowwatch.sp_sendalert('{{ relation.identifier }}', '{{ severity }}', last_query_id())
         {%- else -%}
