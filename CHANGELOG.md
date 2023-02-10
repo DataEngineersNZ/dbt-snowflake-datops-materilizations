@@ -1,5 +1,10 @@
 # dbt_dataengineers_materilizations Changelog
 
+## 0.2.1
+
+* Addition of materialization for Snowflake Alters
+* Updated Task materialization to allow enabling/disabling of tasks in different environments
+
 ## 0.2.0
 
 * Upgraded project to be compatible with dbt v1.3

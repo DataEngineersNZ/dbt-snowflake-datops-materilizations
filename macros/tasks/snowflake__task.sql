@@ -12,7 +12,14 @@
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
   {%- set error_integration = config.get('error_integration', default='') -%}
-  {%- set is_enabled = config.get('is_enabled', default=true) -%}
+
+  {%- if target.name == 'prod' -%}
+    {%- set is_enabled = config.get('is_enabled_prod', default=true) -%}
+  {%- elif target.name == 'test' -%}
+    {%- set is_enabled = config.get('is_enabled_test', default=false) -%}
+  {%- else -%}
+    {%- set is_enabled = config.get('is_enabled_dev', default=false) -%}
+  {%- endif -%}
 
   {% set target_relation = this %}
   {% set existing_relation = load_relation(this) %}
@@ -34,7 +41,7 @@
   -- `BEGIN` happens here:
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
-  
+
   {% if task_after %}
     -- First, suspend the top parent task if there is one
     {% set top_parent = dbt_dataengineers_materilizations.snowflake_get_task_top_parent_node(model) %}
@@ -57,9 +64,21 @@
     {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(target_relation) %}
   {% endif %}
   {% if top_parent %}
-    {% if top_parent.config.is_enabled %}
+  
+    {%- if target.name == 'prod' -%}
+      {%- set is_parent_enabled = top_parent.config.is_enabled_prod -%}
+    {%- elif target.name == 'test' -%}
+      {%- set is_parent_enabled = top_parent.config.is_enabled_test -%}
+    {%- else -%}
+      {%- set is_parent_enabled = top_parent.config.is_enabled_dev -%}
+    {%- endif -%}
+    {%- if is_parent_enabled is none -%}
+      {%- set is_parent_enabled = top_parent.config.is_enabled -%}
+    {%- endif -%}
+
+    {% if is_parent_enabled %}
       {{ log('resuming '~ top_parent_relation, info=True) }}
-      {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(top_parent_relation) %}    
+      {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(top_parent_relation) %}
     {% endif %}
   {% endif %}
 
