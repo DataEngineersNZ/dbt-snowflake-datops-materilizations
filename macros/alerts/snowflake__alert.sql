@@ -9,6 +9,7 @@
   {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
   {%- set action = config.get('action', default='snowwatch' ) -%}
   {%- set severity = config.get('severity', default='error' ) -%}
+  {%- set identifier = model['alias'] -%}
 
   {%- if target.name == 'prod' -%}
     {%- set is_enabled = config.get('is_enabled_prod', default=true) -%}
