@@ -28,7 +28,7 @@
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
   {% call statement('main') -%}
-    {{ dbt_dataengineers_materilizations.snowflake_create__or_replace_alert_statement(target_relation, warehouse, schedule, severity, action, sql) }}
+    {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse, schedule, severity, action, sql) }}
   {%- endcall %}
   {%- if is_enabled == false %}
       {{ dbt_dataengineers_materilizations.snowflake_suspend_alert_statement(target_relation) }}

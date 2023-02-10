@@ -1,4 +1,4 @@
-{%- macro snowflake_create_alert_statement(relation, warehouse, schedule, severity, action, sql) -%}
+{%- macro snowflake_create_or_replace_alert_statement(relation, warehouse, schedule, severity, action, sql) -%}
 
 {{ log("Creating Alert " ~ relation) }}   
 CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(not temporary)) }}({{ parameters }})
