@@ -30,21 +30,42 @@ Usage
 ```sql
 {{ 
     config(materialized='alert',
-    warehouse  = 'task_wh',
+    warehouse  = 'alert_wh',
     schedule  = '60 MINUTE',
-    action = 'snowwatch'
+    action = 'snowwatch',
+    notification_email = 'snowwatch@dataengineers.co.nz',
+    api_key = '********-****-****-****-************',
+    notification_integration = 'INT_SNOWWATCH'
     )
 }}
 ```
-| property          | description                                                                                      | required | default     |
-| ----------------- | ------------------------------------------------------------------------------------------------ | -------- | ----------- |
-| `materialized`    | specifies the type of materialisation to run                                                     | yes      | `alert`     |
-| `warehouse`       | specifies the virtual warehouse that provides compute resources for executing this alert         | yes      | `task_wh`   |
-| `schedule`        | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 MINUTE` |
-| `action`          | specifies the action to run (either 'snowwatch' or enter your own action)                        | no       | `snowwatch` |
-| `is_enabled_prod` | specifies if the alert should be enabled in production environment                               | no       | `true`      |
-| `is_enabled_test` | specifies if the alert should be enabled in test environment                                     | no       | `false`     |
-| `is_enabled_dev`  | specifies if the alert should be enabled in non prod or test environments                        | no       | `false`     |
+| property                   | description                                                                                      | required | default                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ------------------------------- |
+| `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                         |
+| `warehouse`                | specifies the virtual warehouse that provides compute resources for executing this alert         | yes      | `alert_wh`                      |
+| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 MINUTE`                     |
+| `action`                   | specifies the action to run (either 'snowwatch' or enter your own action)                        | no       | `snowwatch`                     |
+| `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `snowwatch@dataengineers.co.nz` |
+| `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                              |
+| `notification_integration` | specifies the email intgeration that should be used                                              | no *     | ``                              |
+| `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                          |
+| `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                         |
+| `is_enabled_dev`           | specifies if the alert should be enabled in non prod or test environments                        | no       | `false`                         |
+
+* only required if `action` is set to `snowwatch`
+* `notification_email` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_email` variable
+* `notification_integration` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_integration` variable
+* `api_key` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_api_key` variable
+
+**Example**
+```yaml
+vars:
+  alert_notification_email: "snowwatch@dataengineers.co.nz"
+  alert_notification_integration: "INT_SNOWWATCH"
+  alert_notification_api_key: "********-****-****-****-************"
+```
+
+For more information on snowwatch please visit [https://www.dataengineers.co.nz/solutions/snowwatch/](https://www.dataengineers.co.nz/solutions/snowwatch/) or contact us at [info@dataengineers.co.nz](mailto:info@dataengineers.co.nz)
 
 
 ## Stored Procedures
