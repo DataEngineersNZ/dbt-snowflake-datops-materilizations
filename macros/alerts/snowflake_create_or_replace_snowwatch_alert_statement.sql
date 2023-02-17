@@ -48,7 +48,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                     LET error_alert_payload VARCHAR := OBJECT_CONSTRUCT(
                                                 'version', :alert_version,
                                                 'messageId', :alert_message_id,
-                                                'messageType', 'ALERT_STATEMENT_ERROR'
+                                                'messageType', 'ALERT_STATEMENT_ERROR',
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
                                                 'alertName', :alert_name,
@@ -62,7 +62,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                     LET error_alert_payload VARCHAR := OBJECT_CONSTRUCT(
                                                 'version', :alert_version,
                                                 'messageId', :alert_message_id,
-                                                'messageType', 'ALERT_EXPRESSION_ERROR'
+                                                'messageType', 'ALERT_EXPRESSION_ERROR',
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
                                                 'alertName', :alert_name,
