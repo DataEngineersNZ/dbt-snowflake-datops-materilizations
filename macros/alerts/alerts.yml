@@ -1,0 +1,7 @@
+version: 2
+
+macros:
+
+  - name: snowflake_create_or_replace_alert_statement
+    docs:
+      show: false

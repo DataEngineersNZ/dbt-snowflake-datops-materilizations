@@ -1,8 +1,20 @@
-# dbt-snowflake-datops-materilizations
-Repo contains the materializations for Data Engineers DataOps Framework
+This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that can be (re)used across dbt projects.
 
+> require-dbt-version: [">=1.3.0", "<2.0.0"]
+----
+
+## Installation Instructions
+Add the following to your packages.yml file
+```
+  - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
+    revision: "0.2.1"
+```
+----
+
+## Contents
 Conatins the following materializations for Snowflake:
 
+* Alerts
 * File Format
 * Stages
 * Stored Procedures
@@ -12,7 +24,49 @@ Conatins the following materializations for Snowflake:
 * Materialised View
 * Generic
 
-Adds the ability to create the raw tables based on the yml file
+## Alerts
+
+Usage
+```sql
+{{ 
+    config(materialized='alert',
+    warehouse  = 'alert_wh',
+    schedule  = '60 MINUTE',
+    action = 'snowwatch',
+    notification_email = 'snowwatch@dataengineers.co.nz',
+    api_key = '********-****-****-****-************',
+    notification_integration = 'INT_SNOWWATCH'
+    )
+}}
+```
+| property                   | description                                                                                      | required | default                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ------------------------------- |
+| `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                         |
+| `warehouse`                | specifies the virtual warehouse that provides compute resources for executing this alert         | yes      | `alert_wh`                      |
+| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 MINUTE`                     |
+| `action`                   | specifies the action to run (either 'snowwatch' or enter your own action)                        | no       | `snowwatch`                     |
+| `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `snowwatch@dataengineers.co.nz` |
+| `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                              |
+| `notification_integration` | specifies the email intgeration that should be used                                              | no *     | ``                              |
+| `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                          |
+| `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                         |
+| `is_enabled_dev`           | specifies if the alert should be enabled in non prod or test environments                        | no       | `false`                         |
+
+* only required if `action` is set to `snowwatch`
+* `notification_email` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_email` variable
+* `notification_integration` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_integration` variable
+* `api_key` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_api_key` variable
+
+**Example**
+```yaml
+vars:
+  alert_notification_email: "snowwatch@dataengineers.co.nz"
+  alert_notification_integration: "INT_SNOWWATCH"
+  alert_notification_api_key: "********-****-****-****-************"
+```
+
+For more information on snowwatch please visit [https://www.dataengineers.co.nz/solutions/snowwatch/](https://www.dataengineers.co.nz/solutions/snowwatch/) or contact us at [info@dataengineers.co.nz](mailto:info@dataengineers.co.nz)
+
 
 ## Stored Procedures
 
@@ -80,15 +134,18 @@ Usage
  }}
 ```
 
-| property                 | description                                                                           | required | default  |
-| ------------------------ | ------------------------------------------------------------------------------------- | -------- | -------- |
-| `materialized`           | specifies the type of materialisation to run                                          | yes      | `task`   |
-| `is_serverless`          | specifies if the warehouse should be serverless or dedicated                          | no       | `true`   |
-| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use | no       | `xsmall` |
-| `schedule`               | specifies the schedule which the task should be run on using CRON expressions         | no *     |          |
-| `task_after`             | specifies the task which this task should be run after                                | no *     |          |
-| `stream_name`            | specifies the stream which the task should run only if there is data available        | no       |          |
-| `is_enabled`             | specifies if the task should be enabled or disabled at the end of the run             | yes      | `true`   |
+| property                 | description                                                                                     | required | default  |
+| ------------------------ | ----------------------------------------------------------------------------------------------- | -------- | -------- |
+| `materialized`           | specifies the type of materialisation to run                                                    | yes      | `task`   |
+| `is_serverless`          | specifies if the warehouse should be serverless or dedicated                                    | no       | `true`   |
+| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use           | no       | `xsmall` |
+| `schedule`               | specifies the schedule which the task should be run on using CRON expressions                   | no *     |          |
+| `task_after`             | specifies the task which this task should be run after                                          | no *     |          |
+| `stream_name`            | specifies the stream which the task should run only if there is data available                  | no       |          |
+| `is_enabled`             | specifies if the task should be enabled or disabled at the end of the run                       | yes      | `true`   |
+| `is_enabled_prod`        | specifies if the alert should be enabled in production environment  at the end of the run       | no       | `true`   |
+| `is_enabled_test`        | specifies if the alert should be enabled in test environment at the end of the run              | no       | `false`  |
+| `is_enabled_dev`         | specifies if the alert should be enabled in non prod or test environments at the end of the run | no       | `false`  |
 
 * only one of `schedule` or `task_after` is required.
 
@@ -111,6 +168,7 @@ Usage
 | `source_model`  | specifies the source table or view model name to add the stream to             | yes      |          |
 
 ## Tables
+Adds the ability to create the raw tables based on the yml file
 
 Usage
 
@@ -122,9 +180,9 @@ Usage
           auto_create_table: true
 ```
 
-| property               | description                                                      | required | default |
-| ---------------------- | ---------------------------------------------------------------- | -------- | ------- |
-| `auto_create_table`    | specifies if the table should be maintianed by dbt or not        | yes      | `false` |
+| property            | description                                               | required | default |
+| ------------------- | --------------------------------------------------------- | -------- | ------- |
+| `auto_create_table` | specifies if the table should be maintianed by dbt or not | yes      | `false` |
 
 * it's recommended that a separate stream object is created instead of setting up the stream via the table object as the stream doesn't appear on the DAG when created via this method, nor can you reference it using the `ref` macro.
 
@@ -145,9 +203,9 @@ Usage
 }}
 ```
 
-| property       | description                                     | required | default       |
-| -------------- | ----------------------------------------------- | -------- | ------------- |
-| `materialized` | specifies the type of materialisation to run    | yes      | `file_format` |
+| property       | description                                  | required | default       |
+| -------------- | -------------------------------------------- | -------- | ------------- |
+| `materialized` | specifies the type of materialisation to run | yes      | `file_format` |
 
 View [Snowflake `create file format` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html) for more information on the available options.
 
@@ -364,12 +422,12 @@ To create a Materialized View, you need to add the following config to the top o
 }}
 ```
 
-| property              | description                                                                 | required | default                 |
-| --------------------- | --------------------------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`        | specifies the type of materialisation to run                                | yes      | `materialized_view`     |
-| `secure`              | specifies that the view is secure.                                          | no       | false                   |
-| `cluster_by`          | specifies an expression on which to cluster the materialized view.          | no       | none                    |
-| `automatic_clustering`| specifies if reclustering of the materialized view is automatically resumed | no       | false                   |
+| property               | description                                                                 | required | default             |
+| ---------------------- | --------------------------------------------------------------------------- | -------- | ------------------- |
+| `materialized`         | specifies the type of materialisation to run                                | yes      | `materialized_view` |
+| `secure`               | specifies that the view is secure.                                          | no       | false               |
+| `cluster_by`           | specifies an expression on which to cluster the materialized view.          | no       | none                |
+| `automatic_clustering` | specifies if reclustering of the materialized view is automatically resumed | no       | false               |
 
 
 Supported model configs: secure, cluster_by, automatic_clustering, persist_docs (relation only)
