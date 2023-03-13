@@ -7,11 +7,11 @@
 {%- materialization alert, adapter='snowflake' -%}
   {%- set warehouse = config.get('warehouse', default='alert_wh') -%}
   {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
-  {%- set action = config.get('action', default='snowwatch' ) -%}
+  {%- set action = config.get('action', default='monitorial' ) -%}
   {%- set severity = config.get('severity', default='error' ) -%}
-  {%- set notification_email = config.get('notification_email', default=var('alert_notification_email', 'snowwatch@dataengineers.co.nz')) -%}
+  {%- set notification_email = config.get('notification_email', default=var('alert_notification_email', 'notifications@monitorial.io')) -%}
   {%- set api_key = config.get('api_key', default=var('alert_notification_api_key', 'unknown') ) -%}
-  {%- set notification_integration = config.get('notification_integration', default=var('alert_notification_integration', 'unknown') ) -%}
+  {%- set notification_integration = config.get('notification_integration', default=var('alert_notification_integration', 'EXT_EMAIL_INTEGRATION') ) -%}
   {%- set identifier = model['alias'] -%}
 
   {%- if target.name == 'prod' -%}
@@ -32,8 +32,8 @@
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
   {% call statement('main') -%}
-    {% if (action|lower in ['snowwatch', 'snowstorm']) %}
-      {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_snowwatch_alert_statement(target_relation, warehouse, schedule, severity, api_key, notification_email, notification_integration, sql) }}
+    {% if (action|lower in ['snowwatch', 'snowstorm', 'monitorial']) %}
+      {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse, schedule, severity, api_key, notification_email, notification_integration, sql) }}
     {% else %}
       {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse, schedule, action, sql) }}
     {% endif %}

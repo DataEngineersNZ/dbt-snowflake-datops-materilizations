@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_snowwatch_alert_statement(relation, warehouse, schedule, severity, api_key, notification_email, notification_integration, sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, api_key, notification_email, notification_integration, sql) -%}
 
 {{ log("Creating Alert " ~ relation) }}
 CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(not temporary)) }}
@@ -17,7 +17,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                 alert_message_type VARCHAR DEFAULT 'USER_ALERT';
                 alert_timestamp TIMESTAMP DEFAULT (SELECT current_timestamp());
                 alert_account_name VARCHAR DEFAULT (SELECT current_account());
-                alert_name VARCHAR DEFAULT '{{ relation.identifier }}';
+                alert_name VARCHAR DEFAULT '{{ relation.include(database=(not temporary), schema=(not temporary)) }}';
                 alert_severity VARCHAR DEFAULT '{{ severity }}';
                 alert_email VARCHAR DEFAULT '{{ notification_email }}';
                 alert_integration VARCHAR DEFAULT '{{ notification_integration }}';

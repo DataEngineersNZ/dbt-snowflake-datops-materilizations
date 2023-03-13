@@ -32,27 +32,27 @@ Usage
     config(materialized='alert',
     warehouse  = 'alert_wh',
     schedule  = '60 MINUTE',
-    action = 'snowwatch',
+    action = 'monitorial',
     notification_email = 'snowwatch@dataengineers.co.nz',
     api_key = '********-****-****-****-************',
-    notification_integration = 'INT_SNOWWATCH'
+    notification_integration = 'EXT_EMAIL_INTEGRATION'
     )
 }}
 ```
-| property                   | description                                                                                      | required | default                         |
-| -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ------------------------------- |
-| `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                         |
-| `warehouse`                | specifies the virtual warehouse that provides compute resources for executing this alert         | yes      | `alert_wh`                      |
-| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 MINUTE`                     |
-| `action`                   | specifies the action to run (either 'snowwatch' or enter your own action)                        | no       | `snowwatch`                     |
-| `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `snowwatch@dataengineers.co.nz` |
-| `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                              |
-| `notification_integration` | specifies the email intgeration that should be used                                              | no *     | ``                              |
-| `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                          |
-| `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                         |
-| `is_enabled_dev`           | specifies if the alert should be enabled in non prod or test environments                        | no       | `false`                         |
+| property                   | description                                                                                      | required | default                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
+| `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                       |
+| `warehouse`                | specifies the virtual warehouse that provides compute resources for executing this alert         | yes      | `alert_wh`                    |
+| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 MINUTE`                   |
+| `action`                   | specifies the action to run (either 'monitorial' or enter your own action)                       | no       | `monitorial`                  |
+| `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `notifications@monitorial.io` |
+| `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                            |
+| `notification_integration` | specifies the email intgeration that should be used                                              | no *     | `EXT_EMAIL_INTEGRATION`       |
+| `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                        |
+| `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                       |
+| `is_enabled_dev`           | specifies if the alert should be enabled in non prod or test environments                        | no       | `false`                       |
 
-* only required if `action` is set to `snowwatch`
+* only required if `action` is set to `monitorial`
 * `notification_email` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_email` variable
 * `notification_integration` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_integration` variable
 * `api_key` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_api_key` variable
@@ -142,6 +142,7 @@ Usage
 | `schedule`               | specifies the schedule which the task should be run on using CRON expressions                   | no *     |          |
 | `task_after`             | specifies the task which this task should be run after                                          | no *     |          |
 | `stream_name`            | specifies the stream which the task should run only if there is data available                  | no       |          |
+| `error_integration`      | specifes the error integration to use                                                           | no       |          |
 | `is_enabled`             | specifies if the task should be enabled or disabled at the end of the run                       | yes      | `true`   |
 | `is_enabled_prod`        | specifies if the alert should be enabled in production environment  at the end of the run       | no       | `true`   |
 | `is_enabled_test`        | specifies if the alert should be enabled in test environment at the end of the run              | no       | `false`  |
