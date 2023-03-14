@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, api_key, notification_email, notification_integration, sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, description, api_key, notification_email, notification_integration, sql) -%}
 
 {{ log("Creating Alert " ~ relation) }}
 CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(not temporary)) }}
@@ -15,6 +15,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                 alert_version VARCHAR DEFAULT '1.0';
                 alert_message_id VARCHAR DEFAULT (SELECT uuid_string());
                 alert_message_type VARCHAR DEFAULT 'USER_ALERT';
+                alert_description VARCHAR DEFAULT '{{ description }}';
                 alert_timestamp TIMESTAMP DEFAULT (SELECT current_timestamp());
                 alert_account_name VARCHAR DEFAULT (SELECT current_account());
                 alert_name VARCHAR DEFAULT '{{ relation.include(database=(not temporary), schema=(not temporary)) }}';
@@ -33,6 +34,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                                                 'accountName', :alert_account_name,
                                                 'alertName', :alert_name,
                                                 'severity', :alert_severity,
+                                                'description', :alert_description,
                                                 'messages', ARRAY_AGG(OBJECT_CONSTRUCT(*))) AS alert_body
                         FROM baseAlertQuery
                     )
@@ -53,6 +55,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                                                 'accountName', :alert_account_name,
                                                 'alertName', :alert_name,
                                                 'severity', 'ERROR',
+                                                'description', :alert_description,
                                                 'messages', ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
                                                     'Error type', 'Statement Error',
                                                     'Error Message', sqlerrm)));
@@ -67,6 +70,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                                                 'accountName', :alert_account_name,
                                                 'alertName', :alert_name,
                                                 'severity', 'ERROR',
+                                                'description', :alert_description,
                                                 'messages', ARRAY_CONSTRUCT(OBJECT_CONSTRUCT(
                                                     'Error type', 'expression Error',
                                                     'Error Message', sqlerrm,

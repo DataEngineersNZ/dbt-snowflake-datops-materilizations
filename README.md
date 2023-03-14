@@ -31,10 +31,11 @@ Usage
 {{ 
     config(materialized='alert',
     warehouse  = 'alert_wh',
-    schedule  = '60 MINUTE',
+    schedule  = '60 minute',
     action = 'monitorial',
-    notification_email = 'snowwatch@dataengineers.co.nz',
-    api_key = '********-****-****-****-************',
+    description = 'your description of what is representing the alert'
+    notification_email = 'notifications@monitorial.io',
+    api_key = '********************************',
     notification_integration = 'EXT_EMAIL_INTEGRATION'
     )
 }}
@@ -43,10 +44,11 @@ Usage
 | -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
 | `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                       |
 | `warehouse`                | specifies the virtual warehouse that provides compute resources for executing this alert         | yes      | `alert_wh`                    |
-| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 MINUTE`                   |
+| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`                   |
 | `action`                   | specifies the action to run (either 'monitorial' or enter your own action)                       | no       | `monitorial`                  |
 | `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `notifications@monitorial.io` |
 | `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                            |
+| `description`              | specifies the description of the alert                                                           | no *     | ``                            |
 | `notification_integration` | specifies the email intgeration that should be used                                              | no *     | `EXT_EMAIL_INTEGRATION`       |
 | `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                        |
 | `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                       |
