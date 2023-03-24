@@ -1,22 +1,31 @@
-{% macro stage_file_formats() %}
-    {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
-        {% set items_to_stage = [] %}
+{% macro stage_file_formats(is_enabled_dev=true, is_enabled_test =true, is_enabled_prod=true) %}
+    {%- if target.name == 'prod' -%}
+        {%- set is_enabled = is_enabled_prod -%}
+    {%- elif target.name == 'test' -%}
+        {%- set is_enabled = is_enabled_test -%}
+    {%- else -%}
+        {%- set is_enabled = is_enabled_dev -%}
+    {%- endif -%}
+    {% if is_enabled %}
+        {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+            {% set items_to_stage = [] %}
 
-        {% set nodes = graph.nodes.values() if graph.nodes else [] %}
-        {% for node in nodes %}
-            {% if node.config.materialized == 'file_format' %}
-                {% do items_to_stage.append(node) %}
+            {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+            {% for node in nodes %}
+                {% if node.config.materialized == 'file_format' %}
+                    {% do items_to_stage.append(node) %}
+                {% endif %}
+            {% endfor %}
+
+            {% do log('file formats to create: ' ~ items_to_stage|length, info = true) %}
+
+            {# Initial run to cater for  #}
+            {% if items_to_stage|length > 0 %}
+                {% do dbt_dataengineers_materilizations.stage_file_format_plans(items_to_stage) %}
             {% endif %}
-        {% endfor %}
-
-        {% do log('file formats to create: ' ~ items_to_stage|length, info = true) %}
-
-        {# Initial run to cater for  #}
-        {% if items_to_stage|length > 0 %}
-            {% do dbt_dataengineers_materilizations.stage_file_format_plans(items_to_stage) %}
         {% endif %}
-
-        
+    {% else %}
+        {% do log('file formats to create: Not enabled', info = true) %}
     {% endif %}
 {% endmacro %}
 

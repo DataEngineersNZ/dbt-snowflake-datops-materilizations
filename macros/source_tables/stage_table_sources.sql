@@ -1,31 +1,42 @@
 
-{% macro stage_table_sources() %}
-    {% if flags.WHICH == 'run' %}
-        {% set sources_to_stage = [] %}
-        {% set externals_tables_to_stage = [] %}
+{% macro stage_table_sources(is_enabled_dev=true, is_enabled_test =true, is_enabled_prod=true) %}
+    {%- if target.name == 'prod' -%}
+        {%- set is_enabled = is_enabled_prod -%}
+    {%- elif target.name == 'test' -%}
+        {%- set is_enabled = is_enabled_test -%}
+    {%- else -%}
+        {%- set is_enabled = is_enabled_dev -%}
+    {%- endif -%}
+    {% if is_enabled %}
+        {% if flags.WHICH == 'run' %}
+            {% set sources_to_stage = [] %}
+            {% set externals_tables_to_stage = [] %}
 
-        {% set source_nodes = graph.sources.values() if graph.sources else [] %}
-        {% for node in source_nodes %}
-            {% if node.external %}
-                {% if node.external.auto_create_table %}
-                    {% if node.external.location %}
-                        {% do externals_tables_to_stage.append(node) %}
-                    {% else %}
-                        {% do sources_to_stage.append(node) %}
+            {% set source_nodes = graph.sources.values() if graph.sources else [] %}
+            {% for node in source_nodes %}
+                {% if node.external %}
+                    {% if node.external.auto_create_table %}
+                        {% if node.external.location %}
+                            {% do externals_tables_to_stage.append(node) %}
+                        {% else %}
+                            {% do sources_to_stage.append(node) %}
+                        {% endif %}
                     {% endif %}
                 {% endif %}
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
 
-        {% do log('tables to create: ' ~ sources_to_stage|length, info = true) %}
-        {% do log('external tables to create: ' ~ externals_tables_to_stage|length, info = true) %}
+            {% do log('tables to create: ' ~ sources_to_stage|length, info = true) %}
+            {% do log('external tables to create: ' ~ externals_tables_to_stage|length, info = true) %}
 
-        {# Initial run to cater for  #}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, true, 'internal') %}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, false, 'internal') %}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(externals_tables_to_stage, true, 'external') %}
-        {% do dbt_dataengineers_materilizations.stage_table_sources_plans(externals_tables_to_stage, false, 'external') %}
-        
+            {# Initial run to cater for  #}
+            {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, true, 'internal') %}
+            {% do dbt_dataengineers_materilizations.stage_table_sources_plans(sources_to_stage, false, 'internal') %}
+            {% do dbt_dataengineers_materilizations.stage_table_sources_plans(externals_tables_to_stage, true, 'external') %}
+            {% do dbt_dataengineers_materilizations.stage_table_sources_plans(externals_tables_to_stage, false, 'external') %}
+        {% endif %}
+    {% else %}
+        {% do log('tables to create: Not enabled', info = true) %}
+        {% do log('external tables to create: Not enabled', info = true) %}
     {% endif %}
 {% endmacro %}
 

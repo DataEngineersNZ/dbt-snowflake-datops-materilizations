@@ -49,6 +49,7 @@ Usage
 | `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `notifications@monitorial.io` |
 | `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                            |
 | `description`              | specifies the description of the alert                                                           | no *     | ``                            |
+| `execute_immediate`        | specifies the statement that needs to be run to feed into the alert                              | no *     | ``                            |
 | `notification_integration` | specifies the email intgeration that should be used                                              | no *     | `EXT_EMAIL_INTEGRATION`       |
 | `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                        |
 | `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                       |
@@ -62,12 +63,12 @@ Usage
 **Example**
 ```yaml
 vars:
-  alert_notification_email: "snowwatch@dataengineers.co.nz"
-  alert_notification_integration: "INT_SNOWWATCH"
+  alert_notification_email: "notifications@monitorial.io"
+  alert_notification_integration: "EXT_EMAIL_INTEGRATION"
   alert_notification_api_key: "********-****-****-****-************"
 ```
 
-For more information on snowwatch please visit [https://www.dataengineers.co.nz/solutions/snowwatch/](https://www.dataengineers.co.nz/solutions/snowwatch/) or contact us at [info@dataengineers.co.nz](mailto:info@dataengineers.co.nz)
+For more information on snowwatch please visit [https://www.dataengineers.co.nz/solutions/snowwatch/](https://www.dataengineers.co.nz/solutions/snowwatch/) or contact us at [info@monitorial.io](mailto:info@monitorial.io)
 
 
 ## Stored Procedures
@@ -120,6 +121,19 @@ example
     ignore_utf8_errors = true
 ```
 
+To action the auto-creation of the file format, you need to add the following pre-hook
+
+```yml
+on-run-start:
+  - "{{ dbt_dataengineers_materilizations.stage_file_formats(true, true, true) }}"
+```
+
+
+| parameter       | description                                                             | default |
+| --------------- | ----------------------------------------------------------------------- | ------- |
+| is_enabled_dev  | specifies if the materialisation should be run in non prod environments | `true`  |
+| is_enabled_test | specifies if the materialisation should be run in test environments     | `true`  |
+| is_enabled_prod | specifies if the materialisation should be run in prod environments     | `true`  |
 
 ## Tasks
 
@@ -193,35 +207,14 @@ To action the auto-creation of the tables, you need to add the following pre-hoo
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_table_sources() }}"
+  - "{{ dbt_dataengineers_materilizations.stage_table_sources(true, true, true) }}"
 ```
 
-## File Formats
-
-Usage
-
-```sql
-{{
-    config(materialized='file_format')
-}}
-```
-
-| property       | description                                  | required | default       |
-| -------------- | -------------------------------------------- | -------- | ------------- |
-| `materialized` | specifies the type of materialisation to run | yes      | `file_format` |
-
-View [Snowflake `create file format` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html) for more information on the available options.
-
-example
-
-```sql
-{{ config(materialized='file_format') }}
-
-    type = json
-    null_if = ()
-    compression = none
-    ignore_utf8_errors = true
-```
+| parameter       | description                                                             | default |
+| --------------- | ----------------------------------------------------------------------- | ------- |
+| is_enabled_dev  | specifies if the materialisation should be run in non prod environments | `true`  |
+| is_enabled_test | specifies if the materialisation should be run in test environments     | `true`  |
+| is_enabled_prod | specifies if the materialisation should be run in prod environments     | `true`  |
 
 ## Stages
 
@@ -241,8 +234,14 @@ To action the auto-creation of the stages before the tables get created, you nee
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_stages() }}"
+  - "{{ dbt_dataengineers_materilizations.stage_stages(true, true, true) }}"
 ```
+
+| parameter       | description                                                             | default |
+| --------------- | ----------------------------------------------------------------------- | ------- |
+| is_enabled_dev  | specifies if the materialisation should be run in non prod environments | `true`  |
+| is_enabled_test | specifies if the materialisation should be run in test environments     | `true`  |
+| is_enabled_prod | specifies if the materialisation should be run in prod environments     | `true`  |
 
 [Storage Integrations](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.html) need to be maintained separately as you require `Create integration` privilage on the role you are using to set those up and they are global to snowflake instead of per database.
 

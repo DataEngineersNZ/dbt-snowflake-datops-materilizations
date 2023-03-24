@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, description, api_key, notification_email, notification_integration, sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) -%}
 
 {{ log("Creating Alert " ~ relation) }}
 CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(not temporary)) }}
@@ -23,6 +23,9 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                 alert_email VARCHAR DEFAULT '{{ notification_email }}';
                 alert_integration VARCHAR DEFAULT '{{ notification_integration }}';
             BEGIN
+                {% if execute_immediate_statement | length > 0 %}
+                    EXECUTE IMMEDIATE '{{ execute_immediate_statement }}';
+                {% endif %}
                 WITH baseAlertQuery AS (
                        {{ sql }}
                 ),
