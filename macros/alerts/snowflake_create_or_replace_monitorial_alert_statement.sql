@@ -82,6 +82,6 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
 
                     CALL SYSTEM$SEND_EMAIL(:alert_integration, :alert_email, :alert_subject, :error_alert_payload);
                     RETURN 'error running alert';
-        end;
+        END;
         $$;
 {%- endmacro -%}

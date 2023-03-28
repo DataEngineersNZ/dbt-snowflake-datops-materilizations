@@ -5,7 +5,8 @@
 */
 
 {%- materialization alert, adapter='snowflake' -%}
-  {%- set warehouse = config.get('warehouse', default='alert_wh') -%}
+  {%- set warehouse_name_or_size = config.get('warehouse_name_or_size', default='alert_wh') -%}
+  {%- set is_serverless = config.get('is_serverless', default=false) -%}
   {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
   {%- set action = config.get('action', default='monitorial' ) -%}
   {%- set severity = config.get('severity', default='error' ) -%}
@@ -14,7 +15,9 @@
   {%- set api_key = config.get('api_key', default=var('alert_notification_api_key', 'unknown') ) -%}
   {%- set execute_immediate_statement = config.get('execute_immediate', default='') -%}
   {%- set notification_integration = config.get('notification_integration', default=var('alert_notification_integration', 'EXT_EMAIL_INTEGRATION') ) -%}
+  {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION') -%}
   {%- set identifier = model['alias'] -%}
+
 
   {%- if target.name == 'prod' -%}
     {%- set is_enabled = config.get('is_enabled_prod', default=true) -%}
@@ -34,14 +37,22 @@
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
   {% call statement('main') -%}
-    {% if (action|lower in ['snowwatch', 'snowstorm', 'monitorial']) %}
-      {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) }}
+    {% if is_serverless == false %}
+      {% if (action|lower in ['snowwatch', 'snowstorm', 'monitorial']) %}
+        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse_name_or_size, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) }}
+      {% else %}
+        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_name_or_size, schedule, action, sql) }}
+      {% endif %}
     {% else %}
-      {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse, schedule, action, sql) }}
+        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_task_statement(target_relation, warehouse_name_or_size, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) }}
     {% endif %}
   {%- endcall %}
   {%- if is_enabled == false %}
+    {% if is_serverless == false %}
       {{ dbt_dataengineers_materilizations.snowflake_suspend_alert_statement(target_relation) }}
+    {% else %}
+      {{ dbt_dataengineers_materilizations.snowflake_suspend_alert_task_statement(target_relation) }}
+    {% endif %}
   {% endif %}
 
       --------------------------------------------------------------------------------------------------------------------
