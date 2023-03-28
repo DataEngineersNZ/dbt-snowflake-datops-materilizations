@@ -10,7 +10,7 @@
       {% else %}
         SCHEDULE = '{{ task_schedule }}'
       {% endif %}
-      {% if error_integration != '' %}
+      {% if task_after_relation is none and error_integration != '' %}
         ERROR_INTEGRATION = '{{ error_integration }}'
       {% endif %}
       {% if stream_relation %}

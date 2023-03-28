@@ -15,7 +15,7 @@
   {%- set api_key = config.get('api_key', default=var('alert_notification_api_key', 'unknown') ) -%}
   {%- set execute_immediate_statement = config.get('execute_immediate', default='') -%}
   {%- set notification_integration = config.get('notification_integration', default=var('alert_notification_integration', 'EXT_EMAIL_INTEGRATION') ) -%}
-  {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION') -%}
+  {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION')) -%}
   {%- set identifier = model['alias'] -%}
 
 

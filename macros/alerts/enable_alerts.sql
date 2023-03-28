@@ -47,6 +47,7 @@
             {% else %}
                 {% do log('Resuming ' ~ level ~ ' alert - ' ~ alert_relation, info=true) %}
                 {% do dbt_dataengineers_materilizations.snowflake_resume_alert_statement(relation) %}
+            {% endif %}
         {% endif %}
     {% endfor %}
 {% endmacro %}
