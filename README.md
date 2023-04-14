@@ -47,6 +47,7 @@ Usage
 | `warehouse_name_or_size`   | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`                    |
 | `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`                   |
 | `action`                   | specifies the action to run (either 'monitorial' or enter your own action)                       | no       | `monitorial`                  |
+| `environment`              | specifies the target environment for the alert                                                   | no       | `target.name`                 |
 | `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `notifications@monitorial.io` |
 | `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                            |
 | `description`              | specifies the description of the alert                                                           | no *     | ``                            |

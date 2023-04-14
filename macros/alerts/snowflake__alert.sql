@@ -17,6 +17,7 @@
   {%- set notification_integration = config.get('notification_integration', default=var('alert_notification_integration', 'EXT_EMAIL_INTEGRATION') ) -%}
   {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION')) -%}
   {%- set identifier = model['alias'] -%}
+  {%- set environment =  config.get('environment', target.name ) -%}
 
 
   {%- if target.name == 'prod' -%}
@@ -39,12 +40,12 @@
   {% call statement('main') -%}
     {% if is_serverless == false %}
       {% if (action|lower in ['snowwatch', 'snowstorm', 'monitorial']) %}
-        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse_name_or_size, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) }}
+        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse_name_or_size, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
       {% else %}
         {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_name_or_size, schedule, action, sql) }}
       {% endif %}
     {% else %}
-        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_task_statement(target_relation, warehouse_name_or_size, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) }}
+        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_task_statement(target_relation, warehouse_name_or_size, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
     {% endif %}
   {%- endcall %}
   {%- if is_enabled == false %}
