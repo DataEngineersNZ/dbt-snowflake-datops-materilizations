@@ -54,9 +54,7 @@ Usage
 | `execute_immediate`        | specifies the statement that needs to be run to feed into the alert                              | no *     | ``                            |
 | `notification_integration` | specifies the email intgeration that should be used                                              | no *     | `EXT_EMAIL_INTEGRATION`       |
 | `error_integration`        | specifies the error intgeration that should be used when using serverless alerts                 | no *     | `EXT_ERROR_INTEGRATION`       |
-| `is_enabled_prod`          | specifies if the alert should be enabled in production environment                               | no       | `true`                        |
-| `is_enabled_test`          | specifies if the alert should be enabled in test environment                                     | no       | `false`                       |
-| `is_enabled_dev`           | specifies if the alert should be enabled in non prod or test environments                        | no       | `false`                       |
+| `enabled_targets`          | specifies if the targets which the alert should be enabled for                                   | no       | `[target.name]`               |
 
 * only required if `action` is set to `monitorial`
 * `notification_email` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_email` variable
@@ -129,16 +127,13 @@ To action the auto-creation of the file format, you need to add the following pr
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_file_formats(true, true, true) }}"
+  - "{{ dbt_dataengineers_materilizations.stage_file_formats(['local-dev', 'unit-test', 'test', 'prod']) }}"
 ```
 
 
-| parameter       | description                                                             | default |
-| --------------- | ----------------------------------------------------------------------- | ------- |
-| is_enabled_dev  | specifies if the materialisation should be run in non prod environments | `true`  |
-| is_enabled_test | specifies if the materialisation should be run in test environments     | `true`  |
-| is_enabled_prod | specifies if the materialisation should be run in prod environments     | `true`  |
-
+| parameter         | description                                                       | default         |
+| ----------------- | ----------------------------------------------------------------- | --------------- |
+| `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 ## Tasks
 
 Usage
@@ -150,23 +145,21 @@ Usage
     warehouse_name_or_size = 'xsmall',
     schedule = 'using cron */2 6-20 * * * Pacific/Auckland',
     stream_name = 'stm_orders',
-    is_enabled = false)
+    enabled_targets = ['prod'])
  }}
 ```
 
-| property                 | description                                                                                     | required | default  |
-| ------------------------ | ----------------------------------------------------------------------------------------------- | -------- | -------- |
-| `materialized`           | specifies the type of materialisation to run                                                    | yes      | `task`   |
-| `is_serverless`          | specifies if the warehouse should be serverless or dedicated                                    | no       | `true`   |
-| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use           | no       | `xsmall` |
-| `schedule`               | specifies the schedule which the task should be run on using CRON expressions                   | no *     |          |
-| `task_after`             | specifies the task which this task should be run after                                          | no *     |          |
-| `stream_name`            | specifies the stream which the task should run only if there is data available                  | no       |          |
-| `error_integration`      | specifes the error integration to use                                                           | no       |          |
-| `is_enabled`             | specifies if the task should be enabled or disabled at the end of the run                       | yes      | `true`   |
-| `is_enabled_prod`        | specifies if the alert should be enabled in production environment  at the end of the run       | no       | `true`   |
-| `is_enabled_test`        | specifies if the alert should be enabled in test environment at the end of the run              | no       | `false`  |
-| `is_enabled_dev`         | specifies if the alert should be enabled in non prod or test environments at the end of the run | no       | `false`  |
+| property                 | description                                                                           | required | default         |
+| ------------------------ | ------------------------------------------------------------------------------------- | -------- | --------------- |
+| `materialized`           | specifies the type of materialisation to run                                          | yes      | `task`          |
+| `is_serverless`          | specifies if the warehouse should be serverless or dedicated                          | no       | `true`          |
+| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use | no       | `xsmall`        |
+| `schedule`               | specifies the schedule which the task should be run on using CRON expressions         | no *     |                 |
+| `task_after`             | specifies the task which this task should be run after                                | no *     |                 |
+| `stream_name`            | specifies the stream which the task should run only if there is data available        | no       |                 |
+| `error_integration`      | specifes the error integration to use                                                 | no       |                 |
+| `enabled_targets`        | specifies if the targets which the alert should be enabled for                        | no       | `[target.name]` |
+
 
 * only one of `schedule` or `task_after` is required.
 * `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `error_notification_integration` variable
@@ -218,14 +211,12 @@ To action the auto-creation of the tables, you need to add the following pre-hoo
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_table_sources(true, true, true) }}"
+  - "{{ dbt_dataengineers_materilizations.stage_table_sources(['local-dev', 'unit-test', 'test', 'prod']) }}"
 ```
 
-| parameter       | description                                                             | default |
-| --------------- | ----------------------------------------------------------------------- | ------- |
-| is_enabled_dev  | specifies if the materialisation should be run in non prod environments | `true`  |
-| is_enabled_test | specifies if the materialisation should be run in test environments     | `true`  |
-| is_enabled_prod | specifies if the materialisation should be run in prod environments     | `true`  |
+| parameter         | description                                                       | default         |
+| ----------------- | ----------------------------------------------------------------- | --------------- |
+| `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 
 ## Stages
 
@@ -245,14 +236,12 @@ To action the auto-creation of the stages before the tables get created, you nee
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_stages(true, true, true) }}"
+  - "{{ dbt_dataengineers_materilizations.stage_stages(['local-dev', 'unit-test', 'test', 'prod']) }}"
 ```
 
-| parameter       | description                                                             | default |
-| --------------- | ----------------------------------------------------------------------- | ------- |
-| is_enabled_dev  | specifies if the materialisation should be run in non prod environments | `true`  |
-| is_enabled_test | specifies if the materialisation should be run in test environments     | `true`  |
-| is_enabled_prod | specifies if the materialisation should be run in prod environments     | `true`  |
+| parameter         | description                                                       | default         |
+| ----------------- | ----------------------------------------------------------------- | --------------- |
+| `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 
 [Storage Integrations](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.html) need to be maintained separately as you require `Create integration` privilage on the role you are using to set those up and they are global to snowflake instead of per database.
 

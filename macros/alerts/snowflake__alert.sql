@@ -18,15 +18,8 @@
   {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION')) -%}
   {%- set identifier = model['alias'] -%}
   {%- set environment =  config.get('environment', target.name ) -%}
-
-
-  {%- if target.name == 'prod' -%}
-    {%- set is_enabled = config.get('is_enabled_prod', default=true) -%}
-  {%- elif target.name == 'test' -%}
-    {%- set is_enabled = config.get('is_enabled_test', default=false) -%}
-  {%- else -%}
-    {%- set is_enabled = config.get('is_enabled_dev', default=false) -%}
-  {%- endif -%}
+  {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
+  {%- set is_enabled = target.name in enabled_targets -%}
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
@@ -39,7 +32,7 @@
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
   {% call statement('main') -%}
     {% if is_serverless == false %}
-      {% if (action|lower in ['snowwatch', 'snowstorm', 'monitorial']) %}
+      {% if (action|lower in ['snowstorm', 'monitorial']) %}
         {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse_name_or_size, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
       {% else %}
         {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_name_or_size, schedule, action, sql) }}

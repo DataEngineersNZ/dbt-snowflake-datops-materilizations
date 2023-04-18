@@ -26,20 +26,7 @@
 
 {% macro resume_alerts(alert_nodes, is_task) %}
     {% for node in alert_nodes %}
-        {% if target.Name == 'prod' %}
-            {% set is_enabled = node.config.is_enabled_prod %}
-        {% elif target.Name == 'test' %}
-            {% set is_enabled = node.config.is_enabled_test %}
-        {% else %}
-            {% set is_enabled = node.config.is_enabled_dev %}
-        {% endif %}
-        {% if is_enabled is none %}
-            {% set is_enabled = node.config.is_enabled %}
-        {% endif %}
-        {% if is_enabled is none %}
-            is_enabled = false
-        {% endif %}
-        {% if is_enabled %}
+        {% if target.name in node.config.enabled_targets %}
             {% set relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
             {% if is_task %}
                 {% do log('Resuming ' ~ level ~ ' task - ' ~ task_relation, info=true) %}

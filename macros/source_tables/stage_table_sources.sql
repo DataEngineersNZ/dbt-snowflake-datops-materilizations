@@ -1,15 +1,6 @@
 
-{% macro stage_table_sources(is_enabled_dev=true, is_enabled_test =true, is_enabled_prod=true) %}
-    {%- if target.name == 'prod' -%}
-        {%- set is_enabled = is_enabled_prod -%}
-    {%- elif target.name == 'test' -%}
-        {%- set is_enabled = is_enabled_test -%}
-    {%- elif target.name == 'unit-test' -%}
-        {%- set is_enabled = true -%}
-    {%- else -%}
-        {%- set is_enabled = is_enabled_dev -%}
-    {%- endif -%}
-    {% if is_enabled %}
+{% macro stage_table_sources(enabled_targets) %}
+    {% if target.name in enabled_targets %}
         {% if flags.WHICH == 'run' %}
             {% set sources_to_stage = [] %}
             {% set externals_tables_to_stage = [] %}
