@@ -19,7 +19,7 @@
 
     -- build model
     {%- call statement('main') -%}
-      {{ dbt_dataengineers_materilizations.snowflake_generic_statement(sql) }}
+      {{ dbt_dataengineers_materializations.snowflake_generic_statement(sql) }}
     {%- endcall -%}
 
    --------------------------------------------------------------------------------------------------------------------

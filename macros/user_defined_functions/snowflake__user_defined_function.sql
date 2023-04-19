@@ -43,9 +43,9 @@
 
   {% call statement('main') -%}
     {% if is_external %}
-      {{ dbt_dataengineers_materilizations.snowflake_create_external_user_defined_functions_statement(target_relation, is_secure, immutable, parameters, return_type, api_integration, api_uri) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_external_user_defined_functions_statement(target_relation, is_secure, immutable, parameters, return_type, api_integration, api_uri) }}
     {% else %}
-      {{ dbt_dataengineers_materilizations.snowflake_create_user_defined_functions_statement(target_relation, is_secure, preferred_language, immutable, parameters, return_type, sdk_version, import_Path, packages, handler_name, imports, target_path, runtime_version, sql) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_user_defined_functions_statement(target_relation, is_secure, preferred_language, immutable, parameters, return_type, sdk_version, import_Path, packages, handler_name, imports, target_path, runtime_version, sql) }}
     {% endif %}
   {%- endcall %}
 

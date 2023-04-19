@@ -6,7 +6,7 @@ macros:
       It will enable any task defined within dbt.
 
       ```yml
-        dbt_dataengineers_materilizations.enable_tasks()
+        dbt_dataengineers_materializations.enable_tasks()
       ```
     docs:
       show: true

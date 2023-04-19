@@ -1,5 +1,5 @@
 {% macro get_stage_build_plan(source_node) %}
-    {{ return(adapter.dispatch('get_stage_build_plan', 'dbt_dataengineers_materilizations')(source_node)) }}
+    {{ return(adapter.dispatch('get_stage_build_plan', 'dbt_dataengineers_materializations')(source_node)) }}
 {% endmacro %}
 
 {% macro default__get_stage_build_plan(source_node) %}

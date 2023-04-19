@@ -3,7 +3,7 @@
 
     {%- set columns = source_node.columns.values() -%}
     {%- set external = source_node.external -%}
-    {%- set is_csv = dbt_dataengineers_materilizations.is_csv(external.file_format, relation.database) %}
+    {%- set is_csv = dbt_dataengineers_materializations.is_csv(external.file_format, relation.database) %}
     {%- set copy_options = external.snowpipe.get('copy_options', none) -%}
     {%- if explicit_transaction -%} begin; {%- endif %}
     

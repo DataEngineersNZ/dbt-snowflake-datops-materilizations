@@ -1,5 +1,5 @@
 {% macro create_external_schema(source_node) %}
-    {{ adapter.dispatch('create_external_schema', 'dbt_dataengineers_materilizations')(source_node) }}
+    {{ adapter.dispatch('create_external_schema', 'dbt_dataengineers_materializations')(source_node) }}
 {% endmacro %}
 
 {% macro default__create_external_schema(source_node) %}
