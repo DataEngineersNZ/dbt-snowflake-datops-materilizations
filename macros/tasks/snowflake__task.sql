@@ -11,15 +11,10 @@
   {%- set task_schedule = config.get('schedule') -%}
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
-  {%- set error_integration = config.get('error_integration', default='') -%}
+  {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION')) -%}
 
-  {%- if target.name == 'prod' -%}
-    {%- set is_enabled = config.get('is_enabled_prod', default=true) -%}
-  {%- elif target.name == 'test' -%}
-    {%- set is_enabled = config.get('is_enabled_test', default=false) -%}
-  {%- else -%}
-    {%- set is_enabled = config.get('is_enabled_dev', default=false) -%}
-  {%- endif -%}
+  {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
+  {%- set is_enabled = target.name in enabled_targets -%}
 
   {% set target_relation = this %}
   {% set existing_relation = load_relation(this) %}
@@ -64,19 +59,7 @@
     {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(target_relation) %}
   {% endif %}
   {% if top_parent %}
-  
-    {%- if target.name == 'prod' -%}
-      {%- set is_parent_enabled = top_parent.config.is_enabled_prod -%}
-    {%- elif target.name == 'test' -%}
-      {%- set is_parent_enabled = top_parent.config.is_enabled_test -%}
-    {%- else -%}
-      {%- set is_parent_enabled = top_parent.config.is_enabled_dev -%}
-    {%- endif -%}
-    {%- if is_parent_enabled is none -%}
-      {%- set is_parent_enabled = top_parent.config.is_enabled -%}
-    {%- endif -%}
-
-    {% if is_parent_enabled %}
+    {% if target.name in top_parent.config.enabled_targets %}
       {{ log('resuming '~ top_parent_relation, info=True) }}
       {% do dbt_dataengineers_materilizations.snowflake_resume_task_statement(top_parent_relation) %}
     {% endif %}

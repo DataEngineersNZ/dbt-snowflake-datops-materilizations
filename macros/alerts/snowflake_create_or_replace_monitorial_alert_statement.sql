@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_alert_statement(relation, warehouse, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) -%}
 
 {{ log("Creating Alert " ~ relation) }}
 CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(not temporary)) }}
@@ -22,6 +22,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                 alert_severity VARCHAR DEFAULT '{{ severity }}';
                 alert_email VARCHAR DEFAULT '{{ notification_email }}';
                 alert_integration VARCHAR DEFAULT '{{ notification_integration }}';
+                alert_environment VARCHAR DEFAULT '{{ environment }}';
             BEGIN
                 {% if execute_immediate_statement | length > 0 %}
                     EXECUTE IMMEDIATE '{{ execute_immediate_statement }}';
@@ -35,6 +36,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                                                 'messageType', :alert_message_type,
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
+                                                'environment', :alert_environment,
                                                 'alertName', :alert_name,
                                                 'severity', :alert_severity,
                                                 'description', :alert_description,
@@ -56,6 +58,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                                                 'messageType', 'ALERT_STATEMENT_ERROR',
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
+                                                'environment', :alert_environment,
                                                 'alertName', :alert_name,
                                                 'severity', 'ERROR',
                                                 'description', :alert_description,
@@ -71,6 +74,7 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
                                                 'messageType', 'ALERT_EXPRESSION_ERROR',
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
+                                                'environment', :alert_environment,
                                                 'alertName', :alert_name,
                                                 'severity', 'ERROR',
                                                 'description', :alert_description,
@@ -82,6 +86,6 @@ CREATE OR REPLACE ALERT {{ relation.include(database=(not temporary), schema=(no
 
                     CALL SYSTEM$SEND_EMAIL(:alert_integration, :alert_email, :alert_subject, :error_alert_payload);
                     RETURN 'error running alert';
-        end;
+        END;
         $$;
 {%- endmacro -%}

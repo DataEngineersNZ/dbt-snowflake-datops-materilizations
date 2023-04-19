@@ -1,14 +1,5 @@
-{% macro stage_stages(is_enabled_dev=true, is_enabled_test =true, is_enabled_prod=true) %}
-    {%- if target.name == 'prod' -%}
-        {%- set is_enabled = is_enabled_prod -%}
-    {%- elif target.name == 'test' -%}
-        {%- set is_enabled = is_enabled_test -%}
-    {%- elif target.name == 'unit-test' -%}
-        {%- set is_enabled = true -%}
-    {%- else -%}
-        {%- set is_enabled = is_enabled_dev -%}
-    {%- endif -%}
-    {% if is_enabled %}
+{% macro stage_stages(enabled_targets) %}
+    {% if target.name in enabled_targets %}
         {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
             {% set stages_to_stage = [] %}
 
