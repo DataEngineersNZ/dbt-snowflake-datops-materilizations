@@ -30,27 +30,26 @@ Usage
 ```sql
 {{ 
     config(materialized='alert',
-    warehouse  = 'alert_wh',
+    is_serverless = False,
+    warehouse_name_or_size  = 'alert_wh',
     schedule  = '60 minute',
     action = 'monitorial',
-    description = 'your description of what is representing the alert'
-    notification_email = 'notifications@monitorial.io',
-    api_key = '********************************',
-    notification_integration = 'EXT_EMAIL_INTEGRATION'
+    description = 'your description of what is representing the alert',
+    enabled_targets = ['local-dev', 'test', 'prod']
     )
 }}
 ```
 | property                   | description                                                                                      | required | default                       |
 | -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
 | `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                       |
-| `is_serverless`            | specifies if the warehouse should be serverless (task object) or dedicated (alert object)        | no       | `false`                       |
+| `is_serverless`            | specifies if the warehouse should be serverless (task object) or dedicated (alert object)        | no       | `False`                       |
 | `warehouse_name_or_size`   | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`                    |
 | `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`                   |
 | `action`                   | specifies the action to run (either 'monitorial' or enter your own action)                       | no       | `monitorial`                  |
+| `description`              | specifies the description of the alert                                                           | no       | ``                            |
 | `environment`              | specifies the target environment for the alert                                                   | no       | `target.name`                 |
 | `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `notifications@monitorial.io` |
 | `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                            |
-| `description`              | specifies the description of the alert                                                           | no *     | ``                            |
 | `execute_immediate`        | specifies the statement that needs to be run to feed into the alert                              | no *     | ``                            |
 | `notification_integration` | specifies the email intgeration that should be used                                              | no *     | `EXT_EMAIL_INTEGRATION`       |
 | `error_integration`        | specifies the error intgeration that should be used when using serverless alerts                 | no *     | `EXT_ERROR_INTEGRATION`       |
@@ -59,6 +58,7 @@ Usage
 * only required if `action` is set to `monitorial`
 * `notification_email` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_email` variable
 * `notification_integration` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_integration` variable
+* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `error_notification_integration` variable
 * `api_key` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_api_key` variable
 
 **Example**
@@ -127,7 +127,7 @@ To action the auto-creation of the file format, you need to add the following pr
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_file_formats(['local-dev', 'unit-test', 'test', 'prod']) }}"
+  - "{{ dbt_dataengineers_materializations.stage_file_formats(['local-dev', 'unit-test', 'test', 'prod']) }}"
 ```
 
 
@@ -157,7 +157,7 @@ Usage
 | `schedule`               | specifies the schedule which the task should be run on using CRON expressions         | no *     |                 |
 | `task_after`             | specifies the task which this task should be run after                                | no *     |                 |
 | `stream_name`            | specifies the stream which the task should run only if there is data available        | no       |                 |
-| `error_integration`      | specifes the error integration to use                                                 | no       |                 |
+| `error_integration`      | specifes the error integration to use                                                 | no *     |                 |
 | `enabled_targets`        | specifies if the targets which the alert should be enabled for                        | no       | `[target.name]` |
 
 
@@ -211,7 +211,7 @@ To action the auto-creation of the tables, you need to add the following pre-hoo
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_table_sources(['local-dev', 'unit-test', 'test', 'prod']) }}"
+  - "{{ dbt_dataengineers_materializations.stage_table_sources(['local-dev', 'unit-test', 'test', 'prod']) }}"
 ```
 
 | parameter         | description                                                       | default         |
@@ -236,7 +236,7 @@ To action the auto-creation of the stages before the tables get created, you nee
 
 ```yml
 on-run-start:
-  - "{{ dbt_dataengineers_materilizations.stage_stages(['local-dev', 'unit-test', 'test', 'prod']) }}"
+  - "{{ dbt_dataengineers_materializations.stage_stages(['local-dev', 'unit-test', 'test', 'prod']) }}"
 ```
 
 | parameter         | description                                                       | default         |

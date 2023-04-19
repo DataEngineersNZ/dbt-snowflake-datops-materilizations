@@ -1,10 +1,11 @@
-# dbt_dataengineers_materilizations Changelog
+# dbt_dataengineers_materializations Changelog
 
 ## 0.2.4
 
 * Update of materialization for Snowflake Alerts to work with monitorial
 * Updated Task materialization to allow enabling/disabling of tasks in different environments based on enabled_targets
 * Updated creation of tables, file_format and stage in different environments based on enabled_targets
+* Fixed naming of packages
 
 ## 0.2.1
 

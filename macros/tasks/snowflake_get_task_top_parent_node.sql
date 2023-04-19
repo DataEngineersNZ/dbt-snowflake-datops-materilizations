@@ -4,7 +4,7 @@
 
   {#-- Only execute this at run-time and not at parse-time. The model entries in the graph dictionary will be incomplete or incorrect during parsing. --#}
   {% if execute %}
-    {% set temp = dbt_dataengineers_materilizations.snowflake_get_task_parent_node(node) %}
+    {% set temp = dbt_dataengineers_materializations.snowflake_get_task_parent_node(node) %}
 
     {% if temp %}
       {% set ns.parent_node = temp %}
@@ -15,7 +15,7 @@
     {#-- While there is still a parent, look it up. There is no while loop in jinja so we need to fake it. --#}
     {% for n in range(100) %}
       {% if ns.keep_looking %}
-        {% set temp = dbt_dataengineers_materilizations.snowflake_get_task_parent_node(ns.parent_node) %}
+        {% set temp = dbt_dataengineers_materializations.snowflake_get_task_parent_node(ns.parent_node) %}
         {% if temp %}
           {% set ns.parent_node = temp %}
         {% else %}

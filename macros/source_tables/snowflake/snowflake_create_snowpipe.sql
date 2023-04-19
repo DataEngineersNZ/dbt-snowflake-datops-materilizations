@@ -9,6 +9,6 @@
         {% if snowpipe.aws_sns_topic -%} AWS_SNS_TOPIC = '{{snowpipe.aws_sns_topic}}' {%- endif %}
         {% if snowpipe.integration -%} INTEGRATION = '{{snowpipe.integration}}' {%- endif %}
         {% if snowpipe.error_integration -%} ERROR_INTEGRATION = '{{snowpipe.error_integration}}' {%- endif %}
-        AS {{ dbt_dataengineers_materilizations.snowflake_get_copy_sql(relation, source_node) }}
+        AS {{ dbt_dataengineers_materializations.snowflake_get_copy_sql(relation, source_node) }}
 
 {% endmacro %}

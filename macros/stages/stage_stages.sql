@@ -13,7 +13,7 @@
             {% do log('stages to create: ' ~ stages_to_stage|length, info = true) %}
 
             {# Initial run to cater for  #}
-            {% do dbt_dataengineers_materilizations.stage_stages_plans(stages_to_stage) %}
+            {% do dbt_dataengineers_materializations.stage_stages_plans(stages_to_stage) %}
         {% endif %}
     {% else %}
         {% do log('stages to create: Not enabled', info = true) %}
@@ -26,7 +26,7 @@
         {% set loop_label = loop.index ~ ' of ' ~ loop.length %}
         {% do log(loop_label ~ ' START stage creation ' ~ node.schema ~ '.' ~ node.name, info = true) -%}
         
-        {% set run_queue = dbt_dataengineers_materilizations.get_stage_build_plan(node) %}
+        {% set run_queue = dbt_dataengineers_materializations.get_stage_build_plan(node) %}
         {% do log(loop_label ~ ' SKIP stage ' ~ node.schema ~ '.' ~ node.name, info = true) if run_queue == [] %}
         
         {% set width = flags.PRINTER_WIDTH %}

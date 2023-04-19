@@ -4,7 +4,7 @@
     {%- set external = source_node.external -%}
     {%- set partitions = external.partitions -%}
 
-    {%- set is_csv = dbt_dataengineers_materilizations.is_csv(external.file_format) -%}
+    {%- set is_csv = dbt_dataengineers_materializations.is_csv(external.file_format) -%}
 
 {# https://docs.snowflake.net/manuals/sql-reference/sql/create-external-table.html #}
 {# This assumes you have already created an external stage #}

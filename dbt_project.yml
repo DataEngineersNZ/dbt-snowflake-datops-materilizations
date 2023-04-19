@@ -1,4 +1,4 @@
-name: 'dbt_dataengineers_materilizations'
+name: 'dbt_dataengineers_materializations'
 version: '0.2.4'
 config-version: 2
 

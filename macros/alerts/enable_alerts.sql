@@ -15,10 +15,10 @@
         {% endfor %}
 
         {% if alerts|count > 0 %}
-            {% do dbt_dataengineers_materilizations.resume_alerts(alerts, false) %}
+            {% do dbt_dataengineers_materializations.resume_alerts(alerts, false) %}
         {% endif %}
         {% if tasks|count > 0 %}
-            {% do dbt_dataengineers_materilizations.resume_alerts(tasks, true) %}
+            {% do dbt_dataengineers_materializations.resume_alerts(tasks, true) %}
         {% endif %}
 
     {% endif %}
@@ -30,10 +30,10 @@
             {% set relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
             {% if is_task %}
                 {% do log('Resuming ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
-                {% do dbt_dataengineers_materilizations.snowflake_resume_alert_task_statement(relation) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_alert_task_statement(relation) %}
             {% else %}
                 {% do log('Resuming ' ~ level ~ ' alert - ' ~ alert_relation, info=true) %}
-                {% do dbt_dataengineers_materilizations.snowflake_resume_alert_statement(relation) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_alert_statement(relation) %}
             {% endif %}
         {% endif %}
     {% endfor %}

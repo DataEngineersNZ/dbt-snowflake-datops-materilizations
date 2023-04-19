@@ -33,19 +33,19 @@
   {% call statement('main') -%}
     {% if is_serverless == false %}
       {% if (action|lower in ['snowstorm', 'monitorial']) %}
-        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse_name_or_size, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_statement(target_relation, warehouse_name_or_size, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
       {% else %}
-        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_name_or_size, schedule, action, sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_name_or_size, schedule, action, sql) }}
       {% endif %}
     {% else %}
-        {{ dbt_dataengineers_materilizations.snowflake_create_or_replace_monitorial_alert_task_statement(target_relation, warehouse_name_or_size, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_task_statement(target_relation, warehouse_name_or_size, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) }}
     {% endif %}
   {%- endcall %}
   {%- if is_enabled == false %}
     {% if is_serverless == false %}
-      {{ dbt_dataengineers_materilizations.snowflake_suspend_alert_statement(target_relation) }}
+      {{ dbt_dataengineers_materializations.snowflake_suspend_alert_statement(target_relation) }}
     {% else %}
-      {{ dbt_dataengineers_materilizations.snowflake_suspend_alert_task_statement(target_relation) }}
+      {{ dbt_dataengineers_materializations.snowflake_suspend_alert_task_statement(target_relation) }}
     {% endif %}
   {% endif %}
 
