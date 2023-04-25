@@ -27,6 +27,17 @@
   -- BEGIN happens here:
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
+  -- if the execute_immediate statement is defined in the macro code, then we need to parse it out of the sql
+  {% if "--execute_immediate=" in sql %}
+    {% full_sql = sql.split('\n') %}
+    {% for line in full_sql if "--execute_immediate=" in line %}
+      {% if "--execute_immediate=" in line %}
+        {% set execute_immediate_statement = line.split('--execute_immediate=')[1] %}
+        {% set sql = sql.replace(line, '') %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
       --------------------------------------------------------------------------------------------------------------------
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
