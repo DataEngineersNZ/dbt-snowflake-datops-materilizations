@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_alert_task_statement(relation, warehouse, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, environment, sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_alert_task_statement(relation, warehouse, error_integration, schedule, severity, execute_immediate_statement, description, api_key, notification_email, notification_integration, environment, sql) -%}
 
 {{ log("Creating Alert as Task " ~ relation) }}
 CREATE OR REPLACE TASK {{ relation.include(database=(not temporary), schema=(not temporary)) }}
