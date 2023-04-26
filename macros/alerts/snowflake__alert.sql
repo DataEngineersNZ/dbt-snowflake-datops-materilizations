@@ -29,7 +29,7 @@
 
   -- if the execute_immediate statement is defined in the macro code, then we need to parse it out of the sql
   {% if "--execute_immediate=" in sql %}
-    {% full_sql = sql.split('\n') %}
+    {% set full_sql = sql.split('\n') %}
     {% for line in full_sql if "--execute_immediate=" in line %}
       {% if "--execute_immediate=" in line %}
         {% set execute_immediate_statement = line.split('--execute_immediate=')[1] %}
