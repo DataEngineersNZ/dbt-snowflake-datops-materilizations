@@ -28,14 +28,24 @@
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
   -- if the execute_immediate statement is defined in the macro code, then we need to parse it out of the sql
+  {% set execute_immediate_statements = [] %}
   {% if "--execute_immediate=" in sql %}
     {% set full_sql = sql.split('\n') %}
     {% for line in full_sql if "--execute_immediate=" in line %}
       {% if "--execute_immediate=" in line %}
-        {% set execute_immediate_statement = line.split('--execute_immediate=')[1] %}
-        {% set sql = sql.replace(line, '') %}
+        {% do execute_immediate_statements.append(line) %}
       {% endif %}
     {% endfor %}
+  {% else %}
+        {% do execute_immediate_statements.append(execute_immediate_statement) %}
+  {% endif %}
+
+  {% if execute_immediate_statements|length > 0%}
+    {% set execute_immediate_statement = execute_immediate_statements[0] %}
+    {% if "--execute_immediate=" in execute_immediate_statement %}
+      {% set sql = sql.replace(execute_immediate_statement, '') %}
+      {% set execute_immediate_statement = execute_immediate_statement.split('--execute_immediate=')[1] %}
+    {% endif %}
   {% endif %}
 
       --------------------------------------------------------------------------------------------------------------------
