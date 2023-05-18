@@ -1,4 +1,4 @@
-{% macro snowflake__create_materialized_view_as(relation, sql, config) -%}
+{% macro create_materialized_view_as(relation, sql, config) -%}
     {%- set secure = config.get('secure', default=false) -%}
     {%- set cluster_by_keys = config.get('cluster_by', default=none) -%}
     {%- set enable_automatic_clustering = config.get('automatic_clustering', default=false) -%}
