@@ -5,6 +5,7 @@
 */
 
 {%- materialization alert, adapter='snowflake' -%}
+  {%- set is_serverless = config.get('is_serverless', false) -%}
   {%- set warehouse_size = config.get('warehouse_size', default='alert_wh') -%}
   {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
   {%- set action = config.get('action', default=none) -%}

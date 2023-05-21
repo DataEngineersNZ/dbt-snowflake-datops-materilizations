@@ -5,7 +5,7 @@
 */
 
 {%- materialization monitorial, adapter='snowflake' -%}
-  {%- set is_serverless = config.get('is_serverless', default=var('default_monitorial_serverless', false) -%}
+  {%- set is_serverless = config.get('is_serverless', default=var('default_monitorial_serverless', false)) -%}
   {%- set warehouse_name_or_size = config.get('warehouse_name_or_size', default=var('default_monitorial_warehouse_name_or_size', 'pc_monitorial_wh')) -%}
   {%- set object_type = config.get('object_type', default=var('default_monitorial_object_type', 'alert')) -%}
   {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
@@ -62,13 +62,13 @@
           {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,sql) }}
         {% else %}
           {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,sql) }}
-        {% end if%}
+        {% endif %}
     {% else %}
       {% if delivery_type|lower == "email" %}
         {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,error_integration,sql) }}
       {% else %}
         {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,error_integration,sql) }}
-      {% end if%}
+      {% endif %}
     {% endif %}
   {%- endcall %}
   {%- if is_enabled == false %}
