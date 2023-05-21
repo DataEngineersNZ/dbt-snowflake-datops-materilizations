@@ -7,13 +7,14 @@ This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that 
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.1"
+    revision: "0.2.6"
 ```
 ----
 
 ## Contents
 Conatins the following materializations for Snowflake:
 
+* Monitorial.io Monitor
 * Alerts
 * File Format
 * Stages
@@ -24,6 +25,69 @@ Conatins the following materializations for Snowflake:
 * Materialised View
 * Generic
 
+## Monitoral Alerts
+
+Usage
+```sql
+{{ 
+    config(materialized='monitorial',
+    schedule  = '60 minute',
+    diplay_message = 'your description of what is representing the alert',
+    enabled_targets = ['local-dev', 'test', 'prod']
+    )
+}}
+```
+| property                 | description                                                                                                  | required | default                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------- |
+| `materialized`           | specifies the type of materialisation to run                                                                 | yes      | `monitorial`                                 |
+| `is_serverless`          | specifies if the warehouse should be serverless (task object) or dedicated (alert object)                    | no *     | `False`                                      |
+| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no *     | `pc_monitorial_wh`                           |
+| `object_type`            | specifies the type of object to be created (options are `alert` or `task`)                                   | no *     | `alert`                                      |
+| `schedule`               | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute)             | yes      | `60 minute`                                  |
+| `severity`               | specifies the severity of the alert (options are `Critial`, `Error`, `Warning`, `Info`, `Debug`, `Resolved`) | no       | `error`                                      |
+| `environment`            | specifies the target environment for the alert                                                               | no       | `target.name`                                |
+| `diplay_message`         | specifies the message to be sent out with the alert                                                          | yes      |                                              |
+| `execute_immediate`      | specifies the statement that needs to be run to feed into the alert                                          | no       | ``                                           |
+| `api_key`                | specifies the monitorial api key required for authentication                                                 | no *     |                                              |
+| `message_type`           | specifes the type of message to be sent, for example `User Login Failure`                                    | no       | `USER_ALERT`                                 |
+| `delivery_type`          | specifies the type of delivery mechanism for the alert (options are `api` or `email`)                        | no       | `api`                                        |
+| `email_integration`      | specifies the email intgeration that should be used                                                          | no *     | `EXT_EMAIL_MONITORIAL_INTEGRATION`           |
+| `notification_email`     | specifies an override for where the alerts should be emailed to                                              | no *     | `pc_monitorial_db.utils.monitorial_dispatch` |
+| `api_function`           | specifies the external function  that should be used when sending via api                                    | no *     | `EXT_ERROR_INTEGRATION`                      |
+| `error_integration`      | specifies the error intgeration that should be used when using serverless alerts                             | no *     | `EXT_ERROR_MONITORIAL_INTEGRATION`           |
+| `enabled_targets`        | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]`                              |
+
+* `is_serverless` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_serverless` variable
+* `warehouse_name_or_size` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_warehouse_name_or_size` variable
+* `object_type` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_object_type` variable
+* `api_key` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_key` variable
+* `delivery_type` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_delivery_type` variable
+* `email_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_email_integration` variable
+* `api_function` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_function` variable
+* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_error_integration` variable
+
+
+**Example**
+```yaml
+vars:
+  ####################################################
+  ### dbt_dataengineers_materializations variables ###
+  ####################################################
+  default_monitorial_email_integration: "EXT_EMAIL_MONITORIAL_INTEGRATION"
+  default_monitorial_api_integration: "EXT_API_MONITORIAL_INTEGRATION"
+  default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
+  default_monitorial_api_function: "pc_monitorial_db.utils.monitorial_dispatch"
+  default_monitorial_serverless: false
+  default_monitorial_object_type: "alert"
+  default_monitorial_notification_email: "notifications@monitorial.io"
+  default_monitorial_warehouse_name_or_size: "pc_monitorial_wh"
+  default_monitorial_api_key: "********************"
+  default_delivery_type: "api"    #options are api or email
+```
+
+For more information on Monitorial.io please visit [https://www.monitorial.io/](https://www.monitorial.io/) or contact us at [info@monitorial.io](mailto:info@monitorial.io)
+
+
 ## Alerts
 
 Usage
@@ -31,10 +95,9 @@ Usage
 {{ 
     config(materialized='alert',
     is_serverless = False,
-    warehouse_name_or_size  = 'alert_wh',
+    action='INSERT INTO yourtable (alert_id, alert_name, result) VALUES (1, ''smaple alert'', ''sample result'')',
+    warehouse_size  = 'alert_wh',
     schedule  = '60 minute',
-    action = 'monitorial',
-    description = 'your description of what is representing the alert',
     enabled_targets = ['local-dev', 'test', 'prod']
     )
 }}
@@ -42,36 +105,13 @@ Usage
 | property                   | description                                                                                      | required | default                       |
 | -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
 | `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                       |
-| `is_serverless`            | specifies if the warehouse should be serverless (task object) or dedicated (alert object)        | no       | `False`                       |
-| `warehouse_name_or_size`   | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`                    |
+| `warehouse_size`           | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`                    |
 | `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`                   |
-| `action`                   | specifies the action to run (either 'monitorial' or enter your own action)                       | no       | `monitorial`                  |
-| `description`              | specifies the description of the alert                                                           | no       | ``                            |
-| `environment`              | specifies the target environment for the alert                                                   | no       | `target.name`                 |
-| `notification_email`       | specifies an override for where the alerts should be emailed to                                  | no *     | `notifications@monitorial.io` |
-| `api_key`                  | specifies the api key required to authenticate the message                                       | no *     | ``                            |
-| `execute_immediate`        | specifies the statement that needs to be run to feed into the alert                              | no *     | ``                            |
-| `notification_integration` | specifies the email intgeration that should be used                                              | no *     | `EXT_EMAIL_INTEGRATION`       |
-| `error_integration`        | specifies the error intgeration that should be used when using serverless alerts                 | no *     | `EXT_ERROR_INTEGRATION`       |
+| `action`                   | specifies the action to run after the  if exists statement                                       | no       | `monitorial`                  |
 | `enabled_targets`          | specifies if the targets which the alert should be enabled for                                   | no       | `[target.name]`               |
 
-* only required if `action` is set to `monitorial`
-* `notification_email` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_email` variable
-* `notification_integration` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_integration` variable
-* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `error_notification_integration` variable
-* `api_key` can be set as a global variable in the `dbt_project.yml` file using the `alert_notification_api_key` variable
 
-**Example**
-```yaml
-vars:
-  alert_notification_email: "notifications@monitorial.io"
-  alert_notification_integration: "EXT_EMAIL_INTEGRATION"  
-  alert_notification_api_key: "********-****-****-****-************"
-  error_notification_integration: "EXT_ERROR_INTEGRATION"
-```
-
-For more information on snowwatch please visit [https://www.dataengineers.co.nz/solutions/snowwatch/](https://www.dataengineers.co.nz/solutions/snowwatch/) or contact us at [info@monitorial.io](mailto:info@monitorial.io)
-
+### We recommended using Monitorial Monitors in preference to custom alerts, as you can send the results to multiple channels and have more control over the message that is sent out.
 
 ## Stored Procedures
 
@@ -162,12 +202,12 @@ Usage
 
 
 * only one of `schedule` or `task_after` is required.
-* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `error_notification_integration` variable
+* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_error_integration` variable
 
 **Example**
 ```yaml
 vars:
-  error_notification_integration: "EXT_ERROR_INTEGRATION"
+  default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
 ```
 
 ## Streams
@@ -281,14 +321,16 @@ example
 ```sql
 {{ config(materialized='generic') }}
 
-CREATE OR REPLACE api integration SnowWatch_Prod_API
+CREATE OR REPLACE api integration EXT_API_MONITORIAL_INTEGRATION
     api_provider = azure_api_management
     azure_tenant_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     azure_ad_application_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    api_allowed_prefixes = ('https://de-snowwatch-prod-ae-apim.azure-api.net')
+    api_allowed_prefixes = ('https://api.monitorial.io')
     API_KEY = 'xxxxxxxxxxxxxxxxxxxx'
     enabled = true; 
 ```
+
+** Note: ** Integrations require `AccountAdmin` privilages which your `dbt` project should not be running under. It is recommended you adopt `Terraform` to deploy integrtaions out from
 
 ## User Defined Functions
 

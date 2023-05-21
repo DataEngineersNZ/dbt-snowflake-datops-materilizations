@@ -11,7 +11,7 @@
   {%- set task_schedule = config.get('schedule') -%}
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
-  {%- set error_integration = config.get('error_integration', default=var('error_notification_integration', 'EXT_ERROR_INTEGRATION')) -%}
+  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', 'EXT_ERROR_MONITORIAL_INTEGRATION')) -%}
 
   {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}

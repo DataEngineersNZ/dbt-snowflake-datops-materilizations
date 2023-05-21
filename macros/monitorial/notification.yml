@@ -1,0 +1,37 @@
+version: 2
+
+macros:
+  - name: enable_monitorial_monitors
+    description: |
+      Enables the monitorial monitors for a given environment.
+    docs:
+      show: true
+  - name: snowflake__monitorial
+    description: |
+      A macro that creates a monitorial materalisation for Snowflake.
+    docs:
+      show: true
+  - name: snowflake_create_or_replace_monitorial_alert_api_statement
+    docs:
+      show: false
+  - name: snowflake_create_or_replace_monitorial_alert_email_statement
+    docs:
+      show: false
+  - name: snowflake_create_or_replace_monitorial_task_api_statement
+    docs:
+      show: false
+  - name: snowflake_create_or_replace_monitorial_task_email_statement
+    docs:
+      show: false
+  - name: snowflake_resume_monitorial_alert_statement
+    docs:
+      show: false
+  - name: snowflake_resume_monitorial_task_statement
+    docs:
+      show: false
+  - name: snowflake_suspend_monitorial_alert_statement
+    docs:
+      show: false
+  - name: snowflake_suspend_monitorial_task_statement
+    docs:
+      show: false
