@@ -2,7 +2,7 @@
 
 ## 0.2.6
 
-* Modifued alert materialisation to be just the Snowflake Alert Object
+* Modified alert materialisation to be just the Snowflake Alert Object
 * Added a new materialisation for Snowflake Monitorial Alerts
 
 ## 0.2.5
