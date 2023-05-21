@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,execute_immediate_statement,api_key,email_integration,notification_email,error_integration,sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,error_integration,sql) -%}
 
 {{ log("Creating Email Based Alert as Task " ~ relation) }}
 CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), schema=(not temporary)) }}
@@ -22,8 +22,8 @@ CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), sche
                 alert_integration VARCHAR DEFAULT '{{ email_integration }}';
                 alert_environment VARCHAR DEFAULT '{{ environment }}';
             BEGIN
-                {% if execute_immediate_statement | length > 0 %}
-                    EXECUTE IMMEDIATE '{{ execute_immediate_statement }}';
+                {% if prereq_statement | length > 0 %}
+                    {{ prereq_statement }};
                 {% endif %}
                 WITH baseAlertQuery AS (
                        {{ sql }}
@@ -44,9 +44,9 @@ CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), sche
                     SELECT alert_body INTO :alert_payload FROM arrayCreation;
                 IF (:alert_payload != '') THEN
                     CALL SYSTEM$SEND_EMAIL(:alert_integration, :alert_email, :alert_subject, :alert_payload);
-                    RETURN 'alert fired';
+                    RETURN 'notification fired';
                 ELSE
-                    RETURN 'No alert fired';
+                    RETURN 'No notification fired';
                 END IF;
             END
         $$;

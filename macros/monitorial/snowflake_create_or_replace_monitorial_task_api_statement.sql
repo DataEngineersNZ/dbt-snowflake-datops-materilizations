@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,execute_immediate_statement,api_key,api_function,error_integration,sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,error_integration,sql) -%}
 
 {{ log("Creating Alert as Task " ~ relation) }}
 CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), schema=(not temporary)) }}
@@ -21,9 +21,10 @@ CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), sche
                 alert_email VARCHAR DEFAULT '{{ notification_email }}';
                 alert_integration VARCHAR DEFAULT '{{ notification_integration }}';
                 alert_environment VARCHAR DEFAULT '{{ environment }}';
+                alter_payload_received VARCHAR DEFAULT '';
             BEGIN
-                {% if execute_immediate_statement | length > 0 %}
-                    EXECUTE IMMEDIATE '{{ execute_immediate_statement }}';
+                {% if prereq_statement | length > 0 %}
+                    {{ prereq_statement }};
                 {% endif %}
                 WITH baseAlertQuery AS (
                        {{ sql }}
@@ -43,10 +44,11 @@ CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), sche
                     )
                     SELECT alert_body INTO :alert_payload FROM arrayCreation;
                 IF (:alert_payload != '') THEN
-                    SELECT {{ api_function }}(:alert_name,:alert_environment,:alert_message_type,:alert_severity,:alert_description,:alert_payload);
-                    RETURN 'alert fired';
+                    SELECT {{ api_function }}(:alert_account_name,:alert_name,:alert_environment,:alert_message_type,:alert_severity,:alert_description,:alert_payload)
+                    INTO :alter_payload_received;
+                    RETURN :alert_payload_received;
                 ELSE
-                    RETURN 'No alert fired';
+                    RETURN 'No notification fired';
                 END IF;
             END
         $$;

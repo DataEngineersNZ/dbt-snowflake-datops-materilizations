@@ -12,7 +12,7 @@
   {%- set severity = config.get('severity', default='error' ) -%}
   {%- set environment =  config.get('environment', default=target.name ) -%}
   {%- set diplay_message = config.get('message', default=model['alias'] ) -%}
-  {%- set execute_immediate_statement = config.get('execute_immediate', default='') -%}
+  {%- set prereq_statement = config.get('prereq', default='') -%}
   {%- set api_key = config.get('api_key', default=var('default_monitorial_api_key', 'unknown') ) -%}
   {%- set message_type = config('message_type', 'USER_ALERT') -%}
   {%- set delivery_type = config.get('delivery_type', default=var('default_monitorial_delivery_type', 'api')) -%}
@@ -31,24 +31,25 @@
   -- BEGIN happens here:
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
-  -- if the execute_immediate statement is defined in the macro code, then we need to parse it out of the sql
-  {% set execute_immediate_statements = [] %}
-  {% if "--execute_immediate=" in sql %}
+  -- if the prereq_statement statement is defined in the macro code, then we need to parse it out of the sql
+  {% set prereq_statements = [] %}
+  {% if "--<prereq>" in sql %}
     {% set full_sql = sql.split('\n') %}
-    {% for line in full_sql if "--execute_immediate=" in line %}
-      {% if "--execute_immediate=" in line %}
-        {% do execute_immediate_statements.append(line) %}
+    {% for line in full_sql if "--<prereq>" in line %}
+      {% if "--<prereq>" in line %}
+        {% do prereq_statements.append(line) %}
       {% endif %}
     {% endfor %}
   {% else %}
-        {% do execute_immediate_statements.append(execute_immediate_statement) %}
+        {% do prereq_statements.append(prereq_statement) %}
   {% endif %}
 
-  {% if execute_immediate_statements|length > 0%}
-    {% set execute_immediate_statement = execute_immediate_statements[0] %}
-    {% if "--execute_immediate=" in execute_immediate_statement %}
-      {% set sql = sql.replace(execute_immediate_statement, '') %}
-      {% set execute_immediate_statement = execute_immediate_statement.split('--execute_immediate=')[1] %}
+  {% if prereq_statements|length > 0%}
+    {% set prereq_statement = prereq_statements[0] %}
+    {% if "--<prereq>" in prereq_statement %}
+      {% set sql = sql.replace(prereq_statement, '') %}
+      {% set prereq_statement = prereq_statement.split('--<prereq>')[1] %}
+      {% set prereq_statement = prereq_statement|replace(';', '') %}
     {% endif %}
   {% endif %}
 
@@ -58,15 +59,15 @@
   {% call statement('main') -%}
     {% if is_serverless == false and object_type == "alert" %}
         {% if delivery_type|lower == "email" %}
-          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,execute_immediate_statement,api_key,email_integration,notification_email,sql) }}
+          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,sql) }}
         {% else %}
-          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,execute_immediate_statement,api_key,api_function,sql) }}
+          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,sql) }}
         {% end if%}
     {% else %}
       {% if delivery_type|lower == "email" %}
-        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,execute_immediate_statement,api_key,email_integration,notification_email,error_integration,sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,error_integration,sql) }}
       {% else %}
-        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,execute_immediate_statement,api_key,api_function,error_integration,sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,error_integration,sql) }}
       {% end if%}
     {% endif %}
   {%- endcall %}

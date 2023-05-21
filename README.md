@@ -47,7 +47,7 @@ Usage
 | `severity`               | specifies the severity of the alert (options are `Critial`, `Error`, `Warning`, `Info`, `Debug`, `Resolved`) | no       | `error`                                      |
 | `environment`            | specifies the target environment for the alert                                                               | no       | `target.name`                                |
 | `diplay_message`         | specifies the message to be sent out with the alert                                                          | yes      |                                              |
-| `execute_immediate`      | specifies the statement that needs to be run to feed into the alert                                          | no       | ``                                           |
+| `prereq`                 | specifies the statement that needs to be run to feed into the alert                                          | no       | ``                                           |
 | `api_key`                | specifies the monitorial api key required for authentication                                                 | no *     |                                              |
 | `message_type`           | specifes the type of message to be sent, for example `User Login Failure`                                    | no       | `USER_ALERT`                                 |
 | `delivery_type`          | specifies the type of delivery mechanism for the alert (options are `api` or `email`)                        | no       | `api`                                        |
@@ -102,13 +102,13 @@ Usage
     )
 }}
 ```
-| property                   | description                                                                                      | required | default                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
-| `materialized`             | specifies the type of materialisation to run                                                     | yes      | `alert`                       |
-| `warehouse_size`           | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`                    |
-| `schedule`                 | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`                   |
-| `action`                   | specifies the action to run after the  if exists statement                                       | no       | `monitorial`                  |
-| `enabled_targets`          | specifies if the targets which the alert should be enabled for                                   | no       | `[target.name]`               |
+| property          | description                                                                                      | required | default         |
+| ----------------- | ------------------------------------------------------------------------------------------------ | -------- | --------------- |
+| `materialized`    | specifies the type of materialisation to run                                                     | yes      | `alert`         |
+| `warehouse_size`  | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`      |
+| `schedule`        | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`     |
+| `action`          | specifies the action to run after the  if exists statement                                       | no       | `monitorial`    |
+| `enabled_targets` | specifies if the targets which the alert should be enabled for                                   | no       | `[target.name]` |
 
 
 ### We recommended using Monitorial Monitors in preference to custom alerts, as you can send the results to multiple channels and have more control over the message that is sent out.
