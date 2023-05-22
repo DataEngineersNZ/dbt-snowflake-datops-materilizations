@@ -16,7 +16,7 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                 alert_name VARCHAR DEFAULT '{{ target_relation.include(database=(not temporary), schema=(not temporary)) }}';
                 alert_severity VARCHAR DEFAULT '{{ severity }}';
                 alert_environment VARCHAR DEFAULT '{{ environment }}';
-                alter_payload_received VARCHAR DEFAULT '';
+                alert_payload_recieved VARCHAR DEFAULT '';
             BEGIN
                 {% if prereq_statement | length > 0 %}
                     {{ prereq_statement }};
@@ -31,8 +31,8 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                     SELECT alert_body INTO :alert_payload FROM arrayCreation;
                 IF (:alert_payload != '') THEN
                     SELECT {{ api_function }}(:alert_account_name,:alert_name,:alert_environment,:alert_message_type,:alert_severity,:alert_display_message,:alert_payload)
-                    INTO :alter_payload_received;
-                    RETURN :alert_payload_received;
+                    INTO :alert_payload_recieved;
+                    RETURN :alert_payload_recieved;
                 ELSE
                     RETURN 'No notification fired';
                 END IF;
