@@ -43,7 +43,7 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                         FROM baseAlertQuery
                     )
                     SELECT alert_body INTO :alert_payload FROM arrayCreation;
-                IF (:alert_payload != '') THEN
+                IF (:alert_payload != []) THEN
                     CALL SYSTEM$SEND_EMAIL(:alert_integration, :alert_email, :alert_subject, :error_alert_payload);
                     RETURN 'notification fired';
                 ELSE

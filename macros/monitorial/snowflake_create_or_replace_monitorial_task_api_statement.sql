@@ -28,7 +28,7 @@ CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), sche
                         FROM baseAlertQuery
                     )
                     SELECT alert_body INTO :alert_payload FROM arrayCreation;
-                IF (:alert_payload != '') THEN
+                IF (:alert_payload != []) THEN
                     SELECT {{ api_function }}(:alert_account_name,:alert_name,:alert_environment,:alert_message_type,:alert_severity,:alert_display_message,:alert_payload)
                     INTO :alert_payload_recieved;
                     RETURN :alert_payload_recieved;
