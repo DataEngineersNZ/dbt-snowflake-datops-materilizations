@@ -1,8 +1,13 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.6
+
+* Modified alert materialisation to be just the Snowflake Alert Object
+* Added a new materialisation for Snowflake Monitorial Alerts
+
 ## 0.2.5
 
-* Updatre of Alert statement to work with Monitorial Monitors Repository so a macro can defind the Execute Immediate statement instead of in config
+* Update of Alert statement to work with Monitorial Monitors Repository so a macro can defind the Execute Immediate statement instead of in config
 
 ## 0.2.4
 

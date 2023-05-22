@@ -1,5 +1,5 @@
 name: 'dbt_dataengineers_materializations'
-version: '0.2.5'
+version: '0.2.6'
 config-version: 2
 
 require-dbt-version: [">=1.3.0", "<2.0.0"]
