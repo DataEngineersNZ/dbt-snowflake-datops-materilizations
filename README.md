@@ -46,7 +46,7 @@ Usage
 | `schedule`               | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute)             | yes      | `60 minute`                                  |
 | `severity`               | specifies the severity of the alert (options are `Critial`, `Error`, `Warning`, `Info`, `Debug`, `Resolved`) | no       | `error`                                      |
 | `environment`            | specifies the target environment for the alert                                                               | no       | `target.name`                                |
-| `diplay_message`         | specifies the message to be sent out with the alert                                                          | yes      |                                              |
+| `display_message`        | specifies the message to be sent out with the alert                                                          | yes      |                                              |
 | `prereq`                 | specifies the statement that needs to be run to feed into the alert                                          | no       | ``                                           |
 | `api_key`                | specifies the monitorial api key required for authentication                                                 | no *     |                                              |
 | `message_type`           | specifes the type of message to be sent, for example `User Login Failure`                                    | no       | `USER_ALERT`                                 |

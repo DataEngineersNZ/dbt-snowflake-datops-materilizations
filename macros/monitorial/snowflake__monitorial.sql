@@ -11,7 +11,7 @@
   {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
   {%- set severity = config.get('severity', default='error' ) -%}
   {%- set environment =  config.get('environment', default=target.name ) -%}
-  {%- set diplay_message = config.get('message', default=model['alias'] ) -%}
+  {%- set display_message = config.get('display_message', default=model['alias'] ) -%}
   {%- set prereq_statement = config.get('prereq', default='') -%}
   {%- set api_key = config.get('api_key', default=var('default_monitorial_api_key', 'unknown') ) -%}
   {%- set message_type = config('message_type', 'USER_ALERT') -%}
@@ -59,15 +59,15 @@
   {% call statement('main') -%}
     {% if is_serverless == false and object_type == "alert" %}
         {% if delivery_type|lower == "email" %}
-          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,sql) }}
+          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,display_message,prereq_statement,api_key,email_integration,notification_email,sql) }}
         {% else %}
-          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,sql) }}
+          {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_alert_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,display_message,prereq_statement,api_function,sql) }}
         {% endif %}
     {% else %}
       {% if delivery_type|lower == "email" %}
-        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,error_integration,sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,display_message,prereq_statement,api_key,email_integration,notification_email,error_integration,sql) }}
       {% else %}
-        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,api_function,error_integration,sql) }}
+        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_monitorial_task_api_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,display_message,prereq_statement,api_function,error_integration,sql) }}
       {% endif %}
     {% endif %}
   {%- endcall %}

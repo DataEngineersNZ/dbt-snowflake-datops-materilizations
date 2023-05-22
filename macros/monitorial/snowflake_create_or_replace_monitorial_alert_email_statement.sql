@@ -1,4 +1,4 @@
-{%- macro snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,diplay_message,prereq_statement,api_key,email_integration,notification_email,sql) -%}
+{%- macro snowflake_create_or_replace_monitorial_alert_email_statement(target_relation,warehouse_name_or_size,schedule,message_type,severity,environment,display_message,prereq_statement,api_key,email_integration,notification_email,sql) -%}
 {{ log("Creating EMail Based Alert " ~ target_relation) }}
 CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), schema=(not temporary)) }}
     WAREHOUSE = {{ warehouse_name_or_size }}
@@ -14,12 +14,14 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                 alert_version VARCHAR DEFAULT '1.0';
                 alert_message_id VARCHAR DEFAULT (SELECT uuid_string());
                 alert_message_type VARCHAR DEFAULT '{{ message_type }}';
-                alert_description VARCHAR DEFAULT '{{ diplay_message }}';
+                alert_display_message VARCHAR DEFAULT '{{ display_message }}';
                 alert_timestamp TIMESTAMP DEFAULT (SELECT current_timestamp());
                 alert_account_name VARCHAR DEFAULT (SELECT current_account());
                 alert_name VARCHAR DEFAULT '{{ target_relation.include(database=(not temporary), schema=(not temporary)) }}';
                 alert_severity VARCHAR DEFAULT '{{ severity }}';
                 alert_environment VARCHAR DEFAULT '{{ environment }}';
+                alert_integration VARCHAR DEFAULT '{{ email_integration }}'
+                alert_email VARCHAR DEFAULT '{{ notification_email }}';
             BEGIN
                 {% if prereq_statement | length > 0 %}
                     {{ prereq_statement }};
@@ -36,7 +38,7 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                                                 'environment', :alert_environment,
                                                 'alertName', :alert_name,
                                                 'severity', :alert_severity,
-                                                'description', :alert_description,
+                                                'description', :alert_display_message,
                                                 'messages', ARRAY_AGG(OBJECT_CONSTRUCT(*))) AS alert_body
                         FROM baseAlertQuery
                     )
