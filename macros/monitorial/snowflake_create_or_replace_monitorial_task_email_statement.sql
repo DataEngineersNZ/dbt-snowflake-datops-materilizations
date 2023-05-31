@@ -32,10 +32,11 @@ CREATE OR REPLACE TASK {{ target_relation.include(database=(not temporary), sche
                         SELECT OBJECT_CONSTRUCT('version', :alert_version,
                                                 'messageId', :alert_message_id,
                                                 'messageType', :alert_message_type,
+                                                'listener', 'snowflake_email',
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
                                                 'environment', :alert_environment,
-                                                'alertName', :alert_name,
+                                                'objectName', :alert_name,
                                                 'severity', :alert_severity,
                                                 'description', :alert_display_message,
                                                 'messages', ARRAY_AGG(OBJECT_CONSTRUCT(*))) AS alert_body

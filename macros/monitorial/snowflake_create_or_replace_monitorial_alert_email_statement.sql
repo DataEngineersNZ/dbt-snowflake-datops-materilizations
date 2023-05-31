@@ -36,7 +36,8 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                                                 'timestamp', :alert_timestamp,
                                                 'accountName', :alert_account_name,
                                                 'environment', :alert_environment,
-                                                'alertName', :alert_name,
+                                                'objectName', :alert_name,
+                                                'listener', 'snowflake_email',
                                                 'severity', :alert_severity,
                                                 'description', :alert_display_message,
                                                 'messages', ARRAY_AGG(OBJECT_CONSTRUCT(*))) AS alert_body
