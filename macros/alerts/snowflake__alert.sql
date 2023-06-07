@@ -20,7 +20,7 @@
   {{ run_hooks(pre_hooks, inside_transaction=True) }}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
-  {% call statement('main') -%}}
+  {% call statement('main') -%}
     {{ dbt_dataengineers_materializations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_size, schedule, action, sql) }}
   {%- endcall %}
   {%- if is_enabled == false %}
