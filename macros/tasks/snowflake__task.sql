@@ -1,5 +1,5 @@
 /*
-      This materialization is used for creating stream objects.
+      This materialization is used for creating task objects.
       The idea behind this materialization is for ability to define tasks ddl and have dbt use the necessary logic
       of deploying the task in a consistent manner and logic.
 */
@@ -11,7 +11,7 @@
   {%- set task_schedule = config.get('schedule') -%}
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
-  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', 'EXT_ERROR_MONITORIAL_INTEGRATION')) -%}
+  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', '')) -%}
 
   {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}

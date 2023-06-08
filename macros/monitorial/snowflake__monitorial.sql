@@ -16,9 +16,9 @@
   {%- set api_key = config.get('api_key', default=var('default_monitorial_api_key', 'unknown') ) -%}
   {%- set message_type = config('message_type', 'USER_ALERT') -%}
   {%- set delivery_type = config.get('delivery_type', default=var('default_monitorial_delivery_type', 'api')) -%}
-  {%- set email_integration = config.get('email_integration', default=var('default_monitorial_email_integration', 'EXT_EMAIL_MONITORIAL_INTEGRATION') ) -%}
+  {%- set email_integration = config.get('email_integration', default=var('default_monitorial_email_integration', 'MONITORIAL_EMAIL_INTEGRATION') ) -%}
   {%- set api_function = config.get('api_function', default=var('default_monitorial_api_function', 'pc_monitorial_db.utils.monitorial_dispatch') ) -%}
-  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', 'EXT_ERROR_MONITORIAL_INTEGRATION')) -%}
+  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', 'MONITORIAL_ERROR_INTEGRATION')) -%}
   {%- set identifier = model['alias'] -%}
   {%- set enabled_targets = config.get('enabled_targets', default=[target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
