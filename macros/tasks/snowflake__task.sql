@@ -12,8 +12,6 @@
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
   {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', '')) -%}
-  {%- set timeout_ms = config.get('timeout', default=None) -%}
-  {%- set suspend_number = config.get('suspend_after_number_of_failures', default=None) -%}
 
   {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}

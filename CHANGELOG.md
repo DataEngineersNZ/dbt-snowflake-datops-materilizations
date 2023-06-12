@@ -13,6 +13,15 @@
 
 * Modified Monitorial Alert Object with updated fields
 
+## 0.2.7.1
+
+* Update defaults for monitorial
+* Fixed spelling issues for deployment
+
+## 0.2.7
+
+* Modified Monitorial Alert Object with updated fields
+
 ## 0.2.6
 
 * Modified alert materialisation to be just the Snowflake Alert Object
