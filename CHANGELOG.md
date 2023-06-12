@@ -1,8 +1,8 @@
 # dbt_dataengineers_materializations Changelog
 ## 0.2.7.2
 
-* Added in ability to set the timeout seconds for the task
-* Added in ability to set the suspend task after number of failures
+* Added in ability to set the timeout seconds for the task (`timeout`)
+* Added in ability to set the suspend task after number of failures (`suspend_after_number_of_failures`)
 
 ## 0.2.7.1
 
