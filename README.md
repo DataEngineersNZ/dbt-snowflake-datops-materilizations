@@ -189,16 +189,18 @@ Usage
  }}
 ```
 
-| property                 | description                                                                           | required | default         |
-| ------------------------ | ------------------------------------------------------------------------------------- | -------- | --------------- |
-| `materialized`           | specifies the type of materialisation to run                                          | yes      | `task`          |
-| `is_serverless`          | specifies if the warehouse should be serverless or dedicated                          | no       | `true`          |
-| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use | no       | `xsmall`        |
-| `schedule`               | specifies the schedule which the task should be run on using CRON expressions         | no *     |                 |
-| `task_after`             | specifies the task which this task should be run after                                | no *     |                 |
-| `stream_name`            | specifies the stream which the task should run only if there is data available        | no       |                 |
-| `error_integration`      | specifes the error integration to use                                                 | no *     |                 |
-| `enabled_targets`        | specifies if the targets which the alert should be enabled for                        | no       | `[target.name]` |
+| property                           | description                                                                                                  | required | default         |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+| `materialized`                     | specifies the type of materialisation to run                                                                 | yes      | `task`          |
+| `is_serverless`                    | specifies if the warehouse should be serverless or dedicated                                                 | no       | `true`          |
+| `warehouse_name_or_size`           | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no       | `xsmall`        |
+| `schedule`                         | specifies the schedule which the task should be run on using CRON expressions                                | no *     |                 |
+| `task_after`                       | specifies the task which this task should be run after                                                       | no *     |                 |
+| `stream_name`                      | specifies the stream which the task should run only if there is data available                               | no       |                 |
+| `error_integration`                | specifes the error integration to use                                                                        | no *     |                 |
+| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `360000`        |
+| `suspend_after_number_of_failures` | Specifies the number of consecutive failed task runs after which the current task is suspended automatically | no       | `0` (no limit)  |
+| `enabled_targets`                  | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]` |
 
 
 * only one of `schedule` or `task_after` is required.

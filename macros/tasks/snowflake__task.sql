@@ -12,6 +12,8 @@
   {%- set task_after = config.get('task_after') -%}
   {%- set stream_name = config.get('stream_name') -%}
   {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', '')) -%}
+  {%- set timeout_ms = config.get('timeout', default=None) -%}
+  {%- set suspend_number = config.get('suspend_after_number_of_failures', default=None) -%}
 
   {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
@@ -47,7 +49,7 @@
     {% endif %}
   {% endif %}
 
-  {% set build_sql = dbt_dataengineers_materializations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, error_integration, sql) %}
+  {% set build_sql = dbt_dataengineers_materializations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, timeout_ms,suspend_number, error_integration, sql) %}
 
   {%- call statement('main') -%}
     {{ build_sql }}
