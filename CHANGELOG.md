@@ -1,4 +1,17 @@
 # dbt_dataengineers_materializations Changelog
+## 0.2.7.2
+
+* Added in ability to set the timeout seconds for the task (`timeout`)
+* Added in ability to set the suspend task after number of failures (`suspend_after_number_of_failures`)
+
+## 0.2.7.1
+
+* Update defaults for monitorial
+* Fixed spelling issues for deployment
+
+## 0.2.7
+
+* Modified Monitorial Alert Object with updated fields
 
 ## 0.2.7.1
 
