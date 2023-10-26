@@ -24,7 +24,8 @@
   {%- set imports = config.get('imports', default=null) -%}
   {%- set target_path = config.get('target_path', default=null) -%}
   {%- set runtime_version = config.get('runtime_version', default=null) -%}
-
+  {%- set external_access_integrations = config.get('external_access_integrations', default=none) %}
+  {%- set secrets = config.get('secrets', default=none) %}
   {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
   {%- set return_type = config.get('return_type', default='varchar' ) -%}
   
@@ -45,7 +46,7 @@
     {% if is_external %}
       {{ dbt_dataengineers_materializations.snowflake_create_external_user_defined_functions_statement(target_relation, is_secure, immutable, parameters, return_type, api_integration, api_uri) }}
     {% else %}
-      {{ dbt_dataengineers_materializations.snowflake_create_user_defined_functions_statement(target_relation, is_secure, preferred_language, immutable, parameters, return_type, sdk_version, import_Path, packages, handler_name, imports, target_path, runtime_version, sql) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_user_defined_functions_statement(target_relation, is_secure, preferred_language, immutable, parameters, return_type, sdk_version, import_Path, packages, external_access_integrations, secrets, handler_name, imports, target_path, runtime_version, sql) }}
     {% endif %}
   {%- endcall %}
 

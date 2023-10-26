@@ -1,4 +1,9 @@
 # dbt_dataengineers_materializations Changelog
+## 0.2.7.3
+
+* Added in the ability to add `external_access_integrations` to user defined functions
+* Added in the ability to add `secrets` to user defined functions
+
 ## 0.2.7.2
 
 * Added in ability to set the timeout seconds for the task (`timeout`)
