@@ -436,27 +436,27 @@ To create a user defined function using Python, you need to add the following co
     is_secure= false,
     immutable=false,
     runtime_version = '3.8',
-    packages = "('numpy','pandas','xgboost==1.5.0')",
-    external_access_integrations = "(your_access_integration)",
-    secrets = "('cred' = oauth_token )"
+    packages = ['numpy','pandas','xgboost==1.5.0'],
+    external_access_integrations = "your_access_integration",
+    secrets = ["\'cred\' = oauth_token"]
     handler_name = 'udf',
     return_type = 'variant')
 }}
 ```
 
-| property                       | description                                                      | required | default                 |
-| ------------------------------ | ---------------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`                 | specifies the type of materialisation to run                     | yes      | `user_defined_function` |
-| `preferred_language`           | specifies the landuage for the UDF function                      | yes      | `python`                |
-| `is_secure`                    | specifies the function whether it is secure or not?              | no       | `false`                 |
-| `immutable`                    | specifies the function is mutable or immutable                   | no       | `false`                 |
-| `return_type`                  | specifies the datatype for the return value                      | yes      |                         |
-| `parameters`                   | specifies the parameter for the function                         | no       |                         |
-| `runtime_version`              | specifies the version of python                                  | yes      |                         |
-| `packages`                     | specifies the packages required for the python function          | yes      |                         |
-| `handler_name`                 | specifies the handler name for the function                      | yes      |                         |
-| `external_access_integrations` | specifies the name of the external access integration to be used | no       |                         |
-| `secrets`                      | specifies the secrets that are to be used by the function        | no       |                         |
+| property                       | description                                                       | required | default                 |
+| ------------------------------ | ----------------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`                 | specifies the type of materialisation to run                      | yes      | `user_defined_function` |
+| `preferred_language`           | specifies the landuage for the UDF function                       | yes      | `python`                |
+| `is_secure`                    | specifies the function whether it is secure or not?               | no       | `false`                 |
+| `immutable`                    | specifies the function is mutable or immutable                    | no       | `false`                 |
+| `return_type`                  | specifies the datatype for the return value                       | yes      |                         |
+| `parameters`                   | specifies the parameter for the function                          | no       |                         |
+| `runtime_version`              | specifies the version of python                                   | yes      |                         |
+| `packages`                     | specifies an array of packages required for the python function   | yes      |                         |
+| `handler_name`                 | specifies the handler name for the function                       | yes      |                         |
+| `external_access_integrations` | specifies the name of the external access integration to be used  | no       |                         |
+| `secrets`                      | specifies an array of secrets that are to be used by the function | no       |                         |
 
 ## Materialized View
 To create a Materialized View, you need to add the following config to the top of your model:

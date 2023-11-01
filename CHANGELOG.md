@@ -27,6 +27,14 @@
 
 * Modified Monitorial Alert Object with updated fields
 
+## 0.2.7
+
+* Monitorial: Email Alert Updates
+* Added in ability to set the timeout seconds for the task (timeout)
+* Added in ability to set the suspend task after number of failures (suspend_after_number_of_failures)
+* Added in the ability to add external_access_integrations to user defined functions
+* Added in the ability to add secrets to user defined functions
+
 ## 0.2.6
 
 * Modified alert materialisation to be just the Snowflake Alert Object
