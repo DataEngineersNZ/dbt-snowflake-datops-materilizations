@@ -1,7 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
-## 0.2.7.4
+## 0.2.7.5
 * Monitorial: Bug fix for deploying message type with models
+
+## 0.2.7.4
+Allow the use to specify a database for the object for the stream
 
 ## 0.2.7.3
 
