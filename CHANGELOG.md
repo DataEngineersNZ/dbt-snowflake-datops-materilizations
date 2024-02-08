@@ -27,6 +27,9 @@
 
 * Modified Monitorial Alert Object with updated fields
 
+## 0.2.7.1
+* Monitorial: Bug fix for deploying message type with models
+
 ## 0.2.7
 
 * Monitorial: Email Alert Updates
