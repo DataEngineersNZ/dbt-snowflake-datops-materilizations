@@ -14,7 +14,7 @@
   {%- set display_message = config.get('display_message', default=model['alias'] ) -%}
   {%- set prereq_statement = config.get('prereq', default='') -%}
   {%- set api_key = config.get('api_key', default=var('default_monitorial_api_key', 'unknown') ) -%}
-  {%- set message_type = config('message_type', 'USER_ALERT') -%}
+  {%- set message_type = config.get('message_type', 'USER_ALERT') -%}
   {%- set delivery_type = config.get('delivery_type', default=var('default_monitorial_delivery_type', 'api')) -%}
   {%- set email_integration = config.get('email_integration', default=var('default_monitorial_email_integration', 'MONITORIAL_EMAIL_INTEGRATION') ) -%}
   {%- set api_function = config.get('api_function', default=var('default_monitorial_api_function', 'pc_monitorial_db.utils.monitorial_dispatch') ) -%}
