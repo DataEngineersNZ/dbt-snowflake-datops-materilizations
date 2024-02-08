@@ -1,4 +1,8 @@
 # dbt_dataengineers_materializations Changelog
+
+## 0.2.7.4
+* Monitorial: Bug fix for deploying message type with models
+
 ## 0.2.7.3
 
 * Added in the ability to add `external_access_integrations` to user defined functions
@@ -26,9 +30,6 @@
 ## 0.2.7
 
 * Modified Monitorial Alert Object with updated fields
-
-## 0.2.7.1
-* Monitorial: Bug fix for deploying message type with models
 
 ## 0.2.7
 
