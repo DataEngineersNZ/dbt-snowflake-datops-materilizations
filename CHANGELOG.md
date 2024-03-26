@@ -1,5 +1,8 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.7.6 - 2024-03-26
+* Streams: Added in the ability to set the materaization for the object for the stream (VIEW or TABLE)
+
 ## 0.2.7.5
 * Monitorial: Bug fix for deploying message type with models
 
