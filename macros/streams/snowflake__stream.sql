@@ -11,6 +11,10 @@
   {%- set source_database = config.get('source_database', default=database) -%}
   {%- set source_materalization = config.get('source_materalization', default="TABLE") %}
   {%- set source_type = config.get('source_type', default='internal') -%}
+  {%- set append_only = config.get('append_only', default=False) -%}
+  {%- set insert_only = config.get('insert_only', default=False) -%}
+  {%- set copy_grants = config.get('copy_grants', default=False) -%}
+  {%- set show_initial_rows = config.get('show_initial_rows', default=False) -%}
   
   {% set target_relation = this %}
   {% set source_relation = adapter.get_relation(identifier=source_model, schema=source_schema, database=source_database) %}
@@ -29,9 +33,9 @@
 
   {%- call statement('main') -%}
     {% if source_type == 'external' %}
-      {{ dbt_dataengineers_materializations.snowflake_create_external_stream_statement(source_materalization, target_relation, source_relation) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_external_stream_statement(source_materalization, target_relation, source_relation, copy_grants, insert_only, append_only, show_initial_rows) }}
     {% else %}
-      {{ dbt_dataengineers_materializations.snowflake_create_stream_statement(target_relation, source_relation) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_stream_statement(target_relation, source_relation, copy_grants, append_only, show_initial_rows) }}
     {% endif %}
   {%- endcall -%}
 
