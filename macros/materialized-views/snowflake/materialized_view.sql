@@ -12,7 +12,7 @@
 
   {% if (existing_relation is none or full_refresh_mode) %}
       {% set build_sql = dbt_dataengineers_materializations.create_materialized_view_as(target_relation, sql, config) %}
-  {% elif existing_relation.is_view or existing_relation.is_table %}
+  {% elif existing_relation.is_table %}
       {#-- Can't overwrite a view with a table - we must drop --#}
       {{ log("Dropping relation " ~ target_relation ~ " because it is a " ~ existing_relation.type ~ " and this model is a materialized view.") }}
       {% do adapter.drop_relation(existing_relation) %}
