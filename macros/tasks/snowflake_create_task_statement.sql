@@ -5,11 +5,6 @@
       {% else %}
         WAREHOUSE = '{{ warehouse_name_or_size }}'
       {% endif %}
-      {% if task_after_relation %}
-        AFTER {{ task_after_relation.include(database=(not temporary), schema=(not temporary)) }}
-      {% else %}
-        SCHEDULE = '{{ task_schedule }}'
-      {% endif %}
       {% if timeout_ms is not none %}
         USER_TASK_TIMEOUT_MS = {{ timeout_ms }}
       {% endif %}
@@ -18,6 +13,11 @@
       {% endif %}
       {% if task_after_relation is none and error_integration != '' %}
         ERROR_INTEGRATION = '{{ error_integration }}'
+      {% endif %}
+      {% if task_after_relation %}
+        AFTER {{ task_after_relation.include(database=(not temporary), schema=(not temporary)) }}
+      {% else %}
+        SCHEDULE = '{{ task_schedule }}'
       {% endif %}
       {% if stream_relation %}
         WHEN SYSTEM$STREAM_HAS_DATA('{{ stream_relation.include(database=(not temporary), schema=(not temporary)) }}')
