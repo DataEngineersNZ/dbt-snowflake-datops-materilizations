@@ -1,5 +1,8 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.7.6
+* Task: Bug fix for utilising dependant tasks
+
 ## 0.2.7.5
 * Monitorial: Bug fix for deploying message type with models
 
