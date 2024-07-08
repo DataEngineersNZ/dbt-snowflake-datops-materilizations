@@ -22,6 +22,7 @@ Conatins the following materializations for Snowflake:
 * Tasks
 * Streams
 * Tables
+* User Defined Functions
 * Materialised View
 * Generic
 
@@ -355,9 +356,10 @@ To create a user defined function using SQL, you need to add the following confi
 | property             | description                                         | required | default                 |
 | -------------------- | --------------------------------------------------- | -------- | ----------------------- |
 | `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
-| `preferred_language` | specifies the landuage for the UDF function         | no       | `sql`                   |
+| `preferred_language` | specifies the landuage for the UDF function         | no       | `SQL`                   |
 | `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
 | `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
+| `memoizable`         | specifies the function is memoizable                | no       | `false`                 |
 | `return_type`        | specifies the datatype for the return value         | yes      |                         |
 | `parameters`         | specifies the parameter for the function            | no       |                         |
 
@@ -389,14 +391,15 @@ To create a user defined function using Javascript, you need to add the followin
 }}
 ```
 
-| property             | description                                         | required | default                 |
-| -------------------- | --------------------------------------------------- | -------- | ----------------------- |
-| `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
-| `preferred_language` | specifies the landuage for the UDF function         | yes      | `javascript`            |
-| `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
-| `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
-| `return_type`        | specifies the datatype for the return value         | yes      |                         |
-| `parameters`         | specifies the parameter for the function            | no       |                         |
+| property              | description                                                     | required | default                 |
+| --------------------- | --------------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`        | specifies the type of materialisation to run                    | yes      | `user_defined_function` |
+| `preferred_language`  | specifies the landuage for the UDF function                     | yes      | `javascript`            |
+| `is_secure`           | specifies the function whether it is secure or not?             | no       | `false`                 |
+| `immutable`           | specifies the function is mutable or immutable                  | no       | `false`                 |
+| `return_type`         | specifies the datatype for the return value                     | yes      |                         |
+| `parameters`          | specifies the parameter for the function                        | no       |                         |
+| `null_input_behavior` | specifies the behavior of the function when passed a NULL value | no       | `CALLED ON NULL INPUT`  |
 
 ### Java
 
@@ -414,16 +417,22 @@ To create a user defined function using Java, you need to add the following conf
 }}
 ```
 
-| property             | description                                              | required | default                 |
-| -------------------- | -------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`       | specifies the type of materialisation to run             | yes      | `user_defined_function` |
-| `preferred_language` | specifies the landuage for the UDF function              | yes      | `java`                  |
-| `is_secure`          | specifies the function whether it is secure or not?      | no       | `false`                 |
-| `immutable`          | specifies the function is mutable or immutable           | no       | `false`                 |
-| `handler_name`       | specifies the combination of class and the function name | yes      |                         |
-| `target_path`        | specifies the path for the jar file                      | yes      |                         |
-| `return_type`        | specifies the datatype for the return value              | yes      |                         |
-| `parameters`         | specifies the parameter for the function                 | no       |                         |
+| property                       | description                                                       | required | default                 |
+| ------------------------------ | ----------------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`                 | specifies the type of materialisation to run                      | yes      | `user_defined_function` |
+| `preferred_language`           | specifies the landuage for the UDF function                       | yes      | `java`                  |
+| `is_secure`                    | specifies the function whether it is secure or not?               | no       | `false`                 |
+| `immutable`                    | specifies the function is mutable or immutable                    | no       | `false`                 |
+| `runtime_version`              | specifies the version of java                                     | yes      |                         |
+| `packages`                     | specifies an array of packages required for the java function     | yes      |                         |
+| `external_access_integrations` | specifies the name of the external access integration to be used  | no       |                         |
+| `secrets`                      | specifies an array of secrets that are to be used by the function | no       |                         |
+| `handler_name`                 | specifies the combination of class and the function name          | yes      |                         |
+| `imports`                      | specifies an array of imports required for the java function      | no       |                         |
+| `target_path`                  | specifies the path for the jar file                               | yes      |                         |
+| `return_type`                  | specifies the datatype for the return value                       | yes      |                         |
+| `parameters`                   | specifies the parameter for the function                          | no       |                         |
+| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | no       | `CALLED ON NULL INPUT`  |
 
 ### Python
 
@@ -457,6 +466,9 @@ To create a user defined function using Python, you need to add the following co
 | `handler_name`                 | specifies the handler name for the function                       | yes      |                         |
 | `external_access_integrations` | specifies the name of the external access integration to be used  | no       |                         |
 | `secrets`                      | specifies an array of secrets that are to be used by the function | no       |                         |
+| `imports`                      | specifies an array of imports required for the python function    | no       |                         |
+| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | no       | `CALLED ON NULL INPUT`  |
+
 
 ## Materialized View
 To create a Materialized View, you need to add the following config to the top of your model:

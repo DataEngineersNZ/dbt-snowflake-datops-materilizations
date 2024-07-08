@@ -1,5 +1,13 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.8
+
+Addition of the materializations:
+
+* Added `Network Rule` Materalization
+* Added `Secret` Materalization
+* Modified `User Defined Function` Materalization to take into account python, sql, javascript, java and external_access
+
 ## 0.2.7.6
 * Task: Bug fix for utilising dependant tasks
 * Materialized View: Removed the check against dropping if its a view
