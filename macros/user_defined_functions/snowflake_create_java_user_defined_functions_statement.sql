@@ -26,7 +26,7 @@ create or replace function {{ relation.include(database=(not temporary), schema=
 {%- endif -%}
 {% if secrets is not none -%}
 	secrets = ('{{ secrets|join(', ') }}')
-{%- end if-%}
+{%- endif -%}
 {% if target_path is not none -%}
 	target_path = {{ target_path }}
 {%- endif -%}
