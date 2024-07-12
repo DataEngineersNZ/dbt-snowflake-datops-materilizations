@@ -10,6 +10,7 @@
   {%- set parameters = config.get('parameters', default={}) -%}
   {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
   {%- set return_type = config.get('return_type', default='varchar' ) -%}
+  {%- set execute_as = config.get('execute_as', default='owner' ) -%}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
@@ -25,7 +26,7 @@
   -- build model
 
   {% call statement('main') -%}
-    {{ dbt_dataengineers_materializations.snowflake_create_stored_procedure_statement(target_relation, preferred_language, parameters, return_type, sql) }}
+    {{ dbt_dataengineers_materializations.snowflake_create_stored_procedure_statement(target_relation, preferred_language, parameters, return_type, execute_as, sql) }}
   {%- endcall %}
 
       --------------------------------------------------------------------------------------------------------------------

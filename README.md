@@ -1,13 +1,13 @@
 This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that can be (re)used across dbt projects.
 
-> require-dbt-version: [">=1.3.0", "<2.0.0"]
+> require-dbt-version: [">=1.7.0", "<2.0.0"]
 ----
 
 ## Installation Instructions
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.7.6"
+    revision: "0.2.8"
 ```
 ----
 
@@ -25,6 +25,8 @@ Conatins the following materializations for Snowflake:
 * User Defined Functions
 * Materialised View
 * Generic
+* Secrets
+* External Network Access
 
 ## Monitoral Alerts
 
@@ -128,14 +130,14 @@ Usage
 }}
 ```
 
-| property             | description                                                                         | required | default            |
-| -------------------- | ----------------------------------------------------------------------------------- | -------- | ------------------ |
-| `materialized`       | specifies the type of materialisation to run                                        | yes      | `stored_procedure` |
-| `preferred_language` | describes the language the stored procedure is written in                           | no       | `sql`              |
-| `override_name`      | specifies the name of the stored procedure if this is an overrider stored procedure | no       | `model['alias']`   |
-| `parameters`         | specifes the parameters that needs to be passed when calling the stored procedure   | no       |                    |
-| `return_type`        | specifies the stored procedure return type                                          | no       | `varchar`          |
-
+| property             | description                                                                                              | required | default            |
+| -------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------------------ |
+| `materialized`       | specifies the type of materialisation to run                                                             | yes      | `stored_procedure` |
+| `preferred_language` | describes the language the stored procedure is written in                                                | no       | `sql`              |
+| `override_name`      | specifies the name of the stored procedure if this is an overrider stored procedure                      | no       | `model['alias']`   |
+| `parameters`         | specifes the parameters that needs to be passed when calling the stored procedure                        | no       |                    |
+| `return_type`        | specifies the stored procedure return type                                                               | no       | `varchar`          |
+| `execute_as`         | specifies the role that the stored procedure should be executed as. Options include `OWNER` and `CALLER` | no       | `owner`            |
 ## File Formats
 
 Usage
@@ -304,6 +306,26 @@ example
 {% endif %} 
   storage_integration = DATAOPS_TEMPLATE_EXTERNAL
 ```
+## Secrets
+
+Usage
+
+```sql
+{{
+    config(
+       materialized='snowflake_secret'
+       , secret_type = 'GENERIC_STRING'
+       , secret_string_variable = "VARIABLE_NAME"
+    )
+}}
+```
+| property                 | description                                                                                                                                   | required | default            |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------ |
+| `materialized`           | specifies the type of materialisation to run                                                                                                  | yes      | `snowflake_secret` |
+| `secret_type`            | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE` | yes      | `GENERIC_STRING`   |
+| `secret_string_variable` | specifies the name of the variable to store the secret                                                                                        | yes      |                    |
+
+
 
 ## Generic
 

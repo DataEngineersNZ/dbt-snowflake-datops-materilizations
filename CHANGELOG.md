@@ -6,7 +6,8 @@ Addition of the materializations:
 
 * Added `Network Rule` Materalization
 * Added `Secret` Materalization
-* Modified `User Defined Function` Materalization to take into account python, sql, javascript, java and external_access
+* Modified `User Defined Function` Materalization to take into account python, sql, javascript and java
+* Modified `Stored Procedure` Materalization to take into account execute as permissions
 
 ## 0.2.7.6
 * Task: Bug fix for utilising dependant tasks
