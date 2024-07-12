@@ -25,7 +25,7 @@ create or replace function {{ relation.include(database=(not temporary), schema=
 	external_access_integrations = ({{ external_access_integrations|join(', ') }})
 {%- endif -%}
 {% if secrets is not none -%}
-	secrets = ('{{ secrets|join(', ') }}')
+	secrets = ({{ secrets|join(', ') }})
 {%- endif -%}
 AS
 

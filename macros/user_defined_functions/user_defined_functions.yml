@@ -2,7 +2,7 @@ version: 2
 
 macros:
 
-  - name: snowflake__user_defined_function
+  - name: user_defined_function
     description: |
       Create a user defined function in Snowflake.
     docs:

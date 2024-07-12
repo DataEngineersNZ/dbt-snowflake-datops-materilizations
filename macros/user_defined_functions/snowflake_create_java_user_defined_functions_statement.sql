@@ -12,24 +12,24 @@ create or replace function {{ relation.include(database=(not temporary), schema=
        immutable
 {%- else -%}
 	volatile
-{%- endif -%}
+{%- endif %}
        runtime_version = '{{ runtime_version }}'
 {% if imports is not none -%}
 	imports = ('{{ imports|join('\', \'') }}')
-{%- endif -%}
+{%- endif %}
 	packages = ('{{ packages|join('\', \'') }}')
 {% if handler is not none -%}
 	handler = '{{ handler_name }}'
-{%- endif -%}
+{%- endif %}
 {% if external_access_integrations is not none -%}
 	external_access_integrations = ({{ external_access_integrations|join(', ') }})
-{%- endif -%}
+{%- endif %}
 {% if secrets is not none -%}
-	secrets = ('{{ secrets|join(', ') }}')
+	secrets = ({{ secrets|join(', ') }})
 {%- endif -%}
 {% if target_path is not none -%}
 	target_path = {{ target_path }}
-{%- endif -%}
+{%- endif %}
 AS
 '
  {{ statement }}

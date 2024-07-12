@@ -10,6 +10,7 @@
   {%- set is_secure = config.get('is_secure', default=false) -%}
   {%- set immutable = config.get('immutable', default=false) -%}
   {%- set return_type = config.get('return_type', default='varchar' ) -%}
+
   /* end common parameters */
   /* start external functions */
   {%- set is_external = config.get('is_external', default=false) -%}
