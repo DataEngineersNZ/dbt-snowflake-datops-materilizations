@@ -5,7 +5,7 @@
         {{ return(adapter.dispatch('get_external_build_plan', 'dbt_dataengineers_materializations')(source_node, is_first_run)) }}
     {% else %}
         {{ return(adapter.dispatch('get_source_build_plan', 'dbt_dataengineers_materializations')(source_node, is_first_run)) }}
-    {% endif %}    
+    {% endif %}
 {% endmacro %}
 
 {% macro default__get_source_build_plan(source_node, is_first_run) %}

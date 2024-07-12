@@ -22,7 +22,8 @@
         {%- set create_or_replace = (current_relation is none or full_refresh_mode) -%}
         {%- set stream_name = dbt_dataengineers_materializations.snowflake_get_stream_name(identifier) -%}
         {%- set stream_relation = api.Relation.create(schema=schema, identifier=stream_name) -%}
-
+       
+        {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_schema(target_relation)) %}
         {# determine if we need to replace a view with this table #}
         {% if current_relation_exists_as_view %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_drop_view(current_relation)) %}
@@ -50,7 +51,7 @@
         {% else %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_or_replace_table(comparison_relation, source_node)) %}
         {% endif %}
-    {% else %}       
+    {% else %}
         {% if current_relation is not none and  comparison_relation is not none %}
             {# If we are not doing a full refresh  #}
             {% if not full_refresh_mode %}
@@ -82,9 +83,9 @@
                         {% if new_col.name == old_col.name and new_col.data_type != old_col.data_type  %}
                             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_alter_table_alter_column(current_relation, old_col.name, new_col.data_type)) %}
                         {% endif %}
-                    {% endfor %}    
+                    {% endfor %}
                 {% endfor %}
-                
+
             {% else %}
                 {% if source_node.external.migrate_data_over_flg %}
                     {% do build_plan.append(dbt_dataengineers_materializations.snowflake_migrate_data(migration_relation, target_relation, source_node)) %}
@@ -96,8 +97,6 @@
         {% do build_plan.append(dbt_dataengineers_materializations.snowflake_drop_table(comparison_relation)) %}
     {% endif %}
 
-    
-    
 
     {% do return(build_plan) %}
 {% endmacro %}

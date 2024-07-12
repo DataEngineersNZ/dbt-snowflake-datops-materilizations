@@ -5,23 +5,23 @@ create or replace secure function {{ relation.include(database=(not temporary), 
 {% else %}
 create or replace function {{ relation.include(database=(not temporary), schema=(not temporary)) }}({{ parameters }})
 {% endif %}
-	return {{ return_type }}
+	returns {{ return_type }}
 	language JAVA
        {{ null_input_behavior }}
 {% if immutable -%}
        immutable
-{%- else -%}
+{%- else %}
 	volatile
 {%- endif %}
        runtime_version = '{{ runtime_version }}'
-{% if imports is not none -%}
+{%- if imports is not none %}
 	imports = ('{{ imports|join('\', \'') }}')
 {%- endif %}
 	packages = ('{{ packages|join('\', \'') }}')
-{% if handler is not none -%}
+{%- if handler is not none %}
 	handler = '{{ handler_name }}'
 {%- endif %}
-{% if external_access_integrations is not none -%}
+{%- if external_access_integrations is not none -%}
 	external_access_integrations = ({{ external_access_integrations|join(', ') }})
 {%- endif %}
 {% if secrets is not none -%}

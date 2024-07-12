@@ -40,7 +40,6 @@
     {% endif %}
   {%- endcall -%}
 
-
   {{ run_hooks(post_hooks, inside_transaction=True) }}
 
   -- `COMMIT` happens here

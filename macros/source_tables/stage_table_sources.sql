@@ -37,22 +37,21 @@
     {% for node in sources_to_stage %}
         {% set loop_label = loop.index ~ ' of ' ~ loop.length %}
         {% if isFirstRun %}
-            {% do log(loop_label ~ ' START First Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
+            {% do log(loop_label ~ ' START First Run for source model ' ~  node.database ~ '.' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
         {% else %}
             {% if table_type == 'external' %}
-                {% do log(loop_label ~ ' START External Table Creation for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
+                {% do log(loop_label ~ ' START External Table Creation for source model ' ~  node.database ~ '.' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% else %}
-                {% do log(loop_label ~ ' START Second Run for source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
+                {% do log(loop_label ~ ' START Second Run for source model ' ~  node.database ~ '.' ~ node.schema ~ '.' ~ node.identifier, info = true) -%}
             {% endif %}
         {% endif %}
         {% set run_queue = dbt_dataengineers_materializations.get_source_build_plan(node, isFirstRun, table_type) %}
         {% if table_type == 'external' %}
-            {% do log(loop_label ~ ' SKIP external table ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
+            {% do log(loop_label ~ ' SKIP external table ' ~  node.database ~ '.' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
         {% else %}
-            {% do log(loop_label ~ ' SKIP source model ' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
+            {% do log(loop_label ~ ' SKIP source model ' ~  node.database ~ '.' ~ node.schema ~ '.' ~ node.identifier, info = true) if run_queue == [] %}
         {% endif %}
 
-        
         {% set width = flags.PRINTER_WIDTH %}
         {% for cmd in run_queue %}
             {# do log(loop_label ~ ' ' ~ cmd, info = true) #}
