@@ -26,7 +26,7 @@ Conatins the following materializations for Snowflake:
 * Materialised View
 * Generic
 * Secrets
-* External Network Access
+* Network Rules
 
 ## Monitoral Alerts
 
@@ -313,19 +313,39 @@ Usage
 ```sql
 {{
     config(
-       materialized='snowflake_secret'
+       materialized='secret'
        , secret_type = 'GENERIC_STRING'
        , secret_string_variable = "VARIABLE_NAME"
     )
 }}
 ```
-| property                 | description                                                                                                                                   | required | default            |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------ |
-| `materialized`           | specifies the type of materialisation to run                                                                                                  | yes      | `snowflake_secret` |
-| `secret_type`            | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE` | yes      | `GENERIC_STRING`   |
-| `secret_string_variable` | specifies the name of the variable to store the secret                                                                                        | yes      |                    |
+| property                 | description                                                                                                                                   | required        | default          |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ---------------- |
+| `materialized`           | specifies the type of materialisation to run                                                                                                  | yes             | `secret`         |
+| `secret_type`            | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE` | yes             | `GENERIC_STRING` |
+| `secret_string_variable` | specifies the name of the variable to store the secret                                                                                        | yes             |                  |
 
+## Network Access
 
+Usage
+
+```sql
+{{
+    config(
+       materialized='network_rule'
+       , rule_type = 'HOST_PORT'
+       , mode = 'EGRESS'
+       , value_list = ['example.com', 'company.com:443']
+    )
+}}
+```
+
+| property       | description                                                                                                                                                               | required | default        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- |
+| `materialized` | specifies the type of materialisation to run                                                                                                                              | yes      | `network_rule` |
+| `rule_type`    | Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type Options include `IPV4`, `AWSVPCEID`, `AZURELINKID`, `HOST_PORT` | yes      | `HOST_PORT`    |
+| `mode`         | Specifies what is restricted by the network rule. Options include `INGRESS`, `INTERNAL_STAGE`, `EGRESS`                                                                   | yes      | `INGRESS`               |
+| `value_list`   | Specifies the network identifiers that will be allowed or blocked                                                                                                         | yes      |                |
 
 ## Generic
 
@@ -434,27 +454,29 @@ To create a user defined function using Java, you need to add the following conf
     is_secure = false,
     handler_name = "'testfunction.echoVarchar'",
     target_path = "'@~/testfunction.jar'",
+    external_access_integrations = ["your_access_integration"],
+    secrets = ["\'cred\' = oauth_token"]
     return_type = 'varchar',
     parameters = 'my_string varchar')
 }}
 ```
 
-| property                       | description                                                       | required | default                 |
-| ------------------------------ | ----------------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`                 | specifies the type of materialisation to run                      | yes      | `user_defined_function` |
-| `preferred_language`           | specifies the landuage for the UDF function                       | yes      | `java`                  |
-| `is_secure`                    | specifies the function whether it is secure or not?               | no       | `false`                 |
-| `immutable`                    | specifies the function is mutable or immutable                    | no       | `false`                 |
-| `runtime_version`              | specifies the version of java                                     | yes      |                         |
-| `packages`                     | specifies an array of packages required for the java function     | yes      |                         |
-| `external_access_integrations` | specifies the name of the external access integration to be used  | no       |                         |
-| `secrets`                      | specifies an array of secrets that are to be used by the function | no       |                         |
-| `handler_name`                 | specifies the combination of class and the function name          | yes      |                         |
-| `imports`                      | specifies an array of imports required for the java function      | no       |                         |
-| `target_path`                  | specifies the path for the jar file                               | yes      |                         |
-| `return_type`                  | specifies the datatype for the return value                       | yes      |                         |
-| `parameters`                   | specifies the parameter for the function                          | no       |                         |
-| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | no       | `CALLED ON NULL INPUT`  |
+| property                       | description                                                       | type    | required | default                 |
+| ------------------------------ | ----------------------------------------------------------------- | ------- | -------- | ----------------------- |
+| `materialized`                 | specifies the type of materialisation to run                      | string  | yes      | `user_defined_function` |
+| `preferred_language`           | specifies the landuage for the UDF function                       | string  | yes      | `java`                  |
+| `is_secure`                    | specifies the function whether it is secure or not?               | boolean | no       | `false`                 |
+| `immutable`                    | specifies the function is mutable or immutable                    | boolean | no       | `false`                 |
+| `runtime_version`              | specifies the version of java                                     | string  | yes      |                         |
+| `packages`                     | specifies an array of packages required for the java function     | array   | yes      |                         |
+| `external_access_integrations` | specifies the name of the external access integration to be used  | array   | no       |                         |
+| `secrets`                      | specifies an array of secrets that are to be used by the function | array   | no       |                         |
+| `handler_name`                 | specifies the combination of class and the function name          | string  | yes      |                         |
+| `imports`                      | specifies an array of imports required for the java function      | array   | no       |                         |
+| `target_path`                  | specifies the path for the jar file                               | string  | yes      |                         |
+| `return_type`                  | specifies the datatype for the return value                       | string  | yes      |                         |
+| `parameters`                   | specifies the parameter for the function                          | string  | no       |                         |
+| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | string  | no       | `CALLED ON NULL INPUT`  |
 
 ### Python
 
@@ -468,28 +490,28 @@ To create a user defined function using Python, you need to add the following co
     immutable=false,
     runtime_version = '3.8',
     packages = ['numpy','pandas','xgboost==1.5.0'],
-    external_access_integrations = "your_access_integration",
+    external_access_integrations = ["your_access_integration"],
     secrets = ["\'cred\' = oauth_token"]
     handler_name = 'udf',
     return_type = 'variant')
 }}
 ```
 
-| property                       | description                                                       | required | default                 |
-| ------------------------------ | ----------------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`                 | specifies the type of materialisation to run                      | yes      | `user_defined_function` |
-| `preferred_language`           | specifies the landuage for the UDF function                       | yes      | `python`                |
-| `is_secure`                    | specifies the function whether it is secure or not?               | no       | `false`                 |
-| `immutable`                    | specifies the function is mutable or immutable                    | no       | `false`                 |
-| `return_type`                  | specifies the datatype for the return value                       | yes      |                         |
-| `parameters`                   | specifies the parameter for the function                          | no       |                         |
-| `runtime_version`              | specifies the version of python                                   | yes      |                         |
-| `packages`                     | specifies an array of packages required for the python function   | yes      |                         |
-| `handler_name`                 | specifies the handler name for the function                       | yes      |                         |
-| `external_access_integrations` | specifies the name of the external access integration to be used  | no       |                         |
-| `secrets`                      | specifies an array of secrets that are to be used by the function | no       |                         |
-| `imports`                      | specifies an array of imports required for the python function    | no       |                         |
-| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | no       | `CALLED ON NULL INPUT`  |
+| property                       | description                                                       | Type    | required | default                 |
+| ------------------------------ | ----------------------------------------------------------------- | ------- | -------- | ----------------------- |
+| `materialized`                 | specifies the type of materialisation to run                      | string  | yes      | `user_defined_function` |
+| `preferred_language`           | specifies the landuage for the UDF function                       | string  | yes      | `python`                |
+| `is_secure`                    | specifies the function whether it is secure or not?               | boolean | no       | `false`                 |
+| `immutable`                    | specifies the function is mutable or immutable                    | boolean | no       | `false`                 |
+| `return_type`                  | specifies the datatype for the return value                       | string  | yes      |                         |
+| `parameters`                   | specifies the parameter for the function                          | string  | no       |                         |
+| `runtime_version`              | specifies the version of python                                   | string  | yes      |                         |
+| `packages`                     | specifies an array of packages required for the python function   | array   | yes      |                         |
+| `handler_name`                 | specifies the handler name for the function                       | string  | yes      |                         |
+| `external_access_integrations` | specifies the name of the external access integration to be used  | array   | no       |                         |
+| `secrets`                      | specifies an array of secrets that are to be used by the function | array   | no       |                         |
+| `imports`                      | specifies an array of imports required for the python function    | array   | no       |                         |
+| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | string  | no       | `CALLED ON NULL INPUT`  |
 
 
 ## Materialized View

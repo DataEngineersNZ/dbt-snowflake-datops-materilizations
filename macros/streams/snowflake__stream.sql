@@ -15,7 +15,7 @@
   {% set source_relation = adapter.get_relation(identifier=source_model, schema=source_schema, database=source_database) %}
 
   {% if source_relation == none %}
-    {% set source_relation = api.Relation.create(identifier=source_model, schema=source_schema, database=database) %} 
+    {% set source_relation = api.Relation.create(identifier=source_model, schema=source_schema, database=source_database) %} 
   {% endif %}
   
   -- setup

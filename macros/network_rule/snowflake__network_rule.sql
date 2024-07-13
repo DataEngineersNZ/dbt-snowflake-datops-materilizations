@@ -3,11 +3,11 @@
 */
 
 {%- materialization network_rule, adapter='snowflake' -%}
-  {%- set rule_type = config.get('rule_type', default='ipv4') -%}
+  {%- set rule_type = config.get('rule_type', default='HOST_PORT') -%}
   {%- set value_list = config.get('value_list', default=[]) -%}
-  {%- set mode = config.get('mode', default='ingress') -%}
+  {%- set mode = config.get('mode', default='INGRESS') -%}
 
-  {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
+  {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database) -%}
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
 

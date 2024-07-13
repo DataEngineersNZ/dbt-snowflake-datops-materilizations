@@ -8,6 +8,8 @@ Addition of the materializations:
 * Added `Secret` Materalization
 * Modified `User Defined Function` Materalization to take into account python, sql, javascript and java
 * Modified `Stored Procedure` Materalization to take into account execute as permissions
+* Modified source table creation to auto-create the schema if necessary
+* Modified `Stream` Materalization to take into account the `source_database` parameter correctly
 
 ## 0.2.7.6
 * Task: Bug fix for utilising dependant tasks
