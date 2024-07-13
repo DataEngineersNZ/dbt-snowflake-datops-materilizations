@@ -319,11 +319,21 @@ Usage
     )
 }}
 ```
-| property                 | description                                                                                                                                   | required        | default          |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ---------------- |
-| `materialized`           | specifies the type of materialisation to run                                                                                                  | yes             | `secret`         |
-| `secret_type`            | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE` | yes             | `GENERIC_STRING` |
-| `secret_string_variable` | specifies the name of the variable to store the secret                                                                                        | yes             |                  |
+| property                          | description                                                                                                                                                                    | Type   | Applicable For                                         | required | default          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------ | -------- | ---------------- |
+| `materialized`                    | specifies the type of materialisation to run                                                                                                                                   | string |                                                        | yes      | `secret`         |
+| `secret_type`                     | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE`                                  | string |                                                        | yes      | `GENERIC_STRING` |
+| `secret_string_variable`          | Specifies a variable name which contains the string to store in the secret.                                                                                                    | string | `GENERIC_STRING`                                       | no       |                  |
+| `username`                        | Specifies the username value to store in the secret.                                                                                                                           | string | `PASSWORD`                                             | no       |                  |
+| `password_variable`               | Specifies a variable name which contains the secret to use with basic authentication.                                                                                          | string | `PASSWORD`                                             | no       |                  |
+| `oauth_refresh_token_variable`    | Specifies the token as a string that is used to obtain a new access token from the OAuth authorization server when the access token expires.                                   | string | `OAUTH2_AUTHORIZATION_CODE`                            | no       |                  |
+| `oauth_refresh_token_expiry_time` | Specifies the timestamp as a string when the OAuth refresh token expires.                                                                                                      | string | `OAUTH2_AUTHORIZATION_CODE`                            | no       |                  |
+| `security_integration`            | Specifies the name value of the Snowflake security integration that connects Snowflake to an external service.                                                                 | string | `OAUTH2_AUTHORIZATION_CODE`,<br/>`OAUTH2_CLIENT_CREDNTIALS` | no       |                  |
+| `oauth_scopes`                    | Specifies a comma-separated list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow | array  | `OAUTH2_CLIENT_CREDNTIALS`                             | no       |                  |
+
+
+> The variables should be treated as environment variables and passed in at runtime. The variables should not be hardcoded in the model.
+> The varibales will be prefixed with `DBT_ENV_SECRET_` and the name of the secret at runtime so the values do not get written to any logs
 
 ## Network Access
 
@@ -344,7 +354,7 @@ Usage
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- |
 | `materialized` | specifies the type of materialisation to run                                                                                                                              | yes      | `network_rule` |
 | `rule_type`    | Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type Options include `IPV4`, `AWSVPCEID`, `AZURELINKID`, `HOST_PORT` | yes      | `HOST_PORT`    |
-| `mode`         | Specifies what is restricted by the network rule. Options include `INGRESS`, `INTERNAL_STAGE`, `EGRESS`                                                                   | yes      | `INGRESS`               |
+| `mode`         | Specifies what is restricted by the network rule. Options include `INGRESS`, `INTERNAL_STAGE`, `EGRESS`                                                                   | yes      | `INGRESS`      |
 | `value_list`   | Specifies the network identifiers that will be allowed or blocked                                                                                                         | yes      |                |
 
 ## Generic

@@ -1,6 +1,6 @@
 # dbt_dataengineers_materializations Changelog
 
-## 0.2.8
+## 0.2.8 - Secrets, Network Rules & UDF's
 
 Addition of the materializations:
 
