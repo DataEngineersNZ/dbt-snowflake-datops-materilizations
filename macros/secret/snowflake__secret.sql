@@ -2,7 +2,7 @@
   This materialization is used for secret objects.
 */
 
-{%- materialization snowflake_secret, adapter='snowflake' -%}
+{%- materialization secret, adapter='snowflake' -%}
   {%- set secret_type = config.get('type', default='GENERIC_STRING') -%}
   {%- set secret_string_variable = config.get('secret_string_variable', default=none) -%}
   {%- set secret_string = none -%}
