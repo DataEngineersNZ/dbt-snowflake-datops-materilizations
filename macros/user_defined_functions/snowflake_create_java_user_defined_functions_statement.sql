@@ -18,16 +18,14 @@ create or replace function {{ relation.include(database=(not temporary), schema=
 	imports = ('{{ imports|join('\', \'') }}')
 {%- endif %}
 	packages = ('{{ packages|join('\', \'') }}')
-{%- if handler is not none %}
 	handler = '{{ handler_name }}'
-{%- endif %}
-{%- if external_access_integrations is not none -%}
+{%- if external_access_integrations is not none %}
 	external_access_integrations = ({{ external_access_integrations|join(', ') }})
 {%- endif %}
-{% if secrets is not none -%}
+{% if secrets is not none %}
 	secrets = ({{ secrets|join(', ') }})
 {%- endif -%}
-{% if target_path is not none -%}
+{% if target_path is not none %}
 	target_path = {{ target_path }}
 {%- endif %}
 AS

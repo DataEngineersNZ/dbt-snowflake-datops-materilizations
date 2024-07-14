@@ -1,6 +1,6 @@
 {% macro stage_stages(enabled_targets) %}
-    {% if target.name in enabled_targets %}
-        {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+    {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+        {% if target.name in enabled_targets %}
             {% set stages_to_stage = [] %}
 
             {% set nodes = graph.nodes.values() if graph.nodes else [] %}
@@ -14,9 +14,9 @@
 
             {# Initial run to cater for  #}
             {% do dbt_dataengineers_materializations.stage_stages_plans(stages_to_stage) %}
+        {% else %}
+            {% do log('stages to create: Not enabled', info = true) %}
         {% endif %}
-    {% else %}
-        {% do log('stages to create: Not enabled', info = true) %}
     {% endif %}
 {% endmacro %}
 

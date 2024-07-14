@@ -1,6 +1,6 @@
 {% macro stage_file_formats(enabled_targets) %}
-    {% if target.name in enabled_targets %}
-        {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+    {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+        {% if target.name in enabled_targets %}
             {% set items_to_stage = [] %}
 
             {% set nodes = graph.nodes.values() if graph.nodes else [] %}
@@ -16,10 +16,11 @@
             {% if items_to_stage|length > 0 %}
                 {% do dbt_dataengineers_materializations.stage_file_format_plans(items_to_stage) %}
             {% endif %}
+        {% else %}
+            {% do log('file formats to create: Not enabled', info = true) %}
         {% endif %}
-    {% else %}
-        {% do log('file formats to create: Not enabled', info = true) %}
     {% endif %}
+
 {% endmacro %}
 
 

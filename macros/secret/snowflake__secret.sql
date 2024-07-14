@@ -14,6 +14,7 @@
   {%- set oauth_refresh_token_expiry_time = config.get('oauth_refresh_token_expiry_time', default=none) -%}
   {%- set security_integration = config.get('security_integration', default=none) -%}
   {%- set oauth_scopes = config.get('oauth_scopes', default=none) -%}
+  {%- set identifier = model['alias'] -%}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
@@ -28,15 +29,15 @@
     -- action statement
     {%- call statement('main') -%}
         {%if secret_type|upper == "PASSWORD" %}
-            {% set password = env_var('DBT_ENV_SECRET_' ~ password_variable|upper, '') %}
+            {% set password = env_var(password_variable|upper, '') %}
             {{ dbt_dataengineers_materializations.snowflake_create_password_secret_statement(target_relation, username, password) }}
         {% elif secret_type|upper == "OAUTH2_CLIENT_CREDNTIALS" %}
         {{ dbt_dataengineers_materializations.snowflake_create_oauth_client_credentials_secret_statement(target_relation, security_integration, oauth_scopes) }}
         {% elif secret_type|upper == "OAUTH2_AUTHORIZATION_CODE" %}
-            {% set oauth_refresh_token = env_var('DBT_ENV_SECRET_' ~ oauth_refresh_token_variable, '') %}
+            {% set oauth_refresh_token = env_var(oauth_refresh_token_variable, '') %}
             {{ dbt_dataengineers_materializations.snowflake_create_oauth_authorization_code_secret_statement(target_relation, security_integration, oauth_refresh_token, oauth_refresh_token_expiry_time) }}
         {% else %}
-            {% set secret_string = env_var('DBT_ENV_SECRET_' ~ secret_string_variable, '') %}
+            {% set secret_string = env_var(secret_string_variable, '') %}
             {{ dbt_dataengineers_materializations.snowflake_create_generic_secret_statement(target_relation, secret_string) }}
         {% endif %}
     {%- endcall -%}

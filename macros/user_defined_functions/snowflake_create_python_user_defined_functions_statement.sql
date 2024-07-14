@@ -21,10 +21,10 @@ create or replace function {{ relation.include(database=(not temporary), schema=
        packages = ('{{ packages|join('\', \'') }}')
 {%- endif -%}
 	handler = '{{ handler_name }}'
-{% if external_access_integrations is not none -%}
+{% if external_access_integrations is not none %}
 	external_access_integrations = ({{ external_access_integrations|join(', ') }})
 {%- endif -%}
-{% if secrets is not none -%}
+{% if secrets is not none %}
 	secrets = ({{ secrets|join(', ') }})
 {%- endif -%}
 AS

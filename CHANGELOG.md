@@ -6,6 +6,7 @@ Addition of the materializations:
 
 * Added `Network Rule` Materalization
 * Added `Secret` Materalization
+* Added `External Network Integration` Materalization
 * Modified `User Defined Function` Materalization to take into account python, sql, javascript and java
 * Modified `Stored Procedure` Materalization to take into account execute as permissions
 * Modified source table creation to auto-create the schema if necessary

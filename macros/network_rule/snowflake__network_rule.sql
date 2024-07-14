@@ -6,6 +6,7 @@
   {%- set rule_type = config.get('rule_type', default='HOST_PORT') -%}
   {%- set value_list = config.get('value_list', default=[]) -%}
   {%- set mode = config.get('mode', default='INGRESS') -%}
+  {%- set identifier = model['alias'] -%}
 
   {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database) -%}
   -- setup
