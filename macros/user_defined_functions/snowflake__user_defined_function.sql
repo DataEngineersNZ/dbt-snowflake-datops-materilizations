@@ -31,7 +31,8 @@
   /* java / python*/
   {%- set runtime_version = config.get('runtime_version', default=none) -%}
   {%- set packages = config.get('packages', default=none) -%}
-  {%- set external_access_integrations = config.get('external_access_integrations', default=none) %}
+  {%- set external_access_integrations = config.get('external_access_integrations', default=[]) %}
+  {%- set external_access_integrations_refs = config.get('external_access_integrations_refs', default=[]) %}
   {%- set secrets = config.get('secrets', default=none) %}
   {%- set handler_name = config.get('handler_name', default=none) -%}
   {%- set imports = config.get('imports', default=null) -%}
@@ -41,6 +42,14 @@
   {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
   {%- set has_transactional_hooks = (hooks | selectattr('transaction', 'equalto', True) | list | length) > 0 %}
+
+  {% for integration in external_access_integrations_refs %}
+    {% set integration_name = integration ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))  %}
+    {% do external_access_integrations.append(integration_name) %}
+  {% endfor %}
+  {% if external_access_integrations|length == 0 %}
+    {% set external_access_integrations = none %}
+  {% endif %}
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}

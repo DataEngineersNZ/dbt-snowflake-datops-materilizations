@@ -374,15 +374,20 @@ Usage
 }}
 ```
 
-| property                          | description                                                                                                                                                                                                 | required | default                       |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |
-| `materialized`                    | specifies the type of materialisation to run                                                                                                                                                                | yes      | `external_access_integration` |
-| `authentication_secrets`          | Specifies the allowed network rules. Only egress rules may be specified                                                                                                                                     | no       | []                            |
-| `network_rules`                   | Specifies the secrets that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                         | yes      | []                            |
-| `api_authentication_integrations` | Specifies the security integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.           | no       | []                            |
-| `role_for_creation`               | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          |                               |
-| `roles_for_use`                   | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                       | yes      | ['developers']                |
+| property                              | description                                                                                                                                                                                                                                                                                                         | required | default                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |
+| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                        | yes      | `external_access_integration` |
+| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                           | no       | []                            |
+| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                               | no       | []                            |
+| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                               | yes      | []                            |
+| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                   | yes      | []                            |
+| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                 | no       | []                            |
+| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                     | no       | []                            |
+| `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
+| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                               | yes      | ['developers']                |
 
+> WARNING: A Role with `CREATE INTEGRATION` roles is required to deploy this object as its an Account level object. The deployment will switch roles when deploying locally to the specified in `role_for_creation`
+> The integration name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
 
 ## Generic
 
@@ -498,22 +503,25 @@ To create a user defined function using Java, you need to add the following conf
 }}
 ```
 
-| property                       | description                                                       | type    | required | default                 |
-| ------------------------------ | ----------------------------------------------------------------- | ------- | -------- | ----------------------- |
-| `materialized`                 | specifies the type of materialisation to run                      | string  | yes      | `user_defined_function` |
-| `preferred_language`           | specifies the landuage for the UDF function                       | string  | yes      | `java`                  |
-| `is_secure`                    | specifies the function whether it is secure or not?               | boolean | no       | `false`                 |
-| `immutable`                    | specifies the function is mutable or immutable                    | boolean | no       | `false`                 |
-| `runtime_version`              | specifies the version of java                                     | string  | yes      |                         |
-| `packages`                     | specifies an array of packages required for the java function     | array   | yes      |                         |
-| `external_access_integrations` | specifies the name of the external access integration to be used  | array   | no       |                         |
-| `secrets`                      | specifies an array of secrets that are to be used by the function | array   | no       |                         |
-| `handler_name`                 | specifies the combination of class and the function name          | string  | yes      |                         |
-| `imports`                      | specifies an array of imports required for the java function      | array   | no       |                         |
-| `target_path`                  | specifies the path for the jar file                               | string  | yes      |                         |
-| `return_type`                  | specifies the datatype for the return value                       | string  | yes      |                         |
-| `parameters`                   | specifies the parameter for the function                          | string  | no       |                         |
-| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | string  | no       | `CALLED ON NULL INPUT`  |
+| property                           | description                                                                   | type    | required | default                 |
+| ---------------------------------- | ----------------------------------------------------------------------------- | ------- | -------- | ----------------------- |
+| `materialized`                     | specifies the type of materialisation to run                                  | string  | yes      | `user_defined_function` |
+| `preferred_language`               | specifies the landuage for the UDF function                                   | string  | yes      | `java`                  |
+| `is_secure`                        | specifies the function whether it is secure or not?                           | boolean | no       | `false`                 |
+| `immutable`                        | specifies the function is mutable or immutable                                | boolean | no       | `false`                 |
+| `runtime_version`                  | specifies the version of java                                                 | string  | yes      |                         |
+| `packages`                         | specifies an array of packages required for the java function                 | array   | yes      |                         |
+| `external_access_integrations`     | specifies the name of the external access integration to be used              | array   | no       |                         |
+| `external_access_integrations_ref` | specifies the name of the external access integration (ref object) to be used | array   | no       |                         |
+| `secrets`                          | specifies an array of secrets that are to be used by the function             | array   | no       |                         |
+| `handler_name`                     | specifies the combination of class and the function name                      | string  | yes      |                         |
+| `imports`                          | specifies an array of imports required for the java function                  | array   | no       |                         |
+| `target_path`                      | specifies the path for the jar file                                           | string  | yes      |                         |
+| `return_type`                      | specifies the datatype for the return value                                   | string  | yes      |                         |
+| `parameters`                       | specifies the parameter for the function                                      | string  | no       |                         |
+| `null_input_behavior`              | specifies the behavior of the function when passed a NULL value               | string  | no       | `CALLED ON NULL INPUT`  |
+
+> The external_access_integrations_ref name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
 
 ### Python
 
