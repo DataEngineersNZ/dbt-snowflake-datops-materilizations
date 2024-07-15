@@ -10,6 +10,7 @@ Addition of the materializations:
 * Modified `User Defined Function` Materalization to take into account python, sql, javascript and java
 * Modified `Stored Procedure` Materalization to take into account execute as permissions
 * Modified source table creation to auto-create the schema if necessary
+* Modified source table creation to specify if dbt is to maintain tables or not
 * Modified `Stream` Materalization to take into account the `source_database` parameter correctly
 
 ## 0.2.7.6

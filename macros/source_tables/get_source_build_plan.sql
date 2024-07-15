@@ -1,10 +1,10 @@
-{% macro get_source_build_plan(source_node, is_first_run, object_type) %}
+{% macro get_source_build_plan(source_node, is_first_run, object_type, allow_modify) %}
     {% if object_type == 'stream' %}
         {{ return(adapter.dispatch('get_stream_build_plan', 'dbt_dataengineers_materializations')(source_node)) }}
     {% elif object_type == 'external' %}
-        {{ return(adapter.dispatch('get_external_build_plan', 'dbt_dataengineers_materializations')(source_node, is_first_run)) }}
+        {{ return(adapter.dispatch('get_external_build_plan', 'dbt_dataengineers_materializations')(source_node, is_first_run, allow_modify)) }}
     {% else %}
-        {{ return(adapter.dispatch('get_source_build_plan', 'dbt_dataengineers_materializations')(source_node, is_first_run)) }}
+        {{ return(adapter.dispatch('get_source_build_plan', 'dbt_dataengineers_materializations')(source_node, is_first_run, allow_modify)) }}
     {% endif %}
 {% endmacro %}
 

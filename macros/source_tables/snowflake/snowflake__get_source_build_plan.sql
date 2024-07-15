@@ -1,4 +1,4 @@
-{% macro snowflake__get_source_build_plan(source_node, is_first_run) %}
+{% macro snowflake__get_source_build_plan(source_node, is_first_run, auto_maintained) %}
     {% set build_plan = [] %}
 
     {# Setup our variables which are re-usable #}
@@ -22,7 +22,7 @@
         {%- set create_or_replace = (current_relation is none or full_refresh_mode) -%}
         {%- set stream_name = dbt_dataengineers_materializations.snowflake_get_stream_name(identifier) -%}
         {%- set stream_relation = api.Relation.create(schema=schema, identifier=stream_name) -%}
-       
+
         {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_schema(target_relation)) %}
         {# determine if we need to replace a view with this table #}
         {% if current_relation_exists_as_view %}
@@ -31,7 +31,7 @@
         {% endif %}
 
         {# determine backups and mirgation and comparison tables accoridngly #}
-        {% if current_relation_exists_as_table %}
+        {% if current_relation_exists_as_table and auto_maintained %}
             {% if source_node.external.retain_previous_version_flg %}
                 {%- set backup_suffix_dt = py_current_timestring() -%}
                 {%- set backup_table_suffix = config.get('backup_table_suffix', default='_DBT_BACKUP_') -%}
@@ -51,7 +51,7 @@
         {% else %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_or_replace_table(comparison_relation, source_node)) %}
         {% endif %}
-    {% else %}
+    {% else if auto_maintained %}
         {% if current_relation is not none and  comparison_relation is not none %}
             {# If we are not doing a full refresh  #}
             {% if not full_refresh_mode %}
