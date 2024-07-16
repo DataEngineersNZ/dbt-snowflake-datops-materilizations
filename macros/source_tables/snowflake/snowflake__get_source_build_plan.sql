@@ -48,11 +48,11 @@
                 {% do build_plan.append(dbt_dataengineers_materializations.snowflake_drop_table(current_relation)) %}
             {% endif %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_or_replace_table(target_relation, source_node)) %}
-        {% else %}
+        {% elif auto_maintained %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_or_replace_table(comparison_relation, source_node)) %}
         {% endif %}
     {% elif auto_maintained %}
-        {% if current_relation is not none and  comparison_relation is not none %}
+        {% if current_relation is not none and comparison_relation is not none %}
             {# If we are not doing a full refresh  #}
             {% if not full_refresh_mode %}
                 {%- set new_cols = adapter.get_missing_columns(comparison_relation, current_relation) %}
