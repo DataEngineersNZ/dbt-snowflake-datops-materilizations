@@ -19,9 +19,9 @@
                             {% endif %}
                         {% else %}
                             {% if node.external.location %}
-                                   {% do sources_to_stage_no_maintenance.append(node) %}
+                                   {% do externals_tables_to_stage_no_maintenance.append(node) %}
                             {% else %}
-                                   {% do sources_to_stage_if_not_exist.append(node) %}
+                                   {% do sources_to_stage_no_maintenance.append(node) %}
                             {% endif %}
                         {% endif %}
                     {% endif %}
