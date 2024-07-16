@@ -1,13 +1,6 @@
 version: 2
 
 macros:
-
-  - name: user_defined_function
-    description: |
-      Create a user defined function in Snowflake.
-    docs:
-      show: true
-
   - name: snowflake_create_external_user_defined_functions_statement
     description: |
       Create an external user defined function in Snowflake.
