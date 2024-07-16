@@ -44,7 +44,7 @@
   {%- set has_transactional_hooks = (hooks | selectattr('transaction', 'equalto', True) | list | length) > 0 %}
 
   {% for integration in external_access_integrations_refs %}
-    {% set integration_name = integration ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))  %}
+    {% set integration_name = integration ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))|replace('-', '_')   %}
     {% do external_access_integrations.append(integration_name) %}
   {% endfor %}
   {% if external_access_integrations|length == 0 %}
