@@ -51,7 +51,7 @@
         {% else %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_or_replace_table(comparison_relation, source_node)) %}
         {% endif %}
-    {% else if auto_maintained %}
+    {% elif auto_maintained %}
         {% if current_relation is not none and  comparison_relation is not none %}
             {# If we are not doing a full refresh  #}
             {% if not full_refresh_mode %}
