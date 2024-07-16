@@ -28,16 +28,16 @@
                 {% endif %}
             {% endfor %}
             {# Initial run to cater for  #}
-            {% do log('===> ' ~ sources_to_stage_auto_maintained|length ~  'Tables to be maintained by dbt <===', info = true) -%}
+            {% do log('===> ' ~ sources_to_stage_auto_maintained|length ~  ' Tables to be maintained by dbt <===', info = true) -%}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_auto_maintained, true, 'internal', true) %}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_auto_maintained, false, 'internal', true) %}
-            {% do log('===> ' ~ sources_to_stage_no_maintenance|length ~  'Tables only to be created by dbt <===', info = true) -%}
+            {% do log('===> ' ~ sources_to_stage_no_maintenance|length ~  ' Tables only to be created by dbt <===', info = true) -%}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_no_maintenance, true, 'internal', false) %}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_no_maintenance, false, 'internal', false) %}
-            {% do log('===> ' ~ externals_tables_to_stage_auto_maintained|length ~  'Tables to be maintained by dbt (with external source) <===', info = true) -%}
+            {% do log('===> ' ~ externals_tables_to_stage_auto_maintained|length ~  ' Tables to be maintained by dbt (with external source) <===', info = true) -%}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_auto_maintained, true, 'external', true) %}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_auto_maintained, false, 'external', true) %}
-            {% do log('===> ' ~ externals_tables_to_stage_no_maintenance|length ~  'only to be created by dbt  (with external source) <===', info = true) -%}
+            {% do log('===> ' ~ externals_tables_to_stage_no_maintenance|length ~  ' Tables only to be created by dbt  (with external source) <===', info = true) -%}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_no_maintenance, true, 'external', false) %}
             {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_no_maintenance, false, 'external', false) %}
         {% endif %}
