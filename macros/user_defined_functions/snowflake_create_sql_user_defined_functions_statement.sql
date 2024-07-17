@@ -11,10 +11,10 @@ create or replace function {{ relation.include(database=(not temporary), schema=
        immutable
 {% else %}
        volatile
-{%- endif -%}
+{%- endif %}
 {% if memoizable %}
        memoizable
-{%- endif -%}
+{%- endif %}
 AS
 $$
  {{ statement }}
