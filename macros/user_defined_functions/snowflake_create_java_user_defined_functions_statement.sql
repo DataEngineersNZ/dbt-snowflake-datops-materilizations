@@ -28,6 +28,7 @@ create or replace function {{ relation.include(database=(not temporary), schema=
 {% if target_path is not none %}
 	target_path = {{ target_path }}
 {%- endif %}
+AS
 '
  {{ statement }}
 '
