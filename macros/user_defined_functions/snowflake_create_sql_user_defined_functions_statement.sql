@@ -16,8 +16,8 @@ create or replace function {{ relation.include(database=(not temporary), schema=
        memoizable
 {%- endif -%}
 AS
-'
+$$
  {{ statement }}
-'
+$$
 ;
 {%- endmacro -%}

@@ -12,10 +12,10 @@ create or replace function {{ relation.include(database=(not temporary), schema=
        immutable
 {% else %}
        volatile
-{%- endif -%}
+{%- endif %}
 AS
-'
+$$
  {{ statement }}
-'
+$$
 ;
 {%- endmacro -%}
