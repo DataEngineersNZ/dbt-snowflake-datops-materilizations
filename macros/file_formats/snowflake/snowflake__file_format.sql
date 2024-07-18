@@ -1,6 +1,6 @@
 /*
   This materialization is used for creating file format objects.
-  The idea behind this materialization is for ability to define CREATE FILE FORMAT statements and have dbt use the necessary logic
+  The idea behind this materialization is for ability to define create file format statements and have dbt use the necessary logic
   of deploying the fileformat in a consistent manner and logic.
   Adapted from https://github.com/venkatra/dbt_hacks
 

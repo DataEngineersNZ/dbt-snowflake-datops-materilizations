@@ -1,13 +1,13 @@
 This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that can be (re)used across dbt projects.
 
-> require-dbt-version: [">=1.3.0", "<2.0.0"]
+> require-dbt-version: [">=1.7.0", "<2.0.0"]
 ----
 
 ## Installation Instructions
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.7.6"
+    revision: "0.2.8"
 ```
 ----
 
@@ -22,8 +22,12 @@ Conatins the following materializations for Snowflake:
 * Tasks
 * Streams
 * Tables
+* User Defined Functions
 * Materialised View
 * Generic
+* Secrets
+* Network Rules
+* External Access Integration
 
 ## Monitoral Alerts
 
@@ -127,14 +131,14 @@ Usage
 }}
 ```
 
-| property             | description                                                                         | required | default            |
-| -------------------- | ----------------------------------------------------------------------------------- | -------- | ------------------ |
-| `materialized`       | specifies the type of materialisation to run                                        | yes      | `stored_procedure` |
-| `preferred_language` | describes the language the stored procedure is written in                           | no       | `sql`              |
-| `override_name`      | specifies the name of the stored procedure if this is an overrider stored procedure | no       | `model['alias']`   |
-| `parameters`         | specifes the parameters that needs to be passed when calling the stored procedure   | no       |                    |
-| `return_type`        | specifies the stored procedure return type                                          | no       | `varchar`          |
-
+| property             | description                                                                                              | required | default            |
+| -------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------------------ |
+| `materialized`       | specifies the type of materialisation to run                                                             | yes      | `stored_procedure` |
+| `preferred_language` | describes the language the stored procedure is written in                                                | no       | `sql`              |
+| `override_name`      | specifies the name of the stored procedure if this is an overrider stored procedure                      | no       | `model['alias']`   |
+| `parameters`         | specifes the parameters that needs to be passed when calling the stored procedure                        | no       |                    |
+| `return_type`        | specifies the stored procedure return type                                                               | no       | `varchar`          |
+| `execute_as`         | specifies the role that the stored procedure should be executed as. Options include `OWNER` and `CALLER` | no       | `owner`            |
 ## File Formats
 
 Usage
@@ -224,11 +228,13 @@ Usage
 }}
 ```
 
-| property        | description                                                                    | required | default  |
-| --------------- | ------------------------------------------------------------------------------ | -------- | -------- |
-| `materialized`  | specifies the type of materialisation to run                                   | yes      | `stream` |
-| `source_schema` | specifies the source table or view schema if different to the current location | yes      |          |
-| `source_model`  | specifies the source table or view model name to add the stream to             | yes      |          |
+| property                 | description                                                                                     | required | default  |
+| ------------------------ | ----------------------------------------------------------------------------------------------- | -------- | -------- |
+| `materialized`           | specifies the type of materialisation to run                                                    | yes      | `stream` |
+| `source_database`        | specifies the source database if different to the current location                              | no       |          |
+| `source_database_prefix` | specifies the varaible prefix to use for the database name if different to the current location | no       |          |
+| `source_schema`          | specifies the source table or view schema if different to the current location                  | no       |          |
+| `source_model`           | specifies the source table or view model name to add the stream to                              | yes      |          |
 
 ## Tables
 Adds the ability to create the raw tables based on the yml file
@@ -241,11 +247,13 @@ Usage
         description: Customer Information
         external:
           auto_create_table: true
+          auto_maintained: false
 ```
 
 | property            | description                                               | required | default |
 | ------------------- | --------------------------------------------------------- | -------- | ------- |
-| `auto_create_table` | specifies if the table should be maintianed by dbt or not | yes      | `false` |
+| `auto_create_table` | specifies if the table should be created by dbt or not    | yes      | `false` |
+| `auto_maintained`   | specifies if the table should be maintianed by dbt or not | no       | `false` |
 
 * it's recommended that a separate stream object is created instead of setting up the stream via the table object as the stream doesn't appear on the DAG when created via this method, nor can you reference it using the `ref` macro.
 
@@ -303,6 +311,87 @@ example
 {% endif %} 
   storage_integration = DATAOPS_TEMPLATE_EXTERNAL
 ```
+## Secrets
+
+Usage
+
+```sql
+{{
+    config(
+       materialized='secret'
+       , secret_type = 'GENERIC_STRING'
+       , secret_string_variable = "VARIABLE_NAME"
+    )
+}}
+```
+| property                          | description                                                                                                                                                                    | Type   | Applicable For                                              | required | default          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------- | -------- | ---------------- |
+| `materialized`                    | specifies the type of materialisation to run                                                                                                                                   | string |                                                             | yes      | `secret`         |
+| `secret_type`                     | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE`                                  | string |                                                             | yes      | `GENERIC_STRING` |
+| `secret_string_variable`          | Specifies a variable name which contains the string to store in the secret.                                                                                                    | string | `GENERIC_STRING`                                            | no       |                  |
+| `username`                        | Specifies the username value to store in the secret.                                                                                                                           | string | `PASSWORD`                                                  | no       |                  |
+| `password_variable`               | Specifies a variable name which contains the secret to use with basic authentication.                                                                                          | string | `PASSWORD`                                                  | no       |                  |
+| `oauth_refresh_token_variable`    | Specifies the token as a string that is used to obtain a new access token from the OAuth authorization server when the access token expires.                                   | string | `OAUTH2_AUTHORIZATION_CODE`                                 | no       |                  |
+| `oauth_refresh_token_expiry_time` | Specifies the timestamp as a string when the OAuth refresh token expires.                                                                                                      | string | `OAUTH2_AUTHORIZATION_CODE`                                 | no       |                  |
+| `security_integration`            | Specifies the name value of the Snowflake security integration that connects Snowflake to an external service.                                                                 | string | `OAUTH2_AUTHORIZATION_CODE`,<br/>`OAUTH2_CLIENT_CREDNTIALS` | no       |                  |
+| `oauth_scopes`                    | Specifies a comma-separated list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow | array  | `OAUTH2_CLIENT_CREDNTIALS`                                  | no       |                  |
+
+
+> The variables should be treated as environment variables and passed in at runtime. The variables should not be hardcoded in the model.
+
+## Network Rules
+
+Usage
+
+```sql
+{{
+    config(
+       materialized='network_rule'
+       , rule_type = 'HOST_PORT'
+       , mode = 'EGRESS'
+       , value_list = ['example.com', 'company.com:443']
+    )
+}}
+```
+
+| property       | description                                                                                                                                                               | required | default        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- |
+| `materialized` | specifies the type of materialisation to run                                                                                                                              | yes      | `network_rule` |
+| `rule_type`    | Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type Options include `IPV4`, `AWSVPCEID`, `AZURELINKID`, `HOST_PORT` | yes      | `HOST_PORT`    |
+| `mode`         | Specifies what is restricted by the network rule. Options include `INGRESS`, `INTERNAL_STAGE`, `EGRESS`                                                                   | yes      | `INGRESS`      |
+| `value_list`   | Specifies the network identifiers that will be allowed or blocked                                                                                                         | yes      |                |
+
+## External Access Integration
+
+Usage
+
+```sql
+{{
+    config(
+       materialized='external_access_integration'
+       , authentication_secrets = [your_secret]
+       , network_rules = ['your_network_rule']
+       , api_authentication_integrations = ['your_api_integration']
+       , role_for_creation = 'dataops_admin'
+       , roles_for_use = 'developers'
+    )
+}}
+```
+
+| property                              | description                                                                                                                                                                                                                                                                                                                                                                                                                              | required | default                       |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |
+| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                                                                                                                                             | yes      | `external_access_integration` |
+| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                | no       | []                            |
+| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                    | no       | []                            |
+| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                    | yes      | []                            |
+| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                        | yes      | []                            |
+| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                      | no       | []                            |
+| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                          | no       | []                            |
+| `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
+| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                                                                                                                                                    | yes      | ['developers']                |
+
+> WARNING: A Role with `CREATE INTEGRATION` roles is required to deploy this object as its an Account level object. The deployment will switch roles when deploying locally to the specified in `role_for_creation`
+> The integration name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
 
 ## Generic
 
@@ -355,9 +444,10 @@ To create a user defined function using SQL, you need to add the following confi
 | property             | description                                         | required | default                 |
 | -------------------- | --------------------------------------------------- | -------- | ----------------------- |
 | `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
-| `preferred_language` | specifies the landuage for the UDF function         | no       | `sql`                   |
+| `preferred_language` | specifies the landuage for the UDF function         | no       | `SQL`                   |
 | `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
 | `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
+| `memoizable`         | specifies the function is memoizable                | no       | `false`                 |
 | `return_type`        | specifies the datatype for the return value         | yes      |                         |
 | `parameters`         | specifies the parameter for the function            | no       |                         |
 
@@ -389,14 +479,15 @@ To create a user defined function using Javascript, you need to add the followin
 }}
 ```
 
-| property             | description                                         | required | default                 |
-| -------------------- | --------------------------------------------------- | -------- | ----------------------- |
-| `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
-| `preferred_language` | specifies the landuage for the UDF function         | yes      | `javascript`            |
-| `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
-| `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
-| `return_type`        | specifies the datatype for the return value         | yes      |                         |
-| `parameters`         | specifies the parameter for the function            | no       |                         |
+| property              | description                                                     | required | default                 |
+| --------------------- | --------------------------------------------------------------- | -------- | ----------------------- |
+| `materialized`        | specifies the type of materialisation to run                    | yes      | `user_defined_function` |
+| `preferred_language`  | specifies the landuage for the UDF function                     | yes      | `javascript`            |
+| `is_secure`           | specifies the function whether it is secure or not?             | no       | `false`                 |
+| `immutable`           | specifies the function is mutable or immutable                  | no       | `false`                 |
+| `return_type`         | specifies the datatype for the return value                     | yes      |                         |
+| `parameters`          | specifies the parameter for the function                        | no       |                         |
+| `null_input_behavior` | specifies the behavior of the function when passed a NULL value | no       | `CALLED ON NULL INPUT`  |
 
 ### Java
 
@@ -409,21 +500,32 @@ To create a user defined function using Java, you need to add the following conf
     is_secure = false,
     handler_name = "'testfunction.echoVarchar'",
     target_path = "'@~/testfunction.jar'",
+    external_access_integrations = ["your_access_integration"],
+    secrets = ["\'cred\' = oauth_token"]
     return_type = 'varchar',
     parameters = 'my_string varchar')
 }}
 ```
 
-| property             | description                                              | required | default                 |
-| -------------------- | -------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`       | specifies the type of materialisation to run             | yes      | `user_defined_function` |
-| `preferred_language` | specifies the landuage for the UDF function              | yes      | `java`                  |
-| `is_secure`          | specifies the function whether it is secure or not?      | no       | `false`                 |
-| `immutable`          | specifies the function is mutable or immutable           | no       | `false`                 |
-| `handler_name`       | specifies the combination of class and the function name | yes      |                         |
-| `target_path`        | specifies the path for the jar file                      | yes      |                         |
-| `return_type`        | specifies the datatype for the return value              | yes      |                         |
-| `parameters`         | specifies the parameter for the function                 | no       |                         |
+| property                           | description                                                                   | type    | required | default                 |
+| ---------------------------------- | ----------------------------------------------------------------------------- | ------- | -------- | ----------------------- |
+| `materialized`                     | specifies the type of materialisation to run                                  | string  | yes      | `user_defined_function` |
+| `preferred_language`               | specifies the landuage for the UDF function                                   | string  | yes      | `java`                  |
+| `is_secure`                        | specifies the function whether it is secure or not?                           | boolean | no       | `false`                 |
+| `immutable`                        | specifies the function is mutable or immutable                                | boolean | no       | `false`                 |
+| `runtime_version`                  | specifies the version of java                                                 | string  | yes      |                         |
+| `packages`                         | specifies an array of packages required for the java function                 | array   | yes      |                         |
+| `external_access_integrations`     | specifies the name of the external access integration to be used              | array   | no       |                         |
+| `external_access_integrations_ref` | specifies the name of the external access integration (ref object) to be used | array   | no       |                         |
+| `secrets`                          | specifies an array of secrets that are to be used by the function             | array   | no       |                         |
+| `handler_name`                     | specifies the combination of class and the function name                      | string  | yes      |                         |
+| `imports`                          | specifies an array of imports required for the java function                  | array   | no       |                         |
+| `target_path`                      | specifies the path for the jar file                                           | string  | yes      |                         |
+| `return_type`                      | specifies the datatype for the return value                                   | string  | yes      |                         |
+| `parameters`                       | specifies the parameter for the function                                      | string  | no       |                         |
+| `null_input_behavior`              | specifies the behavior of the function when passed a NULL value               | string  | no       | `CALLED ON NULL INPUT`  |
+
+> The external_access_integrations_ref name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
 
 ### Python
 
@@ -437,26 +539,29 @@ To create a user defined function using Python, you need to add the following co
     immutable=false,
     runtime_version = '3.8',
     packages = ['numpy','pandas','xgboost==1.5.0'],
-    external_access_integrations = "your_access_integration",
+    external_access_integrations = ["your_access_integration"],
     secrets = ["\'cred\' = oauth_token"]
     handler_name = 'udf',
     return_type = 'variant')
 }}
 ```
 
-| property                       | description                                                       | required | default                 |
-| ------------------------------ | ----------------------------------------------------------------- | -------- | ----------------------- |
-| `materialized`                 | specifies the type of materialisation to run                      | yes      | `user_defined_function` |
-| `preferred_language`           | specifies the landuage for the UDF function                       | yes      | `python`                |
-| `is_secure`                    | specifies the function whether it is secure or not?               | no       | `false`                 |
-| `immutable`                    | specifies the function is mutable or immutable                    | no       | `false`                 |
-| `return_type`                  | specifies the datatype for the return value                       | yes      |                         |
-| `parameters`                   | specifies the parameter for the function                          | no       |                         |
-| `runtime_version`              | specifies the version of python                                   | yes      |                         |
-| `packages`                     | specifies an array of packages required for the python function   | yes      |                         |
-| `handler_name`                 | specifies the handler name for the function                       | yes      |                         |
-| `external_access_integrations` | specifies the name of the external access integration to be used  | no       |                         |
-| `secrets`                      | specifies an array of secrets that are to be used by the function | no       |                         |
+| property                       | description                                                       | Type    | required | default                 |
+| ------------------------------ | ----------------------------------------------------------------- | ------- | -------- | ----------------------- |
+| `materialized`                 | specifies the type of materialisation to run                      | string  | yes      | `user_defined_function` |
+| `preferred_language`           | specifies the landuage for the UDF function                       | string  | yes      | `python`                |
+| `is_secure`                    | specifies the function whether it is secure or not?               | boolean | no       | `false`                 |
+| `immutable`                    | specifies the function is mutable or immutable                    | boolean | no       | `false`                 |
+| `return_type`                  | specifies the datatype for the return value                       | string  | yes      |                         |
+| `parameters`                   | specifies the parameter for the function                          | string  | no       |                         |
+| `runtime_version`              | specifies the version of python                                   | string  | yes      |                         |
+| `packages`                     | specifies an array of packages required for the python function   | array   | yes      |                         |
+| `handler_name`                 | specifies the handler name for the function                       | string  | yes      |                         |
+| `external_access_integrations` | specifies the name of the external access integration to be used  | array   | no       |                         |
+| `secrets`                      | specifies an array of secrets that are to be used by the function | array   | no       |                         |
+| `imports`                      | specifies an array of imports required for the python function    | array   | no       |                         |
+| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | string  | no       | `CALLED ON NULL INPUT`  |
+
 
 ## Materialized View
 To create a Materialized View, you need to add the following config to the top of your model:

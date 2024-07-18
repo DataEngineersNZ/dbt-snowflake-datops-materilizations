@@ -1,5 +1,18 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.8 - Secrets, Network Rules & UDF's
+
+Addition of the materializations:
+
+* Added `Network Rule` Materalization
+* Added `Secret` Materalization
+* Added `External Network Integration` Materalization
+* Modified `User Defined Function` Materalization to take into account python, sql, javascript and java
+* Modified `Stored Procedure` Materalization to take into account execute as permissions
+* Modified source table creation to auto-create the schema if necessary
+* Modified source table creation to specify if dbt is to maintain tables or not
+* Modified `Stream` Materalization to take into account the `source_database` parameter correctly or use a variable for the `source_database_base` in association with a target name
+
 ## 0.2.7.6
 * Task: Bug fix for utilising dependant tasks
 * Materialized View: Removed the check against dropping if its a view

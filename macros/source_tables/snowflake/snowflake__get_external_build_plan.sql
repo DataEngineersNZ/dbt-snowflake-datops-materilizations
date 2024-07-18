@@ -1,4 +1,4 @@
-{% macro snowflake__get_external_build_plan(source_node, is_first_run) %}
+{% macro snowflake__get_external_build_plan(source_node, is_first_run, auto_maintained) %}
 
     {% set build_plan = [] %}
 
@@ -20,7 +20,7 @@
                     dbt_dataengineers_materializations.snowflake_get_copy_sql(target_relation, source_node, explicit_transaction=true),
                     dbt_dataengineers_materializations.snowflake_create_snowpipe(target_relation, source_node)
                 ] %}
-            {% else %}
+            {% elif auto_maintained %}
                 {% set build_plan = build_plan + [
                     dbt_dataengineers_materializations.snowflake_create_or_replace_table(comparison_relation, source_node),
                     dbt_dataengineers_materializations.snowflake_clone_table_relation_if_exists(current_relation, migration_relation)
@@ -33,7 +33,7 @@
                 {% set build_plan = build_plan + dbt_dataengineers_materializations.snowflake_refresh_external_table(target_relation,source_node) %}
             {% endif %}
         {% endif %}
-    {% else %}
+    {% elif auto_maintained %}
         {% if current_relation is not none and migration_relation is not none %}
             {%- set new_cols = adapter.get_missing_columns(comparison_relation, current_relation) %}
             {% if new_cols|length > 0 -%}

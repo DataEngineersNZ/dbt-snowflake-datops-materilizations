@@ -1,11 +1,29 @@
 version: 2
 
 macros:
-
-  - name: snowflake_create_user_defined_functions_statement
+  - name: snowflake_create_external_user_defined_functions_statement
+    description: |
+      Create an external user defined function in Snowflake.
     docs:
       show: false
 
-  - name: snowflake_create_external_user_defined_functions_statement
+  - name: snowflake_create_java_user_defined_functions_statement
+    description: |
+      Create a Java user defined function in Snowflake.
+    docs:
+      show: false
+  - name: snowflake_create_javascript_user_defined_functions_statement
+    description: |
+      Create a JavaScript user defined function in Snowflake.
+    docs:
+      show: false
+  - name: snowflake_create_python_user_defined_functions_statement
+    description: |
+      Create a Python user defined function in Snowflake.
+    docs:
+      show: false
+  - name: snowflake_create_sql_user_defined_functions_statement
+    description: |
+      Create a SQL user defined function in Snowflake.
     docs:
       show: false
