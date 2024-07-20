@@ -11,7 +11,7 @@
   {%- set api_authentication_integrations_refs = config.get('api_authentication_integrations_refs', default=[]) -%}
   {%- set role_for_creation = config.get('role_for_creation', default='developers') -%}
   {%- set roles_for_use = config.get('roles_for_use', default=['dataops_admin']) -%}
-  {%- set identifier = model['alias'] ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))|replace('-', '_') ~ var('external_access_integration_postfix', '')  %}
+  {%- set identifier = model['alias'] ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))|replace('-', '_')  %}
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}
