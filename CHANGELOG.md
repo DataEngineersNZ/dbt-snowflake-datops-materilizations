@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.8.1 - Profile Targets
+
+* Added in the ability to set the profile targets for the materializations `stages`, `file_format`, `tables`
+ - tables
+
 ## 0.2.8 - Secrets, Network Rules & UDF's
 
 Addition of the materializations:

@@ -1,21 +1,23 @@
-{% macro stage_stages(enabled_targets) %}
-    {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
-        {% if target.name in enabled_targets %}
-            {% set stages_to_stage = [] %}
+{% macro stage_stages(enabled_targets=[target.name], enabled_profiles=[target.profile_name]) %}
+    {% if target.profile_name in enabled_profiles %}
+        {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+            {% if target.name in enabled_targets %}
+                {% set stages_to_stage = [] %}
 
-            {% set nodes = graph.nodes.values() if graph.nodes else [] %}
-            {% for node in nodes %}
-                {% if node.config.materialized == 'stage' %}
-                    {% do stages_to_stage.append(node) %}
-                {% endif %}
-            {% endfor %}
+                {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+                {% for node in nodes %}
+                    {% if node.config.materialized == 'stage' %}
+                        {% do stages_to_stage.append(node) %}
+                    {% endif %}
+                {% endfor %}
 
-            {% do log('stages to create: ' ~ stages_to_stage|length, info = true) %}
+                {% do log('stages to create: ' ~ stages_to_stage|length, info = true) %}
 
-            {# Initial run to cater for  #}
-            {% do dbt_dataengineers_materializations.stage_stages_plans(stages_to_stage) %}
-        {% else %}
-            {% do log('stages to create: Not enabled', info = true) %}
+                {# Initial run to cater for  #}
+                {% do dbt_dataengineers_materializations.stage_stages_plans(stages_to_stage) %}
+            {% else %}
+                {% do log('stages to create: Not enabled', info = true) %}
+            {% endif %}
         {% endif %}
     {% endif %}
 {% endmacro %}

@@ -23,7 +23,6 @@
         {%- set stream_name = dbt_dataengineers_materializations.snowflake_get_stream_name(identifier) -%}
         {%- set stream_relation = api.Relation.create(schema=schema, identifier=stream_name) -%}
 
-        {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_schema(target_relation)) %}
         {# determine if we need to replace a view with this table #}
         {% if current_relation_exists_as_view %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_drop_view(current_relation)) %}
@@ -46,6 +45,8 @@
             {% if current_relation_exists_as_table %}
                 {% do build_plan.append(dbt_dataengineers_materializations.snowflake_drop_stream_statement(stream_relation)) %}
                 {% do build_plan.append(dbt_dataengineers_materializations.snowflake_drop_table(current_relation)) %}
+            {% else %}
+                {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_schema(target_relation)) %}
             {% endif %}
             {% do build_plan.append(dbt_dataengineers_materializations.snowflake_create_or_replace_table(target_relation, source_node)) %}
         {% elif auto_maintained %}
