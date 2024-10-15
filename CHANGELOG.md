@@ -1,9 +1,13 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.8.2 - Task Dependants
+
+* Added `enable_task_dependants` macro to allow for the enabling of dependant tasks
+
 ## 0.2.8.1 - Profile Targets
 
 * Added in the ability to set the profile targets for the materializations `stages`, `file_format`, `tables`
- - tables
+
 
 ## 0.2.8 - Secrets, Network Rules & UDF's
 

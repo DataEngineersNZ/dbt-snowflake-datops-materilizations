@@ -7,7 +7,7 @@ This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that 
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.8"
+    revision: "0.2.8.2"
 ```
 ----
 
