@@ -9,7 +9,7 @@
                     | selectattr("config.materialized", "equalto", "task")
                 %}
                 {% for node in matching_nodes %}
-                    {% set task_relation = api.Relation.create(database=target.database, schema=target.schema, identifier=node.name) %}
+                    {% set task_relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
                     {{ log("Enabling task and dependant tasks: " ~ task_relation, info=True) }}
                     {% call statement('enable_depenant_tasks') %}
                         {% do dbt_dataengineers_materializations.snowflake_resume_task_with_dependants_statement(task_relation) %}
