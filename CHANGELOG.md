@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.8.3 - Task Dependants
+
+* Bug fix for `enable_task_dependants`
+
 ## 0.2.8.2 - Task Dependants
 
 * Added `enable_task_dependants` macro to allow for the enabling of dependant tasks
