@@ -7,7 +7,7 @@ This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that 
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.8.2"
+    revision: "0.2.9"
 ```
 ----
 
@@ -22,6 +22,7 @@ Conatins the following materializations for Snowflake:
 * Tasks
 * Streams
 * Tables
+* Immutable Tables
 * User Defined Functions
 * Materialised View
 * Generic
@@ -268,7 +269,22 @@ on-run-start:
 | ----------------- | ----------------------------------------------------------------- | --------------- |
 | `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 
+## Immutable Tables
+
+An immutable table is a table that is created once and never updated. This is useful for tables that are used for reference data or for tables that are used for audit purposes.
+
+``` sql
+{{
+    config(materialized='immutable_table')
+}}
+```
+
+| property       | description                                  | required | default           |
+| -------------- | -------------------------------------------- | -------- | ----------------- |
+| `materialized` | specifies the type of materialisation to run | yes      | `immutable_table` |
+
 ## Stages
+A stage is a location where data files are stored. You can use a stage to load data into a table or to unload data from a table. You can also use a stage to copy data between tables in different databases.
 
 ```sql
 {{
@@ -312,6 +328,8 @@ example
   storage_integration = DATAOPS_TEMPLATE_EXTERNAL
 ```
 ## Secrets
+
+A secret is a secure object that stores sensitive data such as a password, OAuth token, or private key. Secrets are stored in Snowflake and can be referenced in SQL statements, stored procedures, and user-defined functions.
 
 Usage
 
@@ -363,6 +381,8 @@ Usage
 
 ## External Access Integration
 
+External access integrations are used to allow UDFs and stored procedures to access external network locations. External access integrations are used to store the credentials required to access the external network location.
+
 Usage
 
 ```sql
@@ -378,22 +398,24 @@ Usage
 }}
 ```
 
-| property                              | description                                                                                                                                                                                                                                                                                                                                                                                                                              | required | default                       |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |
-| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                                                                                                                                             | yes      | `external_access_integration` |
-| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                | no       | []                            |
-| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                    | no       | []                            |
-| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                    | yes      | []                            |
-| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                        | yes      | []                            |
-| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                      | no       | []                            |
-| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                          | no       | []                            |
-| `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
-| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                                                                                                                                                    | yes      | ['developers']                |
+| property                              | description                                                                                                                                                                                                                                                                                                                                                                                                                                           | required | default                       |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |
+| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                                                                                                                                                          | yes      | `external_access_integration` |
+| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                             | no       | []                            |
+| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                 | no       | []                            |
+| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                 | yes      | []                            |
+| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                     | yes      | []                            |
+| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                   | no       | []                            |
+| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                       | no       | []                            |
+| `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
+| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                                                                                                                                                                 | yes      | ['developers']                |
 
 > WARNING: A Role with `CREATE INTEGRATION` roles is required to deploy this object as its an Account level object. The deployment will switch roles when deploying locally to the specified in `role_for_creation`
 > The integration name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
 
 ## Generic
+
+Where the materialisation is not covered by the other materialisations, you can use the generic materialisation to create the object.
 
 Usage
 

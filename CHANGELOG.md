@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.9 - Immutable table
+
+* Added new materialization for `immutable_table` to create a table that is immutable but is part of the dbt flow
+
 ## 0.2.8.3 - Task Dependants
 
 * Bug fix for `enable_task_dependants`
