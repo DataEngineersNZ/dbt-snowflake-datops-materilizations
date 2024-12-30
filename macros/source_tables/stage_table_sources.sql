@@ -1,47 +1,49 @@
 
 {% macro stage_table_sources(enabled_targets=[target.name], enabled_profiles=[target.profile_name]) %}
-    {% if target.profile_name in enabled_profiles %}
-        {% if target.name in enabled_targets %}
-            {% if flags.WHICH == 'run' %}
-                {% set sources_to_stage_auto_maintained = [] %}
-                {% set externals_tables_to_stage_auto_maintained = [] %}
-                {% set sources_to_stage_no_maintenance = [] %}
-                {% set externals_tables_to_stage_no_maintenance = [] %}
+    {% if execute %}
+        {% if flags.WHICH == 'run' %}
+            {% if target.profile_name in enabled_profiles %}
+                {% if target.name in enabled_targets %}
+                    {% set sources_to_stage_auto_maintained = [] %}
+                    {% set externals_tables_to_stage_auto_maintained = [] %}
+                    {% set sources_to_stage_no_maintenance = [] %}
+                    {% set externals_tables_to_stage_no_maintenance = [] %}
 
-                {% set source_nodes = graph.sources.values() if graph.sources else [] %}
-                {% for node in source_nodes %}
-                    {% if node.external %}
-                        {% if node.external.auto_create_table %}
-                            {% if node.external.auto_maintained %}
-                                {% if node.external.location %}
-                                    {% do externals_tables_to_stage_auto_maintained.append(node) %}
+                    {% set source_nodes = graph.sources.values() if graph.sources else [] %}
+                    {% for node in source_nodes %}
+                        {% if node.external %}
+                            {% if node.external.auto_create_table %}
+                                {% if node.external.auto_maintained %}
+                                    {% if node.external.location %}
+                                        {% do externals_tables_to_stage_auto_maintained.append(node) %}
+                                    {% else %}
+                                        {% do sources_to_stage_auto_maintained.append(node) %}
+                                    {% endif %}
                                 {% else %}
-                                    {% do sources_to_stage_auto_maintained.append(node) %}
-                                {% endif %}
-                            {% else %}
-                                {% if node.external.location %}
-                                    {% do externals_tables_to_stage_no_maintenance.append(node) %}
-                                {% else %}
-                                    {% do sources_to_stage_no_maintenance.append(node) %}
+                                    {% if node.external.location %}
+                                        {% do externals_tables_to_stage_no_maintenance.append(node) %}
+                                    {% else %}
+                                        {% do sources_to_stage_no_maintenance.append(node) %}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                         {% endif %}
-                    {% endif %}
-                {% endfor %}
-                {# Initial run to cater for  #}
-                {% do log('===> ' ~ sources_to_stage_auto_maintained|length ~  ' Tables to be maintained by dbt <===', info = true) -%}
-                {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_auto_maintained, true, 'internal', true) %}
-                {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_auto_maintained, false, 'internal', true) %}
-                {% do log('===> ' ~ sources_to_stage_no_maintenance|length ~  ' Tables only to be created by dbt <===', info = true) -%}
-                {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_no_maintenance, true, 'internal', false) %}
-                {% do log('===> ' ~ externals_tables_to_stage_auto_maintained|length ~  ' Tables to be maintained by dbt (with external source) <===', info = true) -%}
-                {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_auto_maintained, true, 'external', true) %}
-                {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_auto_maintained, false, 'external', true) %}
-                {% do log('===> ' ~ externals_tables_to_stage_no_maintenance|length ~  ' Tables only to be created by dbt  (with external source) <===', info = true) -%}
-                {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_no_maintenance, true, 'external', false) %}
+                    {% endfor %}
+                    {# Initial run to cater for  #}
+                    {% do log('===> ' ~ sources_to_stage_auto_maintained|length ~  ' Tables to be maintained by dbt <===', info = true) -%}
+                    {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_auto_maintained, true, 'internal', true) %}
+                    {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_auto_maintained, false, 'internal', true) %}
+                    {% do log('===> ' ~ sources_to_stage_no_maintenance|length ~  ' Tables only to be created by dbt <===', info = true) -%}
+                    {% do dbt_dataengineers_materializations.stage_table_sources_plans(sources_to_stage_no_maintenance, true, 'internal', false) %}
+                    {% do log('===> ' ~ externals_tables_to_stage_auto_maintained|length ~  ' Tables to be maintained by dbt (with external source) <===', info = true) -%}
+                    {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_auto_maintained, true, 'external', true) %}
+                    {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_auto_maintained, false, 'external', true) %}
+                    {% do log('===> ' ~ externals_tables_to_stage_no_maintenance|length ~  ' Tables only to be created by dbt  (with external source) <===', info = true) -%}
+                    {% do dbt_dataengineers_materializations.stage_table_sources_plans(externals_tables_to_stage_no_maintenance, true, 'external', false) %}
+                {% else %}
+                    {% do log('tables creation not enabled for ' ~ target.name, info = true) %}
+                {% endif %}
             {% endif %}
-        {% else %}
-            {% do log('tables creation not enabled for ' ~ target.name, info = true) %}
         {% endif %}
     {% endif %}
 {% endmacro %}
