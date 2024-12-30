@@ -2,20 +2,18 @@
     {%- if execute -%}
         {% if target.name in enabled_targets -%}
             {% if flags.WHICH == 'run' %}
-                {{ log("START - Enabling task and dependant tasks for " ~ root_task , info=True) }}
                 {% set nodes = graph.nodes.values() if graph.nodes else [] %}
                  {% set matching_nodes = nodes
                     | selectattr("name", "equalto", root_task | lower)
                     | selectattr("config.materialized", "equalto", "task")
                 %}
                 {% for node in matching_nodes %}
-                    {% set task_relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
-                    {{ log("Enabling task and dependant tasks: " ~ task_relation, info=True) }}
+                    {% set task_name = target.database + "." + node.schema + "." + node.name %}
+                    {{ log("Enabling task and dependant tasks: " ~ task_name, info=True) }}
                     {% call statement('enable_depenant_tasks') %}
-                        {% do dbt_dataengineers_materializations.snowflake_resume_task_with_dependants_statement(task_relation) %}
+                        SELECT SYSTEM$TASK_DEPENDENTS_ENABLE('{{task_name}}');
                     {% endcall %}
                 {% endfor %}
-                {{ log("END - Enabling task and dependant tasks for " ~ root_task , info=True) }}
             {% endif %}
         {% endif %}
     {% endif %}
