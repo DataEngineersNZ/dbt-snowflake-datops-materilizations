@@ -1,5 +1,14 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.9.2 - User Defined Functions
+
+* Bug fix for `udf` materialization to cater for no imports being passed in even if an empty array is passed in
+
+## 0.2.9.2 - Dependant Tasks
+
+* fixed up enable task dependants to ensure they only run if being executed
+* fixed table staging to ensure they only run if being executed
+
 ## 0.2.9 - Immutable table
 
 * Added new materialization for `immutable_table` to create a table that is immutable but is part of the dbt flow

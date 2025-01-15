@@ -35,7 +35,12 @@
   {%- set external_access_integrations_refs = config.get('external_access_integrations_refs', default=[]) %}
   {%- set secrets = config.get('secrets', default=none) %}
   {%- set handler_name = config.get('handler_name', default=none) -%}
-  {%- set imports = config.get('imports', default=null) -%}
+  {%- set imports = config.get('imports', default=none) -%}
+  {% if imports is not none -%}
+    {% if imports|length == 0 %}
+        {% set imports = none %}
+    {% endif %}
+  {% endif %}
   /* end java / python*/
 
   {%- set null_input_behavior = config.get('null_input_behavior', 'called on null input')%}
