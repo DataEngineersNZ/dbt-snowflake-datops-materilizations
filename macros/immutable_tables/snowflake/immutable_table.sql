@@ -62,13 +62,11 @@
       {% call statement("main") %}
           comment on table {{ target_relation }} is $${{ model.description }}$$;
       {% endcall %}
-    {% endif %}
 
-    {% if model.config.persist_docs.columns %}
       {% for column in model.columns %}
         -- Add a comment to each column
        {% call statement("main") %}
-          comment on column {{ target_relation }}.{{ column.name }} is $${{ column.description }}$$;
+          comment on column {{ target_relation }}.{{ column }} is $${{ model.columns[column].description }}$$;
        {% endcall %}
       {% endfor %}
     {% endif %}
