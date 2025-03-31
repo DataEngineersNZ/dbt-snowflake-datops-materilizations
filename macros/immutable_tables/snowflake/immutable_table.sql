@@ -6,8 +6,7 @@
   {% set existing_relation = load_relation(this) %}
   
   {{ run_hooks(pre_hooks) }}
-
-{{ log("relation " ~ target_relation ~ " because it is a " ~ existing_relation.type ~ " and this model is a immutable table.", info=True) }}
+   
   {% if (existing_relation is none) %}
       {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, sql) %}
   {% elif existing_relation.is_view  %}
@@ -19,6 +18,8 @@
        {{ log("Dropping relation " ~ target_relation ~ " because it is a transiant table.") }}
       {% do adapter.drop_relation(existing_relation) %}
       {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, sql) %}
+  {% else %}
+       {# noop #}
   {% endif %}
 
   {% if build_sql %}
@@ -49,7 +50,7 @@
     {% endset %}
 
     {% set result = run_query(is_transient_query) %}
-    {% set is_transient = result.columns[0].values()[0] %}
+    {% set is_transient = result.columns[0].values()[0] == "YES" %}
 
     {{ return(is_transient) }}
 {% endmacro %}
