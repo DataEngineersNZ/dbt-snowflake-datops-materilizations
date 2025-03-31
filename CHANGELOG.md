@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.9.3
+
+* Bug fix for  `immutable_table` materialization to ensure that the table is created when moving from an incremental model to a table model
+* Bug fix for `immutable_table` materialization to ensure that the docs are correctly set up for the table
+
 ## 0.2.9.2 - User Defined Functions
 
 * Bug fix for `udf` materialization to cater for no imports being passed in even if an empty array is passed in
