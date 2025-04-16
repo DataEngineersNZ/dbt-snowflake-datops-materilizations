@@ -1,42 +1,69 @@
 {% materialization immutable_table, adapter='snowflake' -%}
 
-  {% set original_query_tag = set_query_tag() %}
+    {% set original_query_tag = set_query_tag() %}
+    {%- set is_transient = config.get('transient', default=false) -%}
+    {%- set if_not_exists = config.get('if_not_exists', default=true) -%}
+    {%- set create_or_replace = config.get('create_or_replace', default=false) -%}
+    {%- set data_retention_in_days = config.get('data_retention_in_days ', default=none) -%}
+    {%- set max_data_extension_in_days = config.get('max_data_extension_in_days ', default=none) -%}
+    {%- set enable_change_tracking = config.get('change_tracking', default=false) -%}
 
-  {% set target_relation = this %}
-  {% set existing_relation = load_relation(this) %}
-  
-  {{ run_hooks(pre_hooks) }}
-   
-  {% if (existing_relation is none) %}
-      {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, sql) %}
-  {% elif existing_relation.is_view  %}
-      {#-- Can't overwrite a view with a table - we must drop --#}
-      {{ log("Dropping relation " ~ target_relation ~ " because it is a " ~ existing_relation.type ~ " and this model is a immutable table.") }}
-      {% do adapter.drop_relation(existing_relation) %}
-      {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, sql) %}
-  {% elif dbt_dataengineers_materializations.check_if_transient(existing_relation.schema, existing_relation.identifier) %}
-       {{ log("Dropping relation " ~ target_relation ~ " because it is a transiant table.") }}
-      {% do adapter.drop_relation(existing_relation) %}
-      {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, sql) %}
-  {% else %}
-       {# noop #}
-  {% endif %}
 
-  {% if build_sql %}
-      {% call statement("main") %}
-          {{ build_sql }}
-      {% endcall %}
-  {% else %}
-    {{ store_result('main', 'SKIP') }}
-  {% endif %}
+    {% if create_or_replace %}
+        {% set create_statement = "create or replace" %}
+    {% else %}
+        {% set create_statement = "create" %}
+    {% endif %}
 
-  {{ run_hooks(post_hooks) }}
+    {% if is_transient %}
+        {% set create_statement = create_statement ~ " transient table"%}
+        {% set allow_transient_removal = false %}
+    {% else %}
+        {% set create_statement = create_statement ~ " table"%}
+        {% set allow_transient_removal = true %}
+    {% endif %}
 
-  {% do dbt_dataengineers_materializations.persist_table_docs(target_relation, model) %}
+    {% if if_not_exists and not create_or_replace  %}
+        {% set create_statement = create_statement ~ " if not exists"  %}
+    {% endif %}
 
-  {% do unset_query_tag(original_query_tag) %}
+    {% set target_relation = this %}
+    {% set existing_relation = load_relation(this) %}
 
-  {{ return({'relations': [target_relation]}) }}
+    {{ run_hooks(pre_hooks) }}
+
+    {% if (existing_relation is none) %}
+        {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
+    {% elif existing_relation.is_view  %}
+        {#-- Can't overwrite a view with a table - we must drop --#}
+        {{ log("Dropping relation " ~ target_relation ~ " because it is a " ~ existing_relation.type ~ " and this model is a immutable table.") }}
+        {% do adapter.drop_relation(existing_relation) %}
+        {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
+    {% elif dbt_dataengineers_materializations.check_if_transient(existing_relation.schema, existing_relation.identifier) %}
+        {% if allow_transient_removal %}
+            {{ log("Dropping relation " ~ target_relation ~ " because it is a transiant table.") }}
+            {% do adapter.drop_relation(existing_relation) %}
+            {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
+        {% endif %}
+    {% else %}
+        {# noop #}
+    {% endif %}
+
+    {% if build_sql %}
+        {% call statement("main") %}
+            {{ build_sql }}
+        {% endcall %}
+    {% else %}
+        {{ store_result('main', 'SKIP') }}
+    {% endif %}
+
+    {{ run_hooks(post_hooks) }}
+
+    {% do dbt_dataengineers_materializations.persist_table_docs(target_relation, model) %}
+
+    {% do unset_query_tag(original_query_tag) %}
+
+    {{ return({'relations': [target_relation]}) }}
 
 {%- endmaterialization %}
 
