@@ -32,7 +32,7 @@
 
     {{ run_hooks(pre_hooks) }}
 
-    {% if (existing_relation is none) %}
+    {% if (existing_relation is none or create_or_replace) %}
         {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
     {% elif existing_relation.is_view  %}
         {#-- Can't overwrite a view with a table - we must drop --#}
@@ -40,12 +40,13 @@
         {% do adapter.drop_relation(existing_relation) %}
         {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
     {% elif dbt_dataengineers_materializations.check_if_transient(existing_relation.schema, existing_relation.identifier) %}
-        {% if allow_transient_removal %}
-            {{ log("Dropping relation " ~ target_relation ~ " because it is a transiant table.") }}
+        {% if create_or_replace or allow_transient_removal %}
+            {{ log("Dropping relation " ~ target_relation ~ " because it is a transiant table.", info=True) }}
             {% do adapter.drop_relation(existing_relation) %}
             {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
         {% endif %}
     {% else %}
+       {{ log("ELSE " ~ target_relation, info=True) }}
         {# noop #}
     {% endif %}
 
