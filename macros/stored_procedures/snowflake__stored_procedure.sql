@@ -7,7 +7,7 @@
 */
 {%- materialization stored_procedure, adapter='snowflake' -%}
   {%- set preferred_language = config.get('preferred_language', default=SQL) -%}
-  {%- set parameters = config.get('parameters', default={}) -%}
+  {%- set parameters = config.get('parameters', default='') -%}
   {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
   {%- set return_type = config.get('return_type', default='varchar' ) -%}
   {%- set execute_as = config.get('execute_as', default='owner' ) -%}
