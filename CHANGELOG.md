@@ -1,5 +1,13 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.10.2
+
+* Bug fix for `stored_procedure` materialization to ensure that the parameters are correctly set up when no parameters are passed in
+
+## 0.2.10.1
+
+* Bug fix for `immutable_table` materialization to ensure that the table is created when moving from an incremental model to a table model
+
 ## 0.2.10
 
 * Modified `immutable_table` to allow transient tables to be created, allow change tracking to be enabled and allow for the setting of the retention period
