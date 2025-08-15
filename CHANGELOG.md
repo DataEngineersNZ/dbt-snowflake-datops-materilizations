@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+
+## 0.2.10.3
+
+* Bug fix for `materialized_view` macro to ensure that the correct SQL statements are generated for applying clustering and enabling automatic clustering
+
 ## 0.2.10.2
 
 * Bug fix for `stored_procedure` materialization to ensure that the parameters are correctly set up when no parameters are passed in
