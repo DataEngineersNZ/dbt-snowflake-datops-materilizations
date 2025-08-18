@@ -1,13 +1,13 @@
 This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that can be (re)used across dbt projects.
 
-> require-dbt-version: [">=1.7.0", "<2.0.0"]
+> require-dbt-version: [">=1.8.0", "<2.0.0"]
 ----
 
 ## Installation Instructions
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.10"
+    revision: "0.2.11"
 ```
 ----
 
