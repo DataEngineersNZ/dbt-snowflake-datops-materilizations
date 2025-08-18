@@ -138,7 +138,7 @@ Allow the use to specify a database for the object for the stream
 
 ## 0.1.3
 
-* Addition of Materialised Views
+* Addition of Materialized Views
 * Snowpipe - auto generated column for data is now payload instead of value
 
 ## 0.1.2.4

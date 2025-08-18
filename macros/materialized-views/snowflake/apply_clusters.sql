@@ -10,7 +10,7 @@
         {%- set cluster_by_string = none -%}
     {%- endif -%}
 
-    {% if cluster_by_string is not none and not temporary -%}
+    {% if cluster_by_string is not none -%}
         alter materialized view {{relation}} cluster by ({{cluster_by_string}});
     {%- endif -%}
 

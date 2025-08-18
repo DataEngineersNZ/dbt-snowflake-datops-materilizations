@@ -11,7 +11,7 @@
         {%- set cluster_by_string = none -%}
     {%- endif -%}
 
-    {% if enable_automatic_clustering and cluster_by_string is not none and not temporary  -%}
+    {% if enable_automatic_clustering and cluster_by_string is not none -%}
         alter materialized view {{relation}} resume recluster;
     {%- endif -%}
 {% endmacro %}
