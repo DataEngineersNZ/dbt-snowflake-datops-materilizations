@@ -1,9 +1,12 @@
 # dbt_dataengineers_materializations Changelog
 
 
-## 0.2.10.3
+## 0.2.11
 
 * Bug fix for `materialized_view` macro to ensure that the correct SQL statements are generated for applying clustering and enabling automatic clustering
+* Renamed `materialized_view` to `snowflake_materialized_view` to cater for `SnowflakeRelationType` issues discovered
+* Addition of `snowflake__alter_column_comment` macro which overrides the default column comment behavior for Snowflake and takes into account materialized views
+* Addition of `snowflake__alter_relation_comment` macro which overrides the default relation comment behavior for Snowflake and takes into account materialized views
 
 ## 0.2.10.2
 

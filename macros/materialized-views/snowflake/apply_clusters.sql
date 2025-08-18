@@ -11,7 +11,7 @@
     {%- endif -%}
 
     {% if cluster_by_string is not none and not temporary -%}
-        ALTER MATERIALIZED VIEW {{relation}} CLUSTER BY ({{cluster_by_string}});
+        alter materialized view {{relation}} cluster by ({{cluster_by_string}});
     {%- endif -%}
 
 {% endmacro %}

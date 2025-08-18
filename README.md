@@ -24,7 +24,7 @@ Conatins the following materializations for Snowflake:
 * Tables
 * Immutable Tables
 * User Defined Functions
-* Materialised View
+* Materialized View
 * Generic
 * Secrets
 * Network Rules
@@ -597,7 +597,7 @@ To create a Materialized View, you need to add the following config to the top o
 
 ```sql
 {{ 
-    config(materialized='materialized_view',
+    config(materialized='snowflake_materialized_view',
     secure = false,
     cluster_by="<<your list of fields>>",
     automatic_clustering = false)
@@ -622,3 +622,14 @@ Supported model configs: secure, cluster_by, automatic_clustering, persist_docs 
 
 > Failure during expansion of view 'TEST_MV': SQL compilation error: Materialized View TEST_MV is invalid.
 
+### Comments
+
+We have enhanced the `snowflake__alter_column_comment` and `snowflake__alter_relation_comment` macros to cater for comments on materialized views. This means that when you use these macros to alter comments on columns or relations within a materialized view, the changes will be properly applied.
+
+To be able to take advantage of these, please add the following to your `dbt_project.yml` file
+
+```yml
+dispatch:
+ - macro_namespace: dbt
+   search_order: [dbt_dataengineers_materializations, dbt]
+```

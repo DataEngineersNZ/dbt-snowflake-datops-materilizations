@@ -12,6 +12,6 @@
     {%- endif -%}
 
     {% if enable_automatic_clustering and cluster_by_string is not none and not temporary  -%}
-        ALTER MATERIALIZED VIEW {{relation}} RESUME RECLUSTER;
+        alter materialized view {{relation}} resume recluster;
     {%- endif -%}
 {% endmacro %}

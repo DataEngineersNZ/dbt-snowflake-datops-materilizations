@@ -1,11 +1,11 @@
-{% materialization materialized_view, adapter='snowflake' -%}
-
+{%- materialization snowflake_materialized_view, adapter='snowflake' -%}
   {% set original_query_tag = set_query_tag() %}
-
+  {% set identifier = model['alias'] %}
   {% set full_refresh_mode = (should_full_refresh()) %}
-
   {% set target_relation = this %}
-  {%- set existing_relation = adapter.get_relation(database=database, schema=schema, identifier=identifier) -%}
+
+  {% set existing_relation = adapter.get_relation(database=database, schema=schema, identifier=identifier) %}
+
   {% set statements = []%}
 
   {{ run_hooks(pre_hooks) }}
@@ -23,13 +23,13 @@
   {% endif %}
 
   {% if statements | length > 0 %}
-    {% for statement in statements %}
-        {% set statement = statement | trim %}
-        {% if statement == '' %}
+    {% for sql_statement in statements %}
+        {% set sql_statement = sql_statement | trim %}
+        {% if sql_statement == '' or sql_statement == 'NONE' %}
             {% continue %}
         {% endif %}
         {% call statement("main") %}
-            {{ statement }}
+            {{ sql_statement }}
         {% endcall %}
     {% endfor %}
   {% else %}
@@ -37,11 +37,11 @@
   {% endif %}
 
   {{ run_hooks(post_hooks) }}
-  
+
   {% do persist_docs(target_relation, model) %}
-  
+
   {% do unset_query_tag(original_query_tag) %}
 
   {{ return({'relations': [target_relation]}) }}
 
-{%- endmaterialization %}
+{%- endmaterialization -%}
