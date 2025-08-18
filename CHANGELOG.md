@@ -1,5 +1,13 @@
 # dbt_dataengineers_materializations Changelog
 
+
+## 0.2.11
+
+* Bug fix for `materialized_view` macro to ensure that the correct SQL statements are generated for applying clustering and enabling automatic clustering
+* Renamed `materialized_view` to `snowflake_materialized_view` to cater for `SnowflakeRelationType` issues discovered
+* Addition of `snowflake__alter_column_comment` macro which overrides the default column comment behavior for Snowflake and takes into account materialized views
+* Addition of `snowflake__alter_relation_comment` macro which overrides the default relation comment behavior for Snowflake and takes into account materialized views
+
 ## 0.2.10.2
 
 * Bug fix for `stored_procedure` materialization to ensure that the parameters are correctly set up when no parameters are passed in
@@ -130,7 +138,7 @@ Allow the use to specify a database for the object for the stream
 
 ## 0.1.3
 
-* Addition of Materialised Views
+* Addition of Materialized Views
 * Snowpipe - auto generated column for data is now payload instead of value
 
 ## 0.1.2.4
