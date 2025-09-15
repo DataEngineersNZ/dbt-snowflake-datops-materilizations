@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.11.2 - Stored Procedures
+
+* removed the `create_or_replace` parameter from the `stored_procedure` materialization as the create or alter doesnt allow for procedure body modifications
+* modified the `copy grants` parameter to default to true as this is the most common use case
+
 ## 0.2.11.1 - Stored Procedures
 
 * added in the ability to include `copy grants` when creating or replacing a stored procedure by adding the parameter `include_copy_grants` to the `stored_procedure` materialization

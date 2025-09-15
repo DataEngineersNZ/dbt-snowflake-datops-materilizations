@@ -11,8 +11,7 @@
   {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
   {%- set return_type = config.get('return_type', default='varchar' ) -%}
   {%- set execute_as = config.get('execute_as', default='owner' ) -%}
-  {%- set create_or_replace = config.get('create_or_replace', default=true) -%}
-  {%- set include_copy_grants = config.get('include_copy_grants', default=false) -%}
+  {%- set include_copy_grants = config.get('include_copy_grants', default=true) -%}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
@@ -28,19 +27,12 @@
   -- build model
 
   {% set copy_grants_statement = "" %}
-  {% if create_or_replace %}
-       {% set create_statement = "create or replace" %}
-       {% if include_copy_grants %}
-              {% set copy_grants_statement = "copy grants" %}
-       {% endif %}
-  {% else %}
-       {% set create_statement = "create or alter" %}
+  {% if include_copy_grants %}
+       {% set copy_grants_statement = "copy grants" %}
   {% endif %}
-  
-       
 
   {% call statement('main') -%}
-    {{ dbt_dataengineers_materializations.snowflake_create_stored_procedure_statement(target_relation, create_statement, copy_grants_statement, preferred_language, parameters, return_type, execute_as, sql) }}
+    {{ dbt_dataengineers_materializations.snowflake_create_stored_procedure_statement(target_relation, copy_grants_statement, preferred_language, parameters, return_type, execute_as, sql) }}
   {%- endcall %}
 
       --------------------------------------------------------------------------------------------------------------------
