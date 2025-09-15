@@ -7,7 +7,7 @@ This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that 
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.11"
+    revision: "0.2.11.1"
 ```
 ----
 
@@ -140,6 +140,8 @@ Usage
 | `parameters`         | specifes the parameters that needs to be passed when calling the stored procedure                        | no       |                    |
 | `return_type`        | specifies the stored procedure return type                                                               | no       | `varchar`          |
 | `execute_as`         | specifies the role that the stored procedure should be executed as. Options include `OWNER` and `CALLER` | no       | `owner`            |
+| `create_or_replace`  | specifies if the stored procedure should be created or replaced                                          | no       | `true`             |
+| `include_copy_grants`| specifies if the stored procedure should include copy grants when using create or replace                | no       | `false`            |
 ## File Formats
 
 Usage

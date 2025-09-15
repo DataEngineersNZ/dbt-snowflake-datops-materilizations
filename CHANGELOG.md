@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.11.1 - Stored Procedures
+
+* added in the ability to include `copy grants` when creating or replacing a stored procedure by adding the parameter `include_copy_grants` to the `stored_procedure` materialization
+* added in the ability to specify if `create or replace` or `create or alter` is used when creating a stored procedure by adding the parameter `create_or_replace` to the `stored_procedure` materialization. Default is `true` which uses `create or replace`
 
 ## 0.2.11
 
