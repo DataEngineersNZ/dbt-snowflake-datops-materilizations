@@ -204,7 +204,7 @@ Usage
 | `task_after`                       | specifies the task which this task should be run after                                                       | no *     |                 |
 | `stream_name`                      | specifies the stream which the task should run only if there is data available                               | no       |                 |
 | `error_integration`                | specifes the error integration to use                                                                        | no *     |                 |
-| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `360000`        |
+| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `3600000`        |
 | `suspend_after_number_of_failures` | Specifies the number of consecutive failed task runs after which the current task is suspended automatically | no       | `0` (no limit)  |
 | `enabled_targets`                  | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]` |
 
