@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.11.3 - File Formats
+
+* added in the ability to specify if `create or replace` or `create if not exists` is used when creating a file format by adding the parameter `create_or_replace` to the `file_format` materialization. Default is `true` which uses `create or replace`
+
 ## 0.2.11.2 - Stored Procedures
 
 * removed the `create_or_replace` parameter from the `stored_procedure` materialization as the create or alter doesnt allow for procedure body modifications

@@ -34,7 +34,7 @@ Conatins the following materializations for Snowflake:
 
 Usage
 ```sql
-{{ 
+{{
     config(materialized='monitorial',
     schedule  = '60 minute',
     diplay_message = 'your description of what is representing the alert',
@@ -97,7 +97,7 @@ For more information on Monitorial.io please visit [https://www.monitorial.io/](
 
 Usage
 ```sql
-{{ 
+{{
     config(materialized='alert',
     is_serverless = False,
     action='INSERT INTO yourtable (alert_id, alert_name, result) VALUES (1, ''smaple alert'', ''sample result'')',
@@ -123,7 +123,7 @@ Usage
 Usage
 
 ```sql
-{{ 
+{{
     config(materialized='stored_procedure',
     preferred_language = 'sql',
     override_name = 'SAMPLE_STORE_PROC',
@@ -147,14 +147,15 @@ Usage
 
 ```sql
 {{
-    config(materialized='file_format')
+    config(materialized='file_format', create_or_replace=true)
 }}
 ```
 
-| property             | description                                       | required | default       |
-| -------------------- | ------------------------------------------------- | -------- | ------------- |
-| `materialized`       | specifies the type of materialisation to run      | yes      | `file_format` |
-| `preferred_language` | describes the language the function is written in | no       | `sql`         |
+| property             | description                                                                                      | required | default       |
+| -------------------- | ------------------------------------------------------------------------------------------------ | -------- | ------------- |
+| `materialized`       | specifies the type of materialisation to run                                                     | yes      | `file_format` |
+| `preferred_language` | describes the language the function is written in                                                | no       | `sql`         |
+| `create_or_replace`  | specifies if `create or replace` or `create if not exists` is used when creating the file format | no       | `true`        |
 
 View [Snowflake `create file format` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html) for more information on the available options.
 
@@ -185,7 +186,7 @@ on-run-start:
 Usage
 
 ```sql
-{{ 
+{{
     config(materialized='task',
     is_serverless = true,
     warehouse_name_or_size = 'xsmall',
@@ -204,7 +205,7 @@ Usage
 | `task_after`                       | specifies the task which this task should be run after                                                       | no *     |                 |
 | `stream_name`                      | specifies the stream which the task should run only if there is data available                               | no       |                 |
 | `error_integration`                | specifes the error integration to use                                                                        | no *     |                 |
-| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `360000`        |
+| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `3600000`        |
 | `suspend_after_number_of_failures` | Specifies the number of consecutive failed task runs after which the current task is suspended automatically | no       | `0` (no limit)  |
 | `enabled_targets`                  | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]` |
 
@@ -331,7 +332,7 @@ example
   url='azure://xxxxxxdev.blob.core.windows.net/external-tables'
 {% else %}
   url='azure://xxxxxxsandbox.blob.core.windows.net/external-tables'
-{% endif %} 
+{% endif %}
   storage_integration = DATAOPS_TEMPLATE_EXTERNAL
 ```
 ## Secrets
@@ -405,17 +406,17 @@ Usage
 }}
 ```
 
-| property                              | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | required | default                       |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------- |
-| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | yes      | `external_access_integration` |
-| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                                                                                           | no       | []                            |
-| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                                                                                               | no       | []                            |
-| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                                                                                               | yes      | []                            |
-| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                                                                                                   | yes      | []                            |
-| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                                                                                                 | no       | []                            |
-| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                                                                                                     | no       | []                            |
-| `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
-| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                                                                                                                                                                                                                                               | yes      | ['developers']                |
+| property                              | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | required | default                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
+| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | yes      | `external_access_integration` |
+| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                                                                                                        | no       | []                            |
+| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                                                                                                            | no       | []                            |
+| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                                                                                                            | yes      | []                            |
+| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                                                                                                                | yes      | []                            |
+| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                                                                                                              | no       | []                            |
+| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                                                                                                                  | no       | []                            |
+| `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
+| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                                                                                                                                                                                                                                                            | yes      | ['developers']                |
 
 > WARNING: A Role with `CREATE INTEGRATION` roles is required to deploy this object as its an Account level object. The deployment will switch roles when deploying locally to the specified in `role_for_creation`
 > The integration name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
@@ -447,7 +448,7 @@ CREATE OR REPLACE api integration EXT_API_MONITORIAL_INTEGRATION
     azure_ad_application_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     api_allowed_prefixes = ('https://api.monitorial.io')
     API_KEY = 'xxxxxxxxxxxxxxxxxxxx'
-    enabled = true; 
+    enabled = true;
 ```
 
 ** Note: ** Integrations require `AccountAdmin` privilages which your `dbt` project should not be running under. It is recommended you adopt `Terraform` to deploy integrtaions out from
@@ -461,7 +462,7 @@ When creating a user defined function, you can use a number of different languag
 To create a user defined function using SQL, you need to add the following config to the top of your model:
 
 ```sql
-{{ 
+{{
     config(materialized='user_defined_function',
     preferred_language = 'sql',
     is_secure = false,
@@ -483,7 +484,7 @@ To create a user defined function using SQL, you need to add the following confi
 #### Parameters
 Parameters are placed into the template with no parsing. To include multiple parameters, use the syntax:
 ```sql
-{{ 
+{{
     config(materialized='user_defined_function',
     preferred_language = 'sql',
     is_secure = false,
@@ -499,7 +500,7 @@ Parameters are placed into the template with no parsing. To include multiple par
 To create a user defined function using Javascript, you need to add the following config to the top of your model:
 
 ```sql
-{{ 
+{{
     config(materialized='user_defined_function',
     preferred_language = 'javascript',
     is_secure = True,
@@ -523,7 +524,7 @@ To create a user defined function using Javascript, you need to add the followin
 To create a user defined function using Java, you need to add the following config to the top of your model:
 
 ```sql
-{{ 
+{{
     config(materialized='user_defined_function',
     preferred_language = 'java',
     is_secure = false,
@@ -561,7 +562,7 @@ To create a user defined function using Java, you need to add the following conf
 To create a user defined function using Python, you need to add the following config to the top of your model:
 
 ```sql
-{{ 
+{{
     config(materialized='user_defined_function',
     preferred_language = 'python',
     is_secure= false,
@@ -597,7 +598,7 @@ To create a Materialized View, you need to add the following config to the top o
 
 
 ```sql
-{{ 
+{{
     config(materialized='snowflake_materialized_view',
     secure = false,
     cluster_by="<<your list of fields>>",

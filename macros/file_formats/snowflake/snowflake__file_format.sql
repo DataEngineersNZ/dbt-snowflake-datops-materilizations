@@ -8,7 +8,14 @@
 {%- materialization file_format, adapter='snowflake' -%}
     {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
     {%- set identifier = model['alias'] -%}
+    {%- set create_or_replace = config.get('create_or_replace', default=true) -%}
     {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
+
+    {% if create_or_replace %}
+        {% set create_statement = "create or replace" %}
+    {% else %}
+        {% set create_statement = "create if not exists" %}
+    {% endif %}
 
     --------------------------------------------------------------------------------------------------------------------
 
@@ -22,7 +29,7 @@
 
     -- build model
     {%- call statement('main') -%}
-      {{ dbt_dataengineers_materializations.snowflake_create_fileformat_statement(target_relation, sql) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_fileformat_statement(create_or_replace, target_relation, sql) }}
     {%- endcall -%}
 
    --------------------------------------------------------------------------------------------------------------------
