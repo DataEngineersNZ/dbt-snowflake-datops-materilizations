@@ -12,9 +12,9 @@
     {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
     {% if create_or_replace %}
-        {% set create_statement = "create or replace" %}
+        {% set create_statement = "create or replace file format" %}
     {% else %}
-        {% set create_statement = "create if not exists" %}
+        {% set create_statement = "create file format if not exists" %}
     {% endif %}
 
     --------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.11.5 - File Formats
+
+* Fixed create or replace statements for file formats
+
 ## 0.2.11.4 - External Tables
 
 * updated `External Table` creation so that file formats and stages originate in the database where the external table should reside
