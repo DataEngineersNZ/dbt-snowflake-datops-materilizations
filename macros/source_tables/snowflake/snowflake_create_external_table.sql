@@ -3,8 +3,7 @@
     {%- set columns = source_node.columns.values() -%}
     {%- set external = source_node.external -%}
     {%- set partitions = external.partitions -%}
-    {%- set file_format = relation.database ~ "." ~ external.file_format -%}
-    {%- set is_csv = dbt_dataengineers_materializations.is_csv(file_format) -%}
+    {%- set is_csv = dbt_dataengineers_materializations.is_csv(external.file_format, relation.database) -%}
 
 {# https://docs.snowflake.net/manuals/sql-reference/sql/create-external-table.html #}
 {# This assumes you have already created an external stage #}
@@ -34,5 +33,5 @@
     {%- endif %}
     {% if external.pattern -%} PATTERN = '{{external.pattern}}' {%- endif %}
     {% if external.integration -%} INTEGRATION = '{{external.integration}}' {%- endif %}
-    FILE_FORMAT = {{file_format}}
+    FILE_FORMAT = {{relation.database ~ "." ~ external.file_format}}
 {% endmacro %}
