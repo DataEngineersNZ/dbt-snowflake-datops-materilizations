@@ -1,6 +1,6 @@
 # dbt_dataengineers_materializations Changelog
 
-## 0.2.11.5 - File Formats
+## 0.2.11.6 - File Formats
 
 * Fixed create or replace statements for file formats
 
