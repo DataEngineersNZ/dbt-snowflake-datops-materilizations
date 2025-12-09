@@ -29,7 +29,7 @@
 
     -- build model
     {%- call statement('main') -%}
-      {{ dbt_dataengineers_materializations.snowflake_create_fileformat_statement(create_or_replace, target_relation, sql) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_fileformat_statement(create_statement, target_relation, sql) }}
     {%- endcall -%}
 
    --------------------------------------------------------------------------------------------------------------------
