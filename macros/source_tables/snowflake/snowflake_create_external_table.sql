@@ -1,10 +1,10 @@
 {% macro snowflake_create_external_table(relation, source_node) %}
-    
+
     {%- set columns = source_node.columns.values() -%}
     {%- set external = source_node.external -%}
     {%- set partitions = external.partitions -%}
-
-    {%- set is_csv = dbt_dataengineers_materializations.is_csv(external.file_format) -%}
+    {%- set file_format = relation.database ~ "." ~ external.file_format -%}
+    {%- set is_csv = dbt_dataengineers_materializations.is_csv(file_format) -%}
 
 {# https://docs.snowflake.net/manuals/sql-reference/sql/create-external-table.html #}
 {# This assumes you have already created an external stage #}
@@ -28,11 +28,11 @@
         {%- endif -%}
     )
     {% if partitions %} PARTITION BY ({{partitions|map(attribute='name')|join(', ')}}) {% endif %}
-    LOCATION = {{external.location}} {# stage #}
+    LOCATION =  {{external.location | replace("@", "@" ~ relation.database ~ ".")}} {# stage #}
     {% if external.auto_refresh in (true, false) -%}
       AUTO_REFRESH = {{external.auto_refresh}}
     {%- endif %}
     {% if external.pattern -%} PATTERN = '{{external.pattern}}' {%- endif %}
     {% if external.integration -%} INTEGRATION = '{{external.integration}}' {%- endif %}
-    FILE_FORMAT = {{external.file_format}}
+    FILE_FORMAT = {{file_format}}
 {% endmacro %}
