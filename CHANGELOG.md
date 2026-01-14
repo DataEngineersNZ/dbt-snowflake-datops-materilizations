@@ -1,6 +1,6 @@
 # dbt_dataengineers_materializations Changelog
 
-## 0.2.11.7 - File Formats
+## 0.2.11.8 - File Formats
 
 * Fixed issue with file format generation when running as a prehook
 
