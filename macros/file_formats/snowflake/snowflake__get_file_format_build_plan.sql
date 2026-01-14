@@ -9,7 +9,7 @@
             identifier = source_node.name
         ) %}
 
-        {%- set create_or_replace = source_node.config.get('create_or_replace', default=true) -%}
+        {%- set create_or_replace = source_node.config.get('create_or_replace', true) -%}
         {% if create_or_replace %}
             {% set create_statement = "create or replace file format" %}
         {% else %}
