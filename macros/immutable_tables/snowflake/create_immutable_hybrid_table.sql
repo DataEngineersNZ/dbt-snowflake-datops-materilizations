@@ -5,7 +5,7 @@
 {{ create_statement }} {{ target_relation.include(database=(not temporary), schema=(not temporary)) }} (
 {%- if columns -%}
     {%- for column in columns %}
-        {%- set column_description = column.description | replace("'","''") -%}
+        {%- set column_description = column.description | default('') | replace("'","''") -%}
         {%- set primary_key = column.name in primary_keys -%}
         {%- set is_unique = column.get("config", {}).get("meta", {}).get('is_unique', false) -%}
         {%- if primary_key -%}
@@ -19,9 +19,9 @@
                 {%- set auto_increment_statement = "" -%}
             {% endif %}
             {% if primary_keys | length == 1 %}
-                {%- set additional_column_detail  = "NOT NULL " ~ auto_increment_statement ~ " PRIMARY KEY COMMENT '" ~ column_description ~ "'" -%}
+                {%- set additional_column_detail  = "NOT NULL" ~ (" " ~ auto_increment_statement if auto_increment else "") ~ " PRIMARY KEY COMMENT '" ~ column_description ~ "'" -%}
             {% else %}
-                {%- set additional_column_detail  = "NOT NULL " ~ auto_increment_statement ~ " COMMENT '" ~ column_description ~ "'" -%}
+                {%- set additional_column_detail  = "NOT NULL" ~ (" " ~ auto_increment_statement if auto_increment else "") ~ " COMMENT '" ~ column_description ~ "'" -%}
             {% endif %}
         {%- elif is_unique -%}
             {%- set additional_column_detail = "UNIQUE COMMENT '" ~ column_description ~ "'" -%}
