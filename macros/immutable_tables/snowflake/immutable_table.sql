@@ -7,7 +7,7 @@
     {%- set data_retention_in_days = config.get('data_retention_in_days ', default=none) -%}
     {%- set max_data_extension_in_days = config.get('max_data_extension_in_days ', default=none) -%}
     {%- set enable_change_tracking = config.get('change_tracking', default=false) -%}
-    {%- set is_hybrid = config.get('hybrid', default=false) -%}
+    {%- set is_hybrid = config.get('is_hybrid', default=false) -%}
     {%- set grant_config = config.get('grants') %}
 
     {% if create_or_replace %}
@@ -38,7 +38,7 @@
 
     {% if (existing_relation is none or create_or_replace) %}
         {% if is_hybrid %}
-            {% set build_sql = dbt_dataengineers_materializations.create_immutable_hybrid_table(target_relation, create_statement) %}
+            {% set build_sql = dbt_dataengineers_materializations.create_immutable_hybrid_table(target_relation, create_statement, model) %}
         {% else %}
             {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
         {% endif %}

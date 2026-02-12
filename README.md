@@ -7,7 +7,7 @@ This [dbt](https://github.com/dbt-labs/dbt) package contains materizations that 
 Add the following to your packages.yml file
 ```
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "0.2.11.8"
+    revision: "0.2.12"
 ```
 ----
 
@@ -43,7 +43,7 @@ Usage
 }}
 ```
 | property                 | description                                                                                                  | required | default                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------------------- |
+|--------------------------|--------------------------------------------------------------------------------------------------------------|----------|----------------------------------------------|
 | `materialized`           | specifies the type of materialisation to run                                                                 | yes      | `monitorial`                                 |
 | `is_serverless`          | specifies if the warehouse should be serverless (task object) or dedicated (alert object)                    | no *     | `False`                                      |
 | `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no *     | `pc_monitorial_wh`                           |
@@ -108,7 +108,7 @@ Usage
 }}
 ```
 | property          | description                                                                                      | required | default         |
-| ----------------- | ------------------------------------------------------------------------------------------------ | -------- | --------------- |
+|-------------------|--------------------------------------------------------------------------------------------------|----------|-----------------|
 | `materialized`    | specifies the type of materialisation to run                                                     | yes      | `alert`         |
 | `warehouse_size`  | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`      |
 | `schedule`        | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`     |
@@ -133,7 +133,7 @@ Usage
 ```
 
 | property              | description                                                                                              | required | default            |
-| --------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------------------ |
+|-----------------------|----------------------------------------------------------------------------------------------------------|----------|--------------------|
 | `materialized`        | specifies the type of materialisation to run                                                             | yes      | `stored_procedure` |
 | `preferred_language`  | describes the language the stored procedure is written in                                                | no       | `sql`              |
 | `override_name`       | specifies the name of the stored procedure if this is an overrider stored procedure                      | no       | `model['alias']`   |
@@ -152,7 +152,7 @@ Usage
 ```
 
 | property             | description                                                                                      | required | default       |
-| -------------------- | ------------------------------------------------------------------------------------------------ | -------- | ------------- |
+|----------------------|--------------------------------------------------------------------------------------------------|----------|---------------|
 | `materialized`       | specifies the type of materialisation to run                                                     | yes      | `file_format` |
 | `preferred_language` | describes the language the function is written in                                                | no       | `sql`         |
 | `create_or_replace`  | specifies if `create or replace` or `create if not exists` is used when creating the file format | no       | `true`        |
@@ -179,7 +179,7 @@ on-run-start:
 
 
 | parameter         | description                                                       | default         |
-| ----------------- | ----------------------------------------------------------------- | --------------- |
+|-------------------|-------------------------------------------------------------------|-----------------|
 | `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 ## Tasks
 
@@ -197,7 +197,7 @@ Usage
 ```
 
 | property                           | description                                                                                                  | required | default         |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
+|------------------------------------|--------------------------------------------------------------------------------------------------------------|----------|-----------------|
 | `materialized`                     | specifies the type of materialisation to run                                                                 | yes      | `task`          |
 | `is_serverless`                    | specifies if the warehouse should be serverless or dedicated                                                 | no       | `true`          |
 | `warehouse_name_or_size`           | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no       | `xsmall`        |
@@ -205,7 +205,7 @@ Usage
 | `task_after`                       | specifies the task which this task should be run after                                                       | no *     |                 |
 | `stream_name`                      | specifies the stream which the task should run only if there is data available                               | no       |                 |
 | `error_integration`                | specifes the error integration to use                                                                        | no *     |                 |
-| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `3600000`        |
+| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `3600000`       |
 | `suspend_after_number_of_failures` | Specifies the number of consecutive failed task runs after which the current task is suspended automatically | no       | `0` (no limit)  |
 | `enabled_targets`                  | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]` |
 
@@ -232,7 +232,7 @@ Usage
 ```
 
 | property                 | description                                                                                     | required | default  |
-| ------------------------ | ----------------------------------------------------------------------------------------------- | -------- | -------- |
+|--------------------------|-------------------------------------------------------------------------------------------------|----------|----------|
 | `materialized`           | specifies the type of materialisation to run                                                    | yes      | `stream` |
 | `source_database`        | specifies the source database if different to the current location                              | no       |          |
 | `source_database_prefix` | specifies the varaible prefix to use for the database name if different to the current location | no       |          |
@@ -254,7 +254,7 @@ Usage
 ```
 
 | property            | description                                               | required | default |
-| ------------------- | --------------------------------------------------------- | -------- | ------- |
+|---------------------|-----------------------------------------------------------|----------|---------|
 | `auto_create_table` | specifies if the table should be created by dbt or not    | yes      | `false` |
 | `auto_maintained`   | specifies if the table should be maintianed by dbt or not | no       | `false` |
 
@@ -268,7 +268,7 @@ on-run-start:
 ```
 
 | parameter         | description                                                       | default         |
-| ----------------- | ----------------------------------------------------------------- | --------------- |
+|-------------------|-------------------------------------------------------------------|-----------------|
 | `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 
 ## Immutable Tables
@@ -281,15 +281,46 @@ An immutable table is a table that is created once and never updated. This is us
 }}
 ```
 
-| property                     | description                                                                                                                                                                           | required | default           |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------- |
-| `materialized`               | specifies the type of materialisation to run                                                                                                                                          | yes      | `immutable_table` |
-| `is_transient`               | specifies if the table should be created as transient                                                                                                                                 | no       | `false`           |
-| `if_not_exists`              | specifies if the table should only be created if it doesnt exist                                                                                                                      | no       | `true`            |
-| `create_or_replace`          | specifies if the table should be created or replaced                                                                                                                                  | no       | `false`           |
-| `data_retention_in_days`     | Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table                                     | no       |                   |
-| `max_data_extension_in_days` | Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the table to prevent streams on the table from becoming stale | no       |                   |
-| `enable_change_tracking`     | Specifies whether to enable change tracking on the table                                                                                                                              | no       | `false`           |
+| property                     | description                                                                                                                                                                                                                 | required | default           |
+|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------------|
+| `materialized`               | specifies the type of materialisation to run                                                                                                                                                                                | yes      | `immutable_table` |
+| `is_transient`               | specifies if the table should be created as transient (ignored if is_hybrid is set to true)                                                                                                                                 | no       | `false`           |
+| `if_not_exists`              | specifies if the table should only be created if it doesnt exist                                                                                                                                                            | no       | `true`            |
+| `create_or_replace`          | specifies if the table should be created or replaced                                                                                                                                                                        | no       | `false`           |
+| `data_retention_in_days`     | Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table (ignored if is_hybrid is set to true)                                     | no       |                   |
+| `max_data_extension_in_days` | Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the table to prevent streams on the table from becoming stale (ignored if is_hybrid is set to true) | no       |                   |
+| `enable_change_tracking`     | Specifies whether to enable change tracking on the table  (ignored if is_hybrid is set to true)                                                                                                                             | no       | `false`           |
+| `is_hybrid`                  | Specifies if the table should be created as a hybrid table or not                                                                                                                                                           | no       | `false`           |
+
+## Immutable Tables (Hybrid)
+A hybrid immutable table is a table that is created once and never updated. This is useful for tables that are used for reference data, tables that are used for audit purposes or where you will be populating via other mechanisms such as tasks or stored procedures.
+
+``` sql
+{{
+    config(
+        materialized='immutable_table',
+        is_hybrid=true,
+        meta={'primary_keys': ['col_1']})
+}}
+```
+
+| property            | description                                                       | required | default           |
+|---------------------|-------------------------------------------------------------------|----------|-------------------|
+| `materialized`      | specifies the type of materialisation to run                      | yes      | `immutable_table` |
+| `if_not_exists`     | specifies if the table should only be created if it doesnt exist  | no       | `true`            |
+| `create_or_replace` | specifies if the table should be created or replaced              | no       | `false`           |
+| `is_hybrid`         | Specifies if the table should be created as a hybrid table or not | yes      | `false`           |
+| `primary_keys`      | Specifies which columns make up the primary key for the table     | yes      | `[]`              |
+
+To specify a column is `unique` apply the `is_unique=true` via the column meta node
+By default the primary key will be set to `auto_increment=true` to display set `auto_increment=false` in the column meta node
+To specify how the `auto_increment` works you can specify the following
+
+| property                   | default |
+|----------------------------|---------|
+| `auto_increment_start`     | `1`     |
+| `auto_increment_increment` | `1`     |
+| `auto_increment_order`     | `order` |
 
 ## Stages
 A stage is a location where data files are stored. You can use a stage to load data into a table or to unload data from a table. You can also use a stage to copy data between tables in different databases.
@@ -301,7 +332,7 @@ A stage is a location where data files are stored. You can use a stage to load d
 ```
 
 | property       | description                                  | required | default |
-| -------------- | -------------------------------------------- | -------- | ------- |
+|----------------|----------------------------------------------|----------|---------|
 | `materialized` | specifies the type of materialisation to run | yes      | `stage` |
 
 View [Snowflake `create stage` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html) for more information on the available options.
@@ -314,7 +345,7 @@ on-run-start:
 ```
 
 | parameter         | description                                                       | default         |
-| ----------------- | ----------------------------------------------------------------- | --------------- |
+|-------------------|-------------------------------------------------------------------|-----------------|
 | `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 
 [Storage Integrations](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.html) need to be maintained separately as you require `Create integration` privilage on the role you are using to set those up and they are global to snowflake instead of per database.
@@ -351,7 +382,7 @@ Usage
 }}
 ```
 | property                          | description                                                                                                                                                                    | Type   | Applicable For                                              | required | default          |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ----------------------------------------------------------- | -------- | ---------------- |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|-------------------------------------------------------------|----------|------------------|
 | `materialized`                    | specifies the type of materialisation to run                                                                                                                                   | string |                                                             | yes      | `secret`         |
 | `secret_type`                     | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE`                                  | string |                                                             | yes      | `GENERIC_STRING` |
 | `secret_string_variable`          | Specifies a variable name which contains the string to store in the secret.                                                                                                    | string | `GENERIC_STRING`                                            | no       |                  |
@@ -381,7 +412,7 @@ Usage
 ```
 
 | property       | description                                                                                                                                                               | required | default        |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------- |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------------|
 | `materialized` | specifies the type of materialisation to run                                                                                                                              | yes      | `network_rule` |
 | `rule_type`    | Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type Options include `IPV4`, `AWSVPCEID`, `AZURELINKID`, `HOST_PORT` | yes      | `HOST_PORT`    |
 | `mode`         | Specifies what is restricted by the network rule. Options include `INGRESS`, `INTERNAL_STAGE`, `EGRESS`                                                                   | yes      | `INGRESS`      |
@@ -406,15 +437,15 @@ Usage
 }}
 ```
 
-| property                              | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | required | default                       |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ----------------------------- |
-| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | yes      | `external_access_integration` |
-| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                                                                                                        | no       | []                            |
-| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                                                                                                                                                                                                                                                                                                                                                            | no       | []                            |
-| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                                                                                                            | yes      | []                            |
-| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                                                                                                                                                                                                                                                                                                                                                | yes      | []                            |
-| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                                                                                                              | no       | []                            |
-| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.                                                                                                                                                                                                                                                                                                                                  | no       | []                            |
+| property                              | description                                                                                                                                                                                                         | required | default                       |
+|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------------------------|
+| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                        | yes      | `external_access_integration` |
+| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                           | no       | []                            |
+| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                               | no       | []                            |
+| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                               | yes      | []                            |
+| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                   | yes      | []                            |
+| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration. | no       | []                            |
+| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.     | no       | []                            |
 | `role_for_creation`                   | Specifies the role which has the `Create integration role granted to it | yes | `dataops_admin`                                                                                                |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          | |          |                               |
 | `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                                                                                                                                                                                                                                                                                                                                                            | yes      | ['developers']                |
 
@@ -434,7 +465,7 @@ Usage
 ```
 
 | property       | description                                  | required | default   |
-| -------------- | -------------------------------------------- | -------- | --------- |
+|----------------|----------------------------------------------|----------|-----------|
 | `materialized` | specifies the type of materialisation to run | yes      | `generic` |
 
 example
@@ -472,7 +503,7 @@ To create a user defined function using SQL, you need to add the following confi
 ```
 
 | property             | description                                         | required | default                 |
-| -------------------- | --------------------------------------------------- | -------- | ----------------------- |
+|----------------------|-----------------------------------------------------|----------|-------------------------|
 | `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
 | `preferred_language` | specifies the landuage for the UDF function         | no       | `SQL`                   |
 | `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
@@ -510,7 +541,7 @@ To create a user defined function using Javascript, you need to add the followin
 ```
 
 | property              | description                                                     | required | default                 |
-| --------------------- | --------------------------------------------------------------- | -------- | ----------------------- |
+|-----------------------|-----------------------------------------------------------------|----------|-------------------------|
 | `materialized`        | specifies the type of materialisation to run                    | yes      | `user_defined_function` |
 | `preferred_language`  | specifies the landuage for the UDF function                     | yes      | `javascript`            |
 | `is_secure`           | specifies the function whether it is secure or not?             | no       | `false`                 |
@@ -538,7 +569,7 @@ To create a user defined function using Java, you need to add the following conf
 ```
 
 | property                           | description                                                                   | type    | required | default                 |
-| ---------------------------------- | ----------------------------------------------------------------------------- | ------- | -------- | ----------------------- |
+|------------------------------------|-------------------------------------------------------------------------------|---------|----------|-------------------------|
 | `materialized`                     | specifies the type of materialisation to run                                  | string  | yes      | `user_defined_function` |
 | `preferred_language`               | specifies the landuage for the UDF function                                   | string  | yes      | `java`                  |
 | `is_secure`                        | specifies the function whether it is secure or not?                           | boolean | no       | `false`                 |
@@ -577,7 +608,7 @@ To create a user defined function using Python, you need to add the following co
 ```
 
 | property                       | description                                                       | Type    | required | default                 |
-| ------------------------------ | ----------------------------------------------------------------- | ------- | -------- | ----------------------- |
+|--------------------------------|-------------------------------------------------------------------|---------|----------|-------------------------|
 | `materialized`                 | specifies the type of materialisation to run                      | string  | yes      | `user_defined_function` |
 | `preferred_language`           | specifies the landuage for the UDF function                       | string  | yes      | `python`                |
 | `is_secure`                    | specifies the function whether it is secure or not?               | boolean | no       | `false`                 |
@@ -607,7 +638,7 @@ To create a Materialized View, you need to add the following config to the top o
 ```
 
 | property               | description                                                                 | required | default             |
-| ---------------------- | --------------------------------------------------------------------------- | -------- | ------------------- |
+|------------------------|-----------------------------------------------------------------------------|----------|---------------------|
 | `materialized`         | specifies the type of materialisation to run                                | yes      | `materialized_view` |
 | `secure`               | specifies that the view is secure.                                          | no       | false               |
 | `cluster_by`           | specifies an expression on which to cluster the materialized view.          | no       | none                |
