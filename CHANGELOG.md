@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.12   - Immutable Hybrid Tables
+
+* Modified `Immutable` materialization to allow for the creation of hybrid tables
+
 ## 0.2.11.8 - File Formats
 
 * Fixed issue with file format generation when running as a prehook
