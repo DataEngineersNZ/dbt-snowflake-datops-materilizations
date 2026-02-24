@@ -331,9 +331,10 @@ A stage is a location where data files are stored. You can use a stage to load d
 }}
 ```
 
-| property       | description                                  | required | default |
-|----------------|----------------------------------------------|----------|---------|
-| `materialized` | specifies the type of materialisation to run | yes      | `stage` |
+| property            | description                                          | required | default |
+|---------------------|------------------------------------------------------|----------|---------|
+| `materialized`      | specifies the type of materialisation to run         | yes      | `stage` |
+| `create_or_replace` | specifies if the stage should be created or replaced | no       | `false` |
 
 View [Snowflake `create stage` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html) for more information on the available options.
 

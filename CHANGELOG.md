@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.12.1 - Stages
+
+* Modified `Stage` materialization to allow for the the `create or replace` of a stage
+
 ## 0.2.12   - Immutable Hybrid Tables
 
 * Modified `Immutable` materialization to allow for the creation of hybrid tables
