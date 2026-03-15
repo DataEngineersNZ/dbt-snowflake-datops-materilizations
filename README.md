@@ -44,7 +44,7 @@ Usage
 ```
 | property                 | description                                                                                                  | required | default                                      |
 |--------------------------|--------------------------------------------------------------------------------------------------------------|----------|----------------------------------------------|
-| `materialized`           | specifies the type of materialisation to run                                                                 | yes      | `monitorial`                                 |
+| `materialized`           | specifies the type of materialization to run                                                                 | yes      | `monitorial`                                 |
 | `is_serverless`          | specifies if the warehouse should be serverless (task object) or dedicated (alert object)                    | no *     | `False`                                      |
 | `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no *     | `pc_monitorial_wh`                           |
 | `object_type`            | specifies the type of object to be created (options are `alert` or `task`)                                   | no *     | `alert`                                      |

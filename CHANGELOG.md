@@ -2,7 +2,7 @@
 
 ## 0.2.12.1 - Stages
 
-* Modified `Stage` materialization to allow for the the `create or replace` of a stage
+* Modified `Stage` materialization to allow for the `create or replace` of a stage
 
 ## 0.2.12   - Immutable Hybrid Tables
 
