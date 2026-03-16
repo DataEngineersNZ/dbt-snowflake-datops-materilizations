@@ -30,6 +30,12 @@ Conatins the following materializations for Snowflake:
 * Network Rules
 * External Access Integration
 
+For Snowflake Agent Materalization add the following to your packages.yml file
+```
+  - git: https://github.com/monitorial-io/dbt-snowflake-cortex.git
+    revision: "1.0.0"
+```
+
 ## Monitoral Alerts
 
 Usage
@@ -44,7 +50,7 @@ Usage
 ```
 | property                 | description                                                                                                  | required | default                                      |
 |--------------------------|--------------------------------------------------------------------------------------------------------------|----------|----------------------------------------------|
-| `materialized`           | specifies the type of materialisation to run                                                                 | yes      | `monitorial`                                 |
+| `materialized`           | specifies the type of materialization to run                                                                 | yes      | `monitorial`                                 |
 | `is_serverless`          | specifies if the warehouse should be serverless (task object) or dedicated (alert object)                    | no *     | `False`                                      |
 | `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no *     | `pc_monitorial_wh`                           |
 | `object_type`            | specifies the type of object to be created (options are `alert` or `task`)                                   | no *     | `alert`                                      |
@@ -331,9 +337,10 @@ A stage is a location where data files are stored. You can use a stage to load d
 }}
 ```
 
-| property       | description                                  | required | default |
-|----------------|----------------------------------------------|----------|---------|
-| `materialized` | specifies the type of materialisation to run | yes      | `stage` |
+| property            | description                                          | required | default |
+|---------------------|------------------------------------------------------|----------|---------|
+| `materialized`      | specifies the type of materialisation to run         | yes      | `stage` |
+| `create_or_replace` | specifies if the stage should be created or replaced | no       | `false` |
 
 View [Snowflake `create stage` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html) for more information on the available options.
 

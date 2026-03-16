@@ -18,11 +18,15 @@ macros:
   - name: default__get_stage_build_plan
     docs:
       show: false
-      
+
   - name: snowflake__get_stage_build_plan
     docs:
       show: false
 
-  - name: snowflake_create_stages_statement
+  - name: snowflake_create_or_replace_stage_statement
+    docs:
+      show: false
+
+  - name: snowflake_create_stages_if_not_exist_statement
     docs:
       show: false
