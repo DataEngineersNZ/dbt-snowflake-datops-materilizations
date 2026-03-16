@@ -1,5 +1,9 @@
 # dbt_dataengineers_materializations Changelog
 
+## 0.2.13 - Snowflake Agents
+
+* added in new materalization `agent` which allows you to create and manage Snowflake Cortex Agents
+
 ## 0.2.12.1 - Stages
 
 * Modified `Stage` materialization to allow for the `create or replace` of a stage
