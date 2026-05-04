@@ -5,12 +5,12 @@
 */
 
 {%- materialization alert, adapter='snowflake' -%}
-  {%- set is_serverless = dbt_dataengineers_materializations.config_meta_get('is_serverless', false) -%}
-  {%- set warehouse_size = dbt_dataengineers_materializations.config_meta_get('warehouse_size', 'alert_wh') -%}
-  {%- set schedule = dbt_dataengineers_materializations.config_meta_get('schedule', '60 MINUTE') -%}
-  {%- set action = dbt_dataengineers_materializations.config_meta_get('action', none) -%}
+  {%- set is_serverless = config_meta_get('is_serverless', false) -%}
+  {%- set warehouse_size = config_meta_get('warehouse_size', 'alert_wh') -%}
+  {%- set schedule = config_meta_get('schedule', '60 MINUTE') -%}
+  {%- set action = config_meta_get('action', none) -%}
   {%- set identifier = model['alias'] -%}
-  {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
+  {%- set enabled_targets = config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
 
   -- setup
@@ -21,13 +21,13 @@
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
   {% call statement('main') -%}
-    {{ dbt_dataengineers_materializations.snowflake_create_or_replace_alert_statement(target_relation, warehouse_size, schedule, action, sql) }}
+    {{ snowflake_create_or_replace_alert_statement(target_relation, warehouse_size, schedule, action, sql) }}
   {%- endcall %}
   {%- if is_enabled == false %}
     {% if is_serverless == false %}
-      {{ dbt_dataengineers_materializations.snowflake_suspend_alert_statement(target_relation) }}
+      {{ snowflake_suspend_alert_statement(target_relation) }}
     {% else %}
-      {{ dbt_dataengineers_materializations.snowflake_suspend_alert_task_statement(target_relation) }}
+      {{ snowflake_suspend_alert_task_statement(target_relation) }}
     {% endif %}
   {% endif %}
 

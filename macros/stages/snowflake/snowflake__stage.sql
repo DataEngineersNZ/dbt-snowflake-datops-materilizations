@@ -8,7 +8,7 @@
 {%- materialization stage, adapter='snowflake' -%}
     {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
     {%- set identifier = model['alias'] -%}
-    {%- set create_or_replace = dbt_dataengineers_materializations.config_meta_get('create_or_replace', false) -%}
+    {%- set create_or_replace = config_meta_get('create_or_replace', false) -%}
     {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
     --------------------------------------------------------------------------------------------------------------------
@@ -25,9 +25,9 @@
     -- build model
     {%- call statement('main') -%}
       {% if create_or_replace %}
-        {{ dbt_dataengineers_materializations.snowflake_create_or_replace_stage_statement(target_relation, sql) }}
+        {{ snowflake_create_or_replace_stage_statement(target_relation, sql) }}
       {% else %}
-        {{ dbt_dataengineers_materializations.snowflake_create_stages_if_not_exist_statement(target_relation, sql) }}
+        {{ snowflake_create_stages_if_not_exist_statement(target_relation, sql) }}
       {% endif %}
     {%- endcall -%}
 

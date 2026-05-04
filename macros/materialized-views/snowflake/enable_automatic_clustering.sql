@@ -1,6 +1,6 @@
 {% macro enable_automatic_clustering(relation, config) -%}
     {%- set cluster_by_keys = config.get('cluster_by', none) -%}
-    {%- set enable_automatic_clustering = dbt_dataengineers_materializations.config_meta_get('automatic_clustering', false) -%}
+    {%- set enable_automatic_clustering = config_meta_get('automatic_clustering', false) -%}
 
     {%- if cluster_by_keys is not none and cluster_by_keys is string -%}
         {%- set cluster_by_keys = [cluster_by_keys] -%}

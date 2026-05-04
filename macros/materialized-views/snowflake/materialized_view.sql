@@ -15,9 +15,9 @@
   {% endif %}
 
   {% if (existing_relation is none or full_refresh_mode or existing_relation.is_table) %}
-      {% do statements.append(dbt_dataengineers_materializations.create_materialized_view_as(target_relation, sql, config)) %}
-      {% do statements.append(dbt_dataengineers_materializations.apply_clusters(target_relation, config)) %}
-      {% do statements.append(dbt_dataengineers_materializations.enable_automatic_clustering(target_relation, config)) %}
+      {% do statements.append(create_materialized_view_as(target_relation, sql, config)) %}
+      {% do statements.append(apply_clusters(target_relation, config)) %}
+      {% do statements.append(enable_automatic_clustering(target_relation, config)) %}
   {% else %}
       {# noop #}
   {% endif %}

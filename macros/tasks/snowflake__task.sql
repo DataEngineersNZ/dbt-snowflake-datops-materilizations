@@ -6,15 +6,15 @@
 
 {%- materialization task, adapter='snowflake' -%}
 
-  {%- set warehouse_name_or_size = dbt_dataengineers_materializations.config_meta_get('warehouse_name_or_size', 'xsmall') -%}
-  {%- set is_serverless = dbt_dataengineers_materializations.config_meta_get('is_serverless', true) -%}
-  {%- set task_schedule = dbt_dataengineers_materializations.config_meta_get('schedule') -%}
-  {%- set task_after = dbt_dataengineers_materializations.config_meta_get('task_after') -%}
-  {%- set stream_name = dbt_dataengineers_materializations.config_meta_get('stream_name') -%}
-  {%- set error_integration = dbt_dataengineers_materializations.config_meta_get('error_integration', var('default_monitorial_error_integration', '')) -%}
-  {%- set timeout_ms = dbt_dataengineers_materializations.config_meta_get('timeout', None) -%}
-  {%- set suspend_number = dbt_dataengineers_materializations.config_meta_get('suspend_after_number_of_failures', none) -%}
-  {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
+  {%- set warehouse_name_or_size = config_meta_get('warehouse_name_or_size', 'xsmall') -%}
+  {%- set is_serverless = config_meta_get('is_serverless', true) -%}
+  {%- set task_schedule = config_meta_get('schedule') -%}
+  {%- set task_after = config_meta_get('task_after') -%}
+  {%- set stream_name = config_meta_get('stream_name') -%}
+  {%- set error_integration = config_meta_get('error_integration', var('default_monitorial_error_integration', '')) -%}
+  {%- set timeout_ms = config_meta_get('timeout', None) -%}
+  {%- set suspend_number = config_meta_get('suspend_after_number_of_failures', none) -%}
+  {%- set enabled_targets = config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
 
   {% set target_relation = this %}
@@ -40,15 +40,15 @@
 
   {% if task_after %}
     -- First, suspend the top parent task if there is one
-    {% set top_parent = dbt_dataengineers_materializations.snowflake_get_task_top_parent_node(model) %}
+    {% set top_parent = snowflake_get_task_top_parent_node(model) %}
     {% if top_parent %}
       {% set top_parent_relation = api.Relation.create(database=top_parent.database, schema=top_parent.schema, identifier=top_parent.name) %}
       {{ log('suspending '~ top_parent_relation, info=True) }}
-      {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(top_parent_relation) %}
+      {% do snowflake_suspend_task_statement(top_parent_relation) %}
     {% endif %}
   {% endif %}
 
-  {% set build_sql = dbt_dataengineers_materializations.snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, timeout_ms,suspend_number, error_integration, sql) %}
+  {% set build_sql = snowflake_create_task_statement(target_relation, is_serverless, warehouse_name_or_size, task_schedule, task_after_relation, stream_relation, timeout_ms,suspend_number, error_integration, sql) %}
 
   {%- call statement('main') -%}
     {{ build_sql }}
@@ -57,12 +57,12 @@
   -- Third, resume the new task and the top parent task --
   {% if is_enabled %}
     {{ log('resuming '~ target_relation, info=True) }}
-    {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(target_relation) %}
+    {% do snowflake_resume_task_statement(target_relation) %}
   {% endif %}
   {% if top_parent %}
     {% if target.name in top_parent.config.enabled_targets %}
       {{ log('resuming '~ top_parent_relation, info=True) }}
-      {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(top_parent_relation) %}
+      {% do snowflake_resume_task_statement(top_parent_relation) %}
     {% endif %}
   {% endif %}
 
