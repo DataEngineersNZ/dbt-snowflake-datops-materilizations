@@ -7,7 +7,7 @@
 
 */
 {%- materialization generic, adapter='snowflake' -%}
-    {% set target_relation = this %}
+    {% set target_relation = api.Relation.create(database=database, schema=schema, identifier=model['alias']) %}
     --------------------------------------------------------------------------------------------------------------------
 
     -- setup
@@ -32,10 +32,6 @@
     {{ run_hooks(post_hooks, inside_transaction=False) }}
 
     -- return
-    {% if target_relation is not none %}
-        {{ return({'relations': [target_relation]}) }}
-    {% else %}
-        {{ return({'relations': []}) }}
-    {% endif %}
+    {{ return({'relations': [target_relation]}) }}
 
 {%- endmaterialization -%}
