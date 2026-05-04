@@ -10,21 +10,11 @@ model-paths: ["models"]
 test-paths: ["tests"]
 macro-paths: ["macros"]
 target-path: "target"
-clean-targets: ["target", "dbt_packages"]
+clean-targets: ["target"]
 
 dispatch:
   - macro_namespace: dbt
     search_order: [dbt_dataengineers_materializations, dbt]
 
-on-run-start:
-  - "{{ dbt_dataengineers_materializations.stage_file_formats() }}"
-  - "{{ dbt_dataengineers_materializations.stage_stages() }}"
-  - "{{ dbt_dataengineers_materializations.stage_table_sources() }}"
-
-on-run-end:
-  - "{{ dbt_dataengineers_materializations.enable_tasks() }}"
-  - "{{ dbt_dataengineers_materializations.enable_alerts() }}"
-
 vars:
-  # Integration test variables
   default_monitorial_error_integration: ""

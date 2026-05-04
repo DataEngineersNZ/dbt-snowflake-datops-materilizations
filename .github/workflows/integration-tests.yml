@@ -53,20 +53,24 @@ jobs:
           if [ -z "$SNOWFLAKE_ACCOUNT" ]; then echo "WARNING: SNOWFLAKE_ACCOUNT is EMPTY"; else echo "SNOWFLAKE_ACCOUNT is set (length: ${#SNOWFLAKE_ACCOUNT})"; fi
 
       - name: Install dbt packages
-        run: |
-          dbt deps --profiles-dir .
-          echo "=== Installed packages ==="
-          ls -la dbt_packages/ 2>/dev/null || echo "dbt_packages directory not found"
-          ls -la dbt_packages/dbt_dataengineers_materializations/dbt_project.yml 2>/dev/null || echo "Package dbt_project.yml not found"
+        run: dbt deps --profiles-dir .
 
-      - name: Debug - parse project
-        run: dbt parse --profiles-dir . 2>&1 || true
+      - name: Pre-create infrastructure (on-run-start hooks)
+        run: |
+          dbt run-operation stage_file_formats --profiles-dir . || true
+          dbt run-operation stage_stages --profiles-dir . || true
+          dbt run-operation stage_table_sources --profiles-dir . || true
 
       - name: Run models (first run - full refresh)
         run: dbt run --full-refresh --exclude tag:enterprise_only --profiles-dir .
 
       - name: Run models (second run - idempotency)
         run: dbt run --exclude tag:enterprise_only --profiles-dir .
+
+      - name: Post-run enable (on-run-end hooks)
+        run: |
+          dbt run-operation enable_tasks --profiles-dir . || true
+          dbt run-operation enable_alerts --profiles-dir . || true
 
       - name: Run assertions
         run: dbt test --profiles-dir .
