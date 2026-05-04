@@ -4,15 +4,13 @@
 */
 {%- materialization general_ddl, adapter='snowflake' -%}
 
-    {%- set target_relation = api.Relation.create(
-        database=database,
-        schema=schema,
-        identifier=model['alias']
-    ) -%}
+    {%- set target_relation = this.incorporate(type='table') -%}
 
     {%- call statement('main') -%}
         {{ sql }};
     {%- endcall -%}
+
+    {% do adapter.commit() %}
 
     {{ return({'relations': [target_relation]}) }}
 
