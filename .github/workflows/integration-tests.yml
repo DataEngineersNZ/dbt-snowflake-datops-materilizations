@@ -39,8 +39,10 @@ jobs:
 
       - name: Write Snowflake private key
         run: |
-          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
+          printf '%s\n' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
           chmod 600 /tmp/snowflake_key.p8
+          echo "Key file size: $(wc -c < /tmp/snowflake_key.p8) bytes"
+          head -1 /tmp/snowflake_key.p8
 
       - name: Verify package structure
         run: |
