@@ -61,9 +61,6 @@
                 {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
             {% endif %}
         {% endif %}
-    {% else %}
-       {{ log("ELSE " ~ target_relation, info=True) }}
-        {# noop #}
     {% endif %}
 
     {% if build_sql %}
