@@ -6,10 +6,12 @@ dbt_integration_tests:
       account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
       user: "{{ env_var('SNOWFLAKE_USER') }}"
       authenticator: snowflake_jwt
-      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH', '/tmp/snowflake_key.p8') }}"
       private_key_passphrase: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PASSPHRASE', '') }}"
       role: "{{ env_var('SNOWFLAKE_ROLE', 'SYSADMIN') }}"
       warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH') }}"
-      database: "{{ env_var('SNOWFLAKE_DATABASE', 'DBT_PACKAGES_CI_TESTS') }}"
-      schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'MATERIALIZATIONS_TESTS') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'DBT_INTEGRATION_TESTS') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'INTEGRATION_TESTS') }}"
       threads: 4
+      connect_retries: 3
+      connect_timeout: 30

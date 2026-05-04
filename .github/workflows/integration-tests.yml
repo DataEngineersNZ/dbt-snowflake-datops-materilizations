@@ -17,7 +17,6 @@ env:
   SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
   SNOWFLAKE_SCHEMA: DBT_INTEGRATION_TEST
   INTEGRATION_TEST_SECRET: "test-secret-value"
-  DBT_PROFILES_DIR: .
 
 jobs:
   integration-tests:
@@ -39,20 +38,38 @@ jobs:
         run: pip install dbt-snowflake>=1.9.0
 
       - name: Write Snowflake private key
-        run: echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
+        run: |
+          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
+          chmod 600 /tmp/snowflake_key.p8
+
+      - name: Verify package structure
+        run: |
+          echo "=== Working directory ==="
+          pwd
+          echo "=== Parent dbt_project.yml ==="
+          head -5 ../dbt_project.yml
+          echo "=== packages.yml ==="
+          cat packages.yml
+          echo "=== Parent macros exist ==="
+          ls ../macros/ | head -10
 
       - name: Install dbt packages
-        run: dbt deps
+        run: |
+          dbt deps --profiles-dir .
+          echo "=== Installed packages ==="
+          ls -la dbt_packages/ 2>/dev/null || echo "dbt_packages directory not found"
+          ls -la dbt_packages/dbt_dataengineers_materializations/ 2>/dev/null || echo "Package directory not found"
+          ls -la dbt_packages/dbt_dataengineers_materializations/macros/ 2>/dev/null || echo "Package macros not found"
 
       - name: Run models (first run - full refresh)
-        run: dbt run --full-refresh --exclude tag:enterprise_only
+        run: dbt run --full-refresh --exclude tag:enterprise_only --profiles-dir .
 
       - name: Run models (second run - idempotency)
-        run: dbt run --exclude tag:enterprise_only
+        run: dbt run --exclude tag:enterprise_only --profiles-dir .
 
       - name: Run assertions
-        run: dbt test
+        run: dbt test --profiles-dir .
 
       - name: Cleanup test objects
         if: always()
-        run: dbt run-operation cleanup
+        run: dbt run-operation cleanup --profiles-dir .

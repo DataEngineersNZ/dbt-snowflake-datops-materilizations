@@ -416,12 +416,12 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
 
 | property | description | applicable for | default |
 |---|---|---|---|
-| `type` | `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE` | | `GENERIC_STRING` |
+| `type` | `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDENTIALS`, `OAUTH2_AUTHORIZATION_CODE` | | `GENERIC_STRING` |
 | `secret_string_variable` | env var name | `GENERIC_STRING` | |
 | `username` | username | `PASSWORD` | |
 | `password_variable` | env var for password | `PASSWORD` | |
 | `security_integration` | security integration | `OAUTH2_*` | |
-| `oauth_scopes` | OAuth scopes | `OAUTH2_CLIENT_CREDNTIALS` | |
+| `oauth_scopes` | OAuth scopes | `OAUTH2_CLIENT_CREDENTIALS` | |
 | `oauth_refresh_token_variable` | env var for refresh token | `OAUTH2_AUTHORIZATION_CODE` | |
 | `oauth_refresh_token_expiry_time` | token expiry timestamp | `OAUTH2_AUTHORIZATION_CODE` | |
 

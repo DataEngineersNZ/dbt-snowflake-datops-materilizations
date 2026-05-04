@@ -4,8 +4,8 @@
     {%- set is_transient = dbt_dataengineers_materializations.config_meta_get('transient', false) -%}
     {%- set if_not_exists = dbt_dataengineers_materializations.config_meta_get('if_not_exists', true) -%}
     {%- set create_or_replace = dbt_dataengineers_materializations.config_meta_get('create_or_replace', false) -%}
-    {%- set data_retention_in_days = dbt_dataengineers_materializations.config_meta_get('data_retention_in_days ', none) -%}
-    {%- set max_data_extension_in_days = dbt_dataengineers_materializations.config_meta_get('max_data_extension_in_days ', none) -%}
+    {%- set data_retention_in_days = dbt_dataengineers_materializations.config_meta_get('data_retention_in_days', none) -%}
+    {%- set max_data_extension_in_days = dbt_dataengineers_materializations.config_meta_get('max_data_extension_in_days', none) -%}
     {%- set enable_change_tracking = dbt_dataengineers_materializations.config_meta_get('change_tracking', false) -%}
     {%- set is_hybrid = dbt_dataengineers_materializations.config_meta_get('is_hybrid', false) -%}
     {%- set grant_config = config.get('grants') %}

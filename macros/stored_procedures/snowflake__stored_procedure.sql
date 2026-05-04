@@ -6,7 +6,7 @@
 
 */
 {%- materialization stored_procedure, adapter='snowflake' -%}
-  {%- set preferred_language = dbt_dataengineers_materializations.config_meta_get('preferred_language', SQL) -%}
+  {%- set preferred_language = dbt_dataengineers_materializations.config_meta_get('preferred_language', 'SQL') -%}
   {%- set parameters = dbt_dataengineers_materializations.config_meta_get('parameters', '') -%}
   {%- set identifier = dbt_dataengineers_materializations.config_meta_get('override_name', model['alias'] ) -%}
   {%- set return_type = dbt_dataengineers_materializations.config_meta_get('return_type', 'varchar' ) -%}

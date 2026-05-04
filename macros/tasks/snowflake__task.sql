@@ -13,7 +13,7 @@
   {%- set stream_name = dbt_dataengineers_materializations.config_meta_get('stream_name') -%}
   {%- set error_integration = dbt_dataengineers_materializations.config_meta_get('error_integration', var('default_monitorial_error_integration', '')) -%}
   {%- set timeout_ms = dbt_dataengineers_materializations.config_meta_get('timeout', None) -%}
-  {%- set suspend_number = dbt_dataengineers_materializations.config_meta_get('suspend_after_number_of_failures', None) -%}
+  {%- set suspend_number = dbt_dataengineers_materializations.config_meta_get('suspend_after_number_of_failures', none) -%}
   {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
 
