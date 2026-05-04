@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('test_task_root') }}
 {{ config(
     materialized='task',
     meta={

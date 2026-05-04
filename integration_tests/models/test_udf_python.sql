@@ -5,7 +5,8 @@
         'runtime_version': '3.11',
         'handler_name': 'add_numbers',
         'return_type': 'FLOAT',
-        'parameters': 'x FLOAT, y FLOAT'
+        'parameters': 'x FLOAT, y FLOAT',
+        'packages': ['snowflake-snowpark-python']
     }
 ) }}
 

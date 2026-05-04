@@ -8,4 +8,4 @@
 
 SELECT
     1 AS id,
-    'hybrid_record' AS name
+    'hybrid_record'::VARCHAR(100) AS name
