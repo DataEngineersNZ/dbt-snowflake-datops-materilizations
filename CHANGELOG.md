@@ -21,6 +21,10 @@ Major release with dbt Fusion engine compatibility and comprehensive documentati
 
 ### Hook Improvements
 * Extended `flags.WHICH` checks to include `'build'` alongside `'run'` in all hook macros (`enable_tasks`, `enable_alerts`, `enable_monitorial_monitors`, `stage_file_formats`, `stage_stages`, `stage_table_sources`)
+* Added `node_config_get` helper for reading custom configs from graph nodes in hooks (checks `meta` with fallback)
+
+### Breaking Changes
+* Renamed `generic` materialization to `general_ddl` to avoid conflicts with dbt's internal generic test type. Models using `materialized='generic'` must change to `materialized='general_ddl'`.
 
 ### Documentation
 * Added macro documentation (YML) for all 15 materializations with config option descriptions

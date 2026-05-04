@@ -1,10 +1,12 @@
 version: 2
 
 macros:
-  - name: materialization_generic_snowflake
+  - name: materialization_general_ddl_snowflake
     description: |
-      Generic materialization for executing arbitrary DDL statements in Snowflake via dbt.
+      General DDL materialization for executing arbitrary DDL statements in Snowflake via dbt.
       Use this as a last resort when no specific materialization exists for the object type you need to create.
-      The model body SQL is executed as-is within a transaction.
+      The model body SQL is executed as-is.
+
+      Previously named `generic` — renamed to `general_ddl` to avoid conflicts with dbt's internal generic test type.
     docs:
       show: true

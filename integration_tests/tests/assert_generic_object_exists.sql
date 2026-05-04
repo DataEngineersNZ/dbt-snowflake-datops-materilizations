@@ -1,4 +1,4 @@
--- Fails if the sequence created by the generic materialization does not exist
+-- Fails if the sequence created by the general_ddl materialization does not exist
 SELECT 1
 WHERE NOT EXISTS (
     SELECT 1
