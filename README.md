@@ -37,7 +37,6 @@ For Snowflake Agent Materialization add the following:
 | `secret` | Secret object | `type`, `secret_string_variable` | [Secrets](#secrets) |
 | `network_rule` | Network Rule | `rule_type`, `value_list`, `mode` | [Network Rules](#network-rules) |
 | `external_access_integration` | External Access Integration | `network_rules`, `authentication_secrets` | [External Access Integration](#external-access-integration) |
-| `general_ddl` | Any DDL (freeform SQL) | none | [General DDL](#general-ddl) |
 | `user_defined_function` | UDF (SQL/Python/Java/JS/External) | `preferred_language`, `return_type`, `parameters` | [User Defined Functions](#user-defined-functions) |
 | `snowflake_materialized_view` | Materialized View | `secure`, `cluster_by`, `automatic_clustering` | [Materialized View](#materialized-view) |
 
@@ -464,22 +463,6 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
 | `roles_for_use` | roles granted USAGE | `['developers']` |
 
 > Requires `CREATE INTEGRATION` privilege. Integration name appends `target.name`.
-
-## General DDL
-
-Execute any DDL not covered by other materializations. Previously named `generic` — renamed to avoid conflicts with dbt's internal generic test type.
-
-```sql
-{{ config(materialized='general_ddl') }}
-
-CREATE OR REPLACE API INTEGRATION ext_api_integration
-    api_provider = azure_api_management
-    azure_tenant_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    api_allowed_prefixes = ('https://api.example.com')
-    enabled = true;
-```
-
-> Integrations require `AccountAdmin`. Use Terraform for integration deployments.
 
 ## User Defined Functions
 

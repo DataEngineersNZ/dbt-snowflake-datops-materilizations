@@ -24,7 +24,7 @@ Major release with dbt Fusion engine compatibility and comprehensive documentati
 * Added `node_config_get` helper for reading custom configs from graph nodes in hooks (checks `meta` with fallback)
 
 ### Breaking Changes
-* Renamed `generic` materialization to `general_ddl` to avoid conflicts with dbt's internal generic test type. Models using `materialized='generic'` must change to `materialized='general_ddl'`.
+* Removed `generic` materialization — incompatible with dbt 1.11.x internal framework. Use `pre-hook`/`post-hook` or `dbt run-operation` for arbitrary DDL instead.
 
 ### Documentation
 * Added macro documentation (YML) for all 15 materializations with config option descriptions

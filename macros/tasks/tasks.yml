@@ -68,13 +68,3 @@ macros:
     description: Generates the ALTER TASK ... SUSPEND statement.
     docs:
       show: false
-
-  - name: resume_suspended_tasks
-    description: Iterates over task nodes and resumes those that are enabled for the current target.
-    docs:
-      show: false
-
-  - name: suspended_tasks
-    description: Identifies tasks that need to be suspended during task graph modifications.
-    docs:
-      show: false
