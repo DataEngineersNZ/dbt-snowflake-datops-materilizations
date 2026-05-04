@@ -29,7 +29,7 @@ macros:
 
       ```yml
       on-run-end:
-        - "{{ dbt_dataengineers_materializations.enable_tasks() }}"
+        - "{% raw %}{{ dbt_dataengineers_materializations.enable_tasks() }}{% endraw %}"
       ```
     docs:
       show: true

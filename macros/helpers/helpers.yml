@@ -13,7 +13,7 @@ macros:
 
       **Usage:**
       ```sql
-      {%- set my_value = dbt_dataengineers_materializations.config_meta_get('my_key', 'fallback') -%}
+      {% raw %}{%- set my_value = dbt_dataengineers_materializations.config_meta_get('my_key', 'fallback') -%}{% endraw %}
       ```
     docs:
       show: true
@@ -28,7 +28,7 @@ macros:
 
       **Usage:**
       ```sql
-      {%- set my_value = dbt_dataengineers_materializations.config_meta_require('my_key') -%}
+      {% raw %}{%- set my_value = dbt_dataengineers_materializations.config_meta_require('my_key') -%}{% endraw %}
       ```
     docs:
       show: true

@@ -19,7 +19,7 @@ macros:
 
       ```yml
       on-run-start:
-        - "{{ dbt_dataengineers_materializations.stage_file_formats() }}"
+        - "{% raw %}{{ dbt_dataengineers_materializations.stage_file_formats() }}{% endraw %}"
       ```
 
       **Parameters:**

@@ -23,7 +23,7 @@ macros:
 
       ```yml
       on-run-end:
-        - "{{ dbt_dataengineers_materializations.enable_alerts() }}"
+        - "{% raw %}{{ dbt_dataengineers_materializations.enable_alerts() }}{% endraw %}"
       ```
     docs:
       show: true

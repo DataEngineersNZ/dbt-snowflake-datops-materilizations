@@ -33,7 +33,7 @@ macros:
 
       ```yml
       on-run-end:
-        - "{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}"
+        - "{% raw %}{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}{% endraw %}"
       ```
     docs:
       show: true
