@@ -1,33 +1,5 @@
 # dbt_dataengineers_materializations Changelog
 
-## 1.0.1 - dbt 1.11.x Compatibility & Integration Tests
-
-Fixes for dbt 1.11.x compatibility issues discovered during CI integration testing.
-
-### Bug Fixes
-* Fixed `enable_tasks` hook not resuming tasks in correct order for multi-level DAGs — rewritten with bottom-up resume ordering (deepest children first, roots last)
-* Fixed `enable_tasks` hook not resuming standalone root tasks (tasks with `schedule` but no children)
-* Fixed `enable_tasks` hook duplicating root task suspend/resume when multiple children share the same root
-* Fixed stray character in `snowflake_get_task_parent_node` macro (trailing `4` on line 11)
-* Fixed `config_meta_get` triggering dbt 1.11.x `CustomKeyInConfigDeprecation` warnings by checking `meta` before falling back to `config.get()`
-* Fixed `config_meta_get` triggering parse-time warnings during `dbt run-operation` by guarding the `config.get()` fallback with `{% if execute %}`
-* Fixed Jinja expressions in YML doc descriptions being compiled by dbt — wrapped in `{% raw %}` tags
-* Fixed `None` (Python) used instead of `none` (Jinja) as default for task timeout config
-* Fixed `node.config.enabled_targets` and `node.config.is_serverless` in hook macros not resolving when configs are under `meta` (Fusion style)
-
-### Breaking Changes
-* Removed `generic` materialization — incompatible with dbt 1.11.x internal framework. Use `pre-hook`/`post-hook` or `dbt run-operation` for arbitrary DDL instead
-
-### New Features
-* Added `node_config_get(node, key, default)` helper macro for reading custom configs from graph node objects in hooks (checks `node.config.meta` first, falls back to `node.config`)
-* Added integration test suite with 25 test models covering all materializations
-* Added CI pipeline (GitHub Actions) with JWT auth, full-refresh + idempotency runs, and assertion tests
-* Added task integration tests covering 3-level DAGs, fan-out patterns, and standalone roots
-
-### Improvements
-* Simplified `enable_tasks` hook with clearer 3-step process: suspend roots, resume children (bottom-up), resume roots
-* Added `.gitignore` entries for `plans/` and `desktop.ini`
-
 ## 1.0.0 - dbt Fusion Compatibility & Documentation
 
 Major release with dbt Fusion engine compatibility and comprehensive documentation.
@@ -42,6 +14,24 @@ Major release with dbt Fusion engine compatibility and comprehensive documentati
 * Removed unused `flags.PRINTER_WIDTH` references
 * Removed unused `has_transactional_hooks` / `hooks` variable references
 
+### Bug Fixes
+* Fixed `enable_tasks` hook not resuming tasks in correct order for multi-level DAGs — rewritten with bottom-up resume ordering (deepest children first, roots last)
+* Fixed `enable_tasks` hook not resuming standalone root tasks (tasks with `schedule` but no children)
+* Fixed `enable_tasks` hook duplicating root task suspend/resume when multiple children share the same root
+* Fixed stray character in `snowflake_get_task_parent_node` macro (trailing `4` on line 11)
+* Fixed `config_meta_get` triggering dbt 1.11.x `CustomKeyInConfigDeprecation` warnings by checking `meta` before falling back to `config.get()`
+* Fixed `config_meta_get` triggering parse-time warnings during `dbt run-operation` by guarding the `config.get()` fallback with `{% if execute %}`
+* Fixed Jinja expressions in YML doc descriptions being compiled by dbt — wrapped in `{% raw %}` tags
+* Fixed `None` (Python) used instead of `none` (Jinja) as default for task timeout config
+* Fixed `node.config.enabled_targets` and `node.config.is_serverless` in hook macros not resolving when configs are under `meta` (Fusion style)
+
+
+### New Features
+* Added `node_config_get(node, key, default)` helper macro for reading custom configs from graph node objects in hooks (checks `node.config.meta` first, falls back to `node.config`)
+* Added integration test suite with 25 test models covering all materializations
+* Added CI pipeline (GitHub Actions) with JWT auth, full-refresh + idempotency runs, and assertion tests
+* Added task integration tests covering 3-level DAGs, fan-out patterns, and standalone roots
+
 ### Execute Guards
 * Added `{% if execute %}` guards to all `run_query()` calls to prevent malformed SQL during Fusion static analysis
 * Added `{% if execute %}` guards to all on-run-start/end hook macros that access `graph.nodes` or `graph.sources`
@@ -50,6 +40,10 @@ Major release with dbt Fusion engine compatibility and comprehensive documentati
 ### Hook Improvements
 * Extended `flags.WHICH` checks to include `'build'` alongside `'run'` in all hook macros (`enable_tasks`, `enable_alerts`, `enable_monitorial_monitors`, `stage_file_formats`, `stage_stages`, `stage_table_sources`)
 * Added `node_config_get` helper for reading custom configs from graph nodes in hooks (checks `meta` with fallback)
+
+### Breaking Changes
+* Removed `generic` materialization — incompatible with dbt 1.11.x internal framework. Use `pre-hook`/`post-hook` or `dbt run-operation` for arbitrary DDL instead
+
 
 ### Documentation
 * Added macro documentation (YML) for all 15 materializations with config option descriptions
