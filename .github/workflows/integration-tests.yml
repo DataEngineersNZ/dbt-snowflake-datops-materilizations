@@ -1,0 +1,81 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+  SNOWFLAKE_PRIVATE_KEY_PATH: /tmp/snowflake_key.p8
+  SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+  SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+  SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+  SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+  SNOWFLAKE_SCHEMA: DBT_INTEGRATION_TEST
+  INTEGRATION_TEST_SECRET: "test-secret-value"
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: integration_tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-snowflake>=1.9.4
+
+      - name: Write Snowflake private key
+        run: |
+          printf '%s\n' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
+          chmod 600 /tmp/snowflake_key.p8
+          echo "Key file written ($(wc -c < /tmp/snowflake_key.p8) bytes)"
+
+      - name: Verify package structure
+        run: |
+          echo "=== Working directory ==="
+          pwd
+          echo "=== packages.yml ==="
+          cat packages.yml
+          echo "=== Check env vars are set ==="
+          if [ -z "$SNOWFLAKE_USER" ]; then echo "WARNING: SNOWFLAKE_USER is EMPTY"; else echo "SNOWFLAKE_USER is set (length: ${#SNOWFLAKE_USER})"; fi
+          if [ -z "$SNOWFLAKE_ACCOUNT" ]; then echo "WARNING: SNOWFLAKE_ACCOUNT is EMPTY"; else echo "SNOWFLAKE_ACCOUNT is set (length: ${#SNOWFLAKE_ACCOUNT})"; fi
+
+      - name: Install dbt packages
+        run: dbt deps --profiles-dir .
+
+      - name: Pre-create infrastructure (on-run-start hooks)
+        run: |
+          dbt run-operation stage_file_formats --profiles-dir .
+          dbt run-operation stage_stages --profiles-dir .
+          dbt run-operation stage_table_sources --profiles-dir .
+
+      - name: Run models (first run - full refresh)
+        run: dbt run --full-refresh --exclude tag:enterprise_only --profiles-dir .
+
+      - name: Run models (second run - idempotency)
+        run: dbt run --exclude tag:enterprise_only --profiles-dir .
+
+      - name: Post-run enable (on-run-end hooks)
+        run: |
+          dbt run-operation enable_tasks --profiles-dir .
+          dbt run-operation enable_alerts --profiles-dir .
+
+      - name: Run assertions
+        run: dbt test --profiles-dir .
+
+      - name: Cleanup test objects
+        if: always()
+        run: dbt run-operation cleanup --profiles-dir .

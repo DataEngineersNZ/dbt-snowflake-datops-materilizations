@@ -1,0 +1,34 @@
+version: 2
+
+macros:
+  - name: materialization_snowflake_materialized_view_snowflake
+    description: |
+      Materialization for managing Snowflake Materialized View objects via dbt.
+      Creates or replaces a materialized view with the SQL defined in the model body.
+      Supports clustering and automatic reclustering. Drops and recreates if the existing
+      relation is a table rather than a view.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `secure` (bool, default: false) — Create as a secure materialized view
+      - `cluster_by` (string or list) — Column(s) to cluster the materialized view by
+      - `automatic_clustering` (bool, default: false) — Enable automatic reclustering
+
+      **Usage:**
+      Set `materialized: snowflake_materialized_view` in your model config.
+    docs:
+      show: true
+
+  - name: create_materialized_view_as
+    description: Generates the CREATE OR REPLACE MATERIALIZED VIEW DDL statement with optional SECURE keyword.
+    docs:
+      show: false
+
+  - name: apply_clusters
+    description: Generates the ALTER MATERIALIZED VIEW ... CLUSTER BY statement to apply clustering keys.
+    docs:
+      show: false
+
+  - name: enable_automatic_clustering
+    description: Generates the ALTER MATERIALIZED VIEW ... RESUME RECLUSTER statement to enable automatic reclustering.
+    docs:
+      show: false

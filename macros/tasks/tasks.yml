@@ -1,48 +1,70 @@
 version: 2
+
 macros:
+  - name: materialization_task_snowflake
+    description: |
+      Materialization for managing Snowflake Task objects via dbt.
+      Creates or replaces a Snowflake task with the SQL defined in the model body.
+      Handles task dependency chains by suspending the top parent task before modification
+      and resuming it afterwards.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `is_serverless` (bool, default: true) — Use serverless compute
+      - `warehouse_name_or_size` (string, default: 'xsmall') — Warehouse name or size when not serverless
+      - `schedule` (string) — Cron or interval schedule (required for root tasks)
+      - `task_after` (string) — Name of the parent task this task depends on
+      - `stream_name` (string) — Name of a stream to use as the WHEN condition
+      - `error_integration` (string) — Error notification integration name
+      - `timeout` (int) — Task timeout in milliseconds
+      - `suspend_after_number_of_failures` (int) — Auto-suspend after N consecutive failures
+      - `enabled_targets` (list, default: [target.name]) — Target environments where the task is active
+    docs:
+      show: true
+
   - name: enable_tasks
-    description: >
-      This macro should be added to the `on-run-end` hook after the `dbt_dataengineers_utils.grant_privileges` macro has been run. 
+    description: |
+      Hook macro to resume all task objects after a dbt run.
+      Add this to your `on-run-end` hook after the `dbt_dataengineers_utils.grant_privileges` macro has been run.
       It will enable any task defined within dbt.
 
       ```yml
-        dbt_dataengineers_materializations.enable_tasks()
+      on-run-end:
+        - "{% raw %}{{ dbt_dataengineers_materializations.enable_tasks() }}{% endraw %}"
       ```
     docs:
       show: true
 
   - name: get_task_node_by_id
+    description: Looks up a task graph node by its unique ID.
     docs:
       show: false
 
   - name: snowflake_create_task_statement
+    description: Generates the CREATE OR REPLACE TASK DDL statement with schedule, warehouse, stream, and error integration options.
     docs:
       show: false
 
   - name: snowflake_get_task_parent_node
+    description: Resolves the immediate parent task node from the graph for a given task model.
     docs:
       show: false
 
   - name: snowflake_get_task_top_parent_node
+    description: Walks up the task dependency chain to find the root (top-level) parent task node.
     docs:
       show: false
 
   - name: snowflake_resume_task_statement
+    description: Generates the ALTER TASK ... RESUME statement.
     docs:
       show: false
 
   - name: snowflake_resume_task_with_dependants_statement
+    description: Resumes a task and all its downstream dependent tasks.
     docs:
       show: false
 
   - name: snowflake_suspend_task_statement
-    docs:
-      show: false
-
-  - name: resume_suspended_tasks
-    docs:
-      show: false
-
-  - name: suspended_tasks
+    description: Generates the ALTER TASK ... SUSPEND statement.
     docs:
       show: false

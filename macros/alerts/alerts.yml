@@ -1,7 +1,49 @@
 version: 2
 
 macros:
+  - name: materialization_alert_snowflake
+    description: |
+      Materialization for managing Snowflake Alert objects via dbt.
+      Creates or replaces a Snowflake alert with the SQL defined in the model body as the IF condition,
+      and a configured action to execute when the condition is met.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `is_serverless` (bool, default: false) — Use serverless compute instead of a warehouse
+      - `warehouse_size` (string, default: 'alert_wh') — Warehouse name or size for the alert
+      - `schedule` (string, default: '60 MINUTE') — Cron or interval schedule for alert evaluation
+      - `action` (string, required) — SQL statement to execute when the alert condition is true
+      - `enabled_targets` (list, default: [target.name]) — Target environments where the alert is active
+    docs:
+      show: true
+
+  - name: enable_alerts
+    description: |
+      Hook macro to resume all alert objects after a dbt run.
+      Add this to your `on-run-end` hook to automatically resume alerts that are defined in your project.
+
+      ```yml
+      on-run-end:
+        - "{% raw %}{{ dbt_dataengineers_materializations.enable_alerts() }}{% endraw %}"
+      ```
+    docs:
+      show: true
+
+  - name: resume_alerts
+    description: Iterates over alert nodes and resumes each one that is enabled for the current target.
+    docs:
+      show: false
 
   - name: snowflake_create_or_replace_alert_statement
+    description: Generates the CREATE OR REPLACE ALERT DDL statement.
+    docs:
+      show: false
+
+  - name: snowflake_resume_alert_statement
+    description: Generates the ALTER ALERT ... RESUME statement to resume a suspended alert.
+    docs:
+      show: false
+
+  - name: snowflake_suspend_alert_statement
+    description: Generates the ALTER ALERT ... SUSPEND statement to suspend an active alert.
     docs:
       show: false

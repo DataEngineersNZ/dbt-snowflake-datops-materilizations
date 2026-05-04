@@ -3,3 +3,5 @@ target/
 dbt_packages/
 logs/
 dbt_internal_packages/
+plans/
+desktop.ini

@@ -5,22 +5,22 @@
 */
 
 {%- materialization monitorial, adapter='snowflake' -%}
-  {%- set is_serverless = config.get('is_serverless', default=var('default_monitorial_serverless', false)) -%}
-  {%- set warehouse_name_or_size = config.get('warehouse_name_or_size', default=var('default_monitorial_warehouse_name_or_size', 'pc_monitorial_wh')) -%}
-  {%- set object_type = config.get('object_type', default=var('default_monitorial_object_type', 'alert')) -%}
-  {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
-  {%- set severity = config.get('severity', default='error' ) -%}
-  {%- set environment =  config.get('environment', default=target.name ) -%}
-  {%- set display_message = config.get('display_message', default=model['alias'] ) -%}
-  {%- set prereq_statement = config.get('prereq', default='') -%}
-  {%- set api_key = config.get('api_key', default=var('default_monitorial_api_key', 'unknown') ) -%}
-  {%- set message_type = config.get('message_type', 'USER_ALERT') -%}
-  {%- set delivery_type = config.get('delivery_type', default=var('default_monitorial_delivery_type', 'api')) -%}
-  {%- set email_integration = config.get('email_integration', default=var('default_monitorial_email_integration', 'MONITORIAL_EMAIL_INTEGRATION') ) -%}
-  {%- set api_function = config.get('api_function', default=var('default_monitorial_api_function', 'pc_monitorial_db.utils.monitorial_dispatch') ) -%}
-  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', 'MONITORIAL_ERROR_INTEGRATION')) -%}
+  {%- set is_serverless = dbt_dataengineers_materializations.config_meta_get('is_serverless', var('default_monitorial_serverless', false)) -%}
+  {%- set warehouse_name_or_size = dbt_dataengineers_materializations.config_meta_get('warehouse_name_or_size', var('default_monitorial_warehouse_name_or_size', 'pc_monitorial_wh')) -%}
+  {%- set object_type = dbt_dataengineers_materializations.config_meta_get('object_type', var('default_monitorial_object_type', 'alert')) -%}
+  {%- set schedule = dbt_dataengineers_materializations.config_meta_get('schedule', '60 MINUTE') -%}
+  {%- set severity = dbt_dataengineers_materializations.config_meta_get('severity', 'error' ) -%}
+  {%- set environment =  dbt_dataengineers_materializations.config_meta_get('environment', target.name ) -%}
+  {%- set display_message = dbt_dataengineers_materializations.config_meta_get('display_message', model['alias'] ) -%}
+  {%- set prereq_statement = dbt_dataengineers_materializations.config_meta_get('prereq', '') -%}
+  {%- set api_key = dbt_dataengineers_materializations.config_meta_get('api_key', var('default_monitorial_api_key', 'unknown') ) -%}
+  {%- set message_type = dbt_dataengineers_materializations.config_meta_get('message_type', 'USER_ALERT') -%}
+  {%- set delivery_type = dbt_dataengineers_materializations.config_meta_get('delivery_type', var('default_monitorial_delivery_type', 'api')) -%}
+  {%- set email_integration = dbt_dataengineers_materializations.config_meta_get('email_integration', var('default_monitorial_email_integration', 'MONITORIAL_EMAIL_INTEGRATION') ) -%}
+  {%- set api_function = dbt_dataengineers_materializations.config_meta_get('api_function', var('default_monitorial_api_function', 'pc_monitorial_db.utils.monitorial_dispatch') ) -%}
+  {%- set error_integration = dbt_dataengineers_materializations.config_meta_get('error_integration', var('default_monitorial_error_integration', 'MONITORIAL_ERROR_INTEGRATION')) -%}
   {%- set identifier = model['alias'] -%}
-  {%- set enabled_targets = config.get('enabled_targets', default=[target.name]) %}
+  {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
   {%- set notification_email = var('default_monitorial_notification_email', 'notifications@monitorial.io') -%}
 

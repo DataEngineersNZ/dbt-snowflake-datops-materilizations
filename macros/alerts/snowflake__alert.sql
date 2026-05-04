@@ -5,12 +5,12 @@
 */
 
 {%- materialization alert, adapter='snowflake' -%}
-  {%- set is_serverless = config.get('is_serverless', false) -%}
-  {%- set warehouse_size = config.get('warehouse_size', default='alert_wh') -%}
-  {%- set schedule = config.get('schedule', default='60 MINUTE') -%}
-  {%- set action = config.get('action', default=none) -%}
+  {%- set is_serverless = dbt_dataengineers_materializations.config_meta_get('is_serverless', false) -%}
+  {%- set warehouse_size = dbt_dataengineers_materializations.config_meta_get('warehouse_size', 'alert_wh') -%}
+  {%- set schedule = dbt_dataengineers_materializations.config_meta_get('schedule', '60 MINUTE') -%}
+  {%- set action = dbt_dataengineers_materializations.config_meta_get('action', none) -%}
   {%- set identifier = model['alias'] -%}
-  {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
+  {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
 
   -- setup

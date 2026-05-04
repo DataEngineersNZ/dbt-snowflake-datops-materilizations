@@ -1,7 +1,0 @@
-version: 2
-
-macros:
-  
-  - name: snowflake_generic_statement
-    docs:
-      show: false

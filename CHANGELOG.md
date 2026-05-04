@@ -1,5 +1,38 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.0 - dbt Fusion Compatibility & Documentation
+
+Major release with dbt Fusion engine compatibility and comprehensive documentation.
+
+### dbt Fusion Compatibility
+* Updated `require-dbt-version` to `>=1.3.0, <3.0.0` to support dbt Fusion (2.x)
+* Added `config_meta_get` and `config_meta_require` helper macros for cross-engine config access
+* Migrated all custom `config.get()` calls to use `config_meta_get` wrapper (checks both top-level and `meta` for backwards compatibility)
+* Replaced `builtins.ref()` with standard `ref()` in external access integration materialization
+* Replaced `py_current_timestring()` with `modules.datetime.datetime.now().strftime()` (Jinja-native)
+* Removed all `default=` keyword arguments from `.get()` calls (Fusion's dict.get() only accepts positional args)
+* Removed unused `flags.PRINTER_WIDTH` references
+* Removed unused `has_transactional_hooks` / `hooks` variable references
+
+### Execute Guards
+* Added `{% if execute %}` guards to all `run_query()` calls to prevent malformed SQL during Fusion static analysis
+* Added `{% if execute %}` guards to all on-run-start/end hook macros that access `graph.nodes` or `graph.sources`
+* Added defensive `none` checks on `run_query` result column access
+
+### Hook Improvements
+* Extended `flags.WHICH` checks to include `'build'` alongside `'run'` in all hook macros (`enable_tasks`, `enable_alerts`, `enable_monitorial_monitors`, `stage_file_formats`, `stage_stages`, `stage_table_sources`)
+* Added `node_config_get` helper for reading custom configs from graph nodes in hooks (checks `meta` with fallback)
+
+### Breaking Changes
+* Removed `generic` materialization — incompatible with dbt 1.11.x internal framework. Use `pre-hook`/`post-hook` or `dbt run-operation` for arbitrary DDL instead.
+
+### Documentation
+* Added macro documentation (YML) for all 15 materializations with config option descriptions
+* Added macro documentation for all public hook macros with usage examples
+* Added macro documentation for all internal helper macros
+* Created YML docs for 8 previously undocumented directories: adapters, external_access_integration, helpers, immutable_tables, materialized-views, network_rule, schema, secret
+* Updated README with complete setup guide, quick reference table, Fusion compatibility section, and hooks documentation
+
 ## 0.2.12.1 - Stages
 
 * Modified `Stage` materialization to allow for the `create or replace` of a stage

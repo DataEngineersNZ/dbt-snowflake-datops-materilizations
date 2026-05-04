@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: test_immutable_hybrid_table
+    columns:
+      - name: id
+        data_type: NUMBER(38,0)
+        config:
+          meta:
+            auto_increment: false
+      - name: name
+        data_type: VARCHAR(100)

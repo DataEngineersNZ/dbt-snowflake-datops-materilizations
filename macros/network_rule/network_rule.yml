@@ -1,0 +1,20 @@
+version: 2
+
+macros:
+  - name: materialization_network_rule_snowflake
+    description: |
+      Materialization for managing Snowflake Network Rule objects via dbt.
+      Creates a network rule that defines allowed or blocked network endpoints
+      for use with External Access Integrations.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `rule_type` (string, default: 'HOST_PORT') — Rule type: HOST_PORT, IPV4, or PRIVATE_HOST_PORT
+      - `value_list` (list, default: []) — List of hostnames, IPs, or endpoints
+      - `mode` (string, default: 'INGRESS') — Rule mode: INGRESS, INTERNAL_STAGE, or EGRESS (forced to EGRESS for HOST_PORT)
+    docs:
+      show: true
+
+  - name: snowflake_create_network_rule_statement
+    description: Generates the CREATE NETWORK RULE IF NOT EXISTS DDL with type, value list, and mode.
+    docs:
+      show: false

@@ -1,0 +1,14 @@
+version: 2
+
+macros:
+  - name: create_external_schema
+    description: |
+      Dispatch wrapper that delegates to the adapter-specific schema creation macro.
+      Used internally by build plans to ensure the target schema exists before creating objects.
+    docs:
+      show: false
+
+  - name: default__create_external_schema
+    description: Generates a CREATE SCHEMA IF NOT EXISTS statement for the source node's database and schema.
+    docs:
+      show: false

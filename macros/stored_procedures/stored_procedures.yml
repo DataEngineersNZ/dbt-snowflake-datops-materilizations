@@ -1,7 +1,22 @@
 version: 2
 
 macros:
+  - name: materialization_stored_procedure_snowflake
+    description: |
+      Materialization for managing Snowflake Stored Procedure objects via dbt.
+      Creates or replaces a stored procedure with the SQL defined in the model body as the procedure body.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `preferred_language` (string, default: 'SQL') — Procedure language (SQL, JAVASCRIPT, PYTHON, JAVA)
+      - `parameters` (string, default: '') — Procedure parameter list, e.g. `'P_NAME VARCHAR, P_AGE NUMBER'`
+      - `override_name` (string, default: model alias) — Override the procedure name
+      - `return_type` (string, default: 'varchar') — Return type of the procedure
+      - `execute_as` (string, default: 'owner') — Execution context: 'owner' or 'caller'
+      - `include_copy_grants` (bool, default: true) — Include COPY GRANTS in the CREATE statement
+    docs:
+      show: true
 
   - name: snowflake_create_stored_procedure_statement
+    description: Generates the CREATE OR REPLACE PROCEDURE DDL statement with language, parameters, return type, and body.
     docs:
       show: false

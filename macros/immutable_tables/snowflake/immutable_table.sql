@@ -1,13 +1,13 @@
 {% materialization immutable_table, adapter='snowflake' -%}
 
     {% set original_query_tag = set_query_tag() %}
-    {%- set is_transient = config.get('transient', default=false) -%}
-    {%- set if_not_exists = config.get('if_not_exists', default=true) -%}
-    {%- set create_or_replace = config.get('create_or_replace', default=false) -%}
-    {%- set data_retention_in_days = config.get('data_retention_in_days ', default=none) -%}
-    {%- set max_data_extension_in_days = config.get('max_data_extension_in_days ', default=none) -%}
-    {%- set enable_change_tracking = config.get('change_tracking', default=false) -%}
-    {%- set is_hybrid = config.get('is_hybrid', default=false) -%}
+    {%- set is_transient = dbt_dataengineers_materializations.config_meta_get('transient', false) -%}
+    {%- set if_not_exists = dbt_dataengineers_materializations.config_meta_get('if_not_exists', true) -%}
+    {%- set create_or_replace = dbt_dataengineers_materializations.config_meta_get('create_or_replace', false) -%}
+    {%- set data_retention_in_days = dbt_dataengineers_materializations.config_meta_get('data_retention_in_days', none) -%}
+    {%- set max_data_extension_in_days = dbt_dataengineers_materializations.config_meta_get('max_data_extension_in_days', none) -%}
+    {%- set enable_change_tracking = dbt_dataengineers_materializations.config_meta_get('change_tracking', false) -%}
+    {%- set is_hybrid = dbt_dataengineers_materializations.config_meta_get('is_hybrid', false) -%}
     {%- set grant_config = config.get('grants') %}
 
     {% if create_or_replace %}
@@ -88,15 +88,23 @@
 
 {% macro check_if_transient(schema, table) %}
 
-    {% set is_transient_query %}
-        SELECT is_transient
-        FROM information_schema.tables
-        WHERE table_schema = '{{ schema }}'
-          AND table_name = '{{ table }}'
-    {% endset %}
+    {% if execute %}
+        {% set is_transient_query %}
+            SELECT is_transient
+            FROM information_schema.tables
+            WHERE table_schema = '{{ schema }}'
+              AND table_name = '{{ table }}'
+        {% endset %}
 
-    {% set result = run_query(is_transient_query) %}
-    {% set is_transient = result.columns[0].values()[0] == "YES" %}
+        {% set result = run_query(is_transient_query) %}
+        {% if result and result | length > 0 %}
+            {% set is_transient = result.columns[0].values()[0] == "YES" %}
+        {% else %}
+            {% set is_transient = false %}
+        {% endif %}
+    {% else %}
+        {% set is_transient = false %}
+    {% endif %}
 
     {{ return(is_transient) }}
 {% endmacro %}

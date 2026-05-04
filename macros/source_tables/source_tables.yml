@@ -1,64 +1,150 @@
 version: 2
 
 macros:
- 
-  - name: get_source_build_plan
-    description: Creates a build execution plan to action
-    docs:
-      show: false
+  - name: stage_table_sources
+    description: |
+      Hook macro to create and maintain source tables during a dbt run.
+      Add this to your `on-run-start` hook to auto-create tables from dbt source definitions
+      that have `external.auto_create_table` set to true.
+      Handles both internal and external (stage-backed) tables, with optional ongoing schema maintenance.
 
-  - name: snowflake_create_or_replace_table
+      ```yml
+      on-run-start:
+        - "{% raw %}{{ dbt_dataengineers_materializations.stage_table_sources() }}{% endraw %}"
+      ```
+
+      **Parameters:**
+      - `enabled_targets` (list, default: [target.name]) — Target environments where tables are staged
+      - `enabled_profiles` (list, default: [target.profile_name]) — Profiles where tables are staged
     docs:
-      show: false
+      show: true
 
   - name: stage_table_sources_plans
+    description: Iterates over source nodes and executes their build plans for table creation or maintenance.
+    docs:
+      show: false
+
+  - name: get_source_build_plan
+    description: Dispatch wrapper that delegates to the adapter-specific source table build plan.
     docs:
       show: false
 
   - name: default__get_source_build_plan
+    description: Default adapter implementation for source table build plans.
     docs:
       show: false
-      
+
   - name: default__get_stream_build_plan
+    description: Default adapter implementation for stream build plans on source tables.
+    docs:
+      show: false
+
+  - name: default__get_external_build_plan
+    description: Default adapter implementation for external table build plans.
     docs:
       show: false
 
   - name: snowflake__get_source_build_plan
+    description: Snowflake-specific build plan for creating and maintaining internal source tables.
     docs:
       show: false
 
   - name: snowflake__get_stream_build_plan
+    description: Snowflake-specific build plan for creating streams on source tables.
+    docs:
+      show: false
+
+  - name: snowflake__get_external_build_plan
+    description: Snowflake-specific build plan for external (stage-backed) tables with Snowpipe support and schema migration.
+    docs:
+      show: false
+
+  - name: is_csv
+    description: Determines whether a file format is CSV by inspecting the format type or querying the Snowflake file format metadata.
+    docs:
+      show: false
+
+  - name: snowflake_create_or_replace_table
+    description: Generates a CREATE OR REPLACE TABLE statement from a source node's column definitions.
+    docs:
+      show: false
+
+  - name: snowflake_create_empty_table
+    description: Creates an empty table with metadata columns (filename, row number, import timestamp) for Snowpipe ingestion.
+    docs:
+      show: false
+
+  - name: snowflake_create_external_table
+    description: Generates a CREATE OR REPLACE EXTERNAL TABLE statement with column expressions, partitions, and file format.
+    docs:
+      show: false
+
+  - name: snowflake_create_snowpipe
+    description: Generates a CREATE OR REPLACE PIPE statement for auto-ingest or manual Snowpipe.
+    docs:
+      show: false
+
+  - name: snowflake_drop_pipe
+    description: Generates a DROP PIPE IF EXISTS statement.
+    docs:
+      show: false
+
+  - name: snowflake_get_copy_sql
+    description: Generates the COPY INTO statement used by Snowpipe and initial data loading, handling CSV and semi-structured formats.
+    docs:
+      show: false
+
+  - name: snowflake_refresh_external_table
+    description: Generates an ALTER EXTERNAL TABLE ... REFRESH statement for manual partition refresh.
+    docs:
+      show: false
+
+  - name: snowflake_refresh_snowpipe
+    description: Generates an ALTER PIPE ... REFRESH statement for non-auto-ingest pipes.
     docs:
       show: false
 
   - name: snowflake_alter_table_add_column
+    description: Generates an ALTER TABLE ... ADD COLUMN statement.
     docs:
       show: false
 
   - name: snowflake_alter_table_alter_column
+    description: Generates an ALTER TABLE ... ALTER COLUMN statement.
     docs:
       show: false
 
   - name: snowflake_alter_table_drop_column
+    description: Generates an ALTER TABLE ... DROP COLUMN statement.
     docs:
       show: false
 
   - name: snowflake_clone_table_relation_if_exists
+    description: Clones an existing table relation for migration purposes.
     docs:
       show: false
 
   - name: snowflake_drop_table
+    description: Generates a DROP TABLE IF EXISTS statement.
     docs:
       show: false
 
   - name: snowflake_drop_view
+    description: Generates a DROP VIEW IF EXISTS statement.
     docs:
       show: false
 
   - name: snowflake_get_stream_name
+    description: Resolves the stream name for a source table.
     docs:
       show: false
 
   - name: snowflake_migrate_data
+    description: Migrates data from a cloned migration table into a newly created table during schema changes.
+    docs:
+      show: false
+
+  - name: snowflake_create_schema
+    description: Generates a CREATE SCHEMA IF NOT EXISTS statement for source table schemas.
     docs:
       show: false

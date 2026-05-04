@@ -1,7 +1,7 @@
 
 {% macro stage_table_sources(enabled_targets=[target.name], enabled_profiles=[target.profile_name]) %}
     {% if execute %}
-        {% if flags.WHICH == 'run' %}
+            {% if flags.WHICH in ['run', 'build'] %}
             {% if target.profile_name in enabled_profiles %}
                 {% if target.name in enabled_targets %}
                     {% set sources_to_stage_auto_maintained = [] %}

@@ -1,5 +1,6 @@
 {% macro enable_alerts() %}
-    {% if flags.WHICH == 'run' %}
+    {% if execute %}
+    {% if flags.WHICH in ['run', 'build'] %}
         {% do log("START: Locating alerts to resume", info=True) %}
         {% set alerts = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
@@ -14,13 +15,15 @@
         {% endif %}
 
     {% endif %}
+    {% endif %}
 {% endmacro %}
 
 {% macro resume_alerts(alert_nodes, is_task) %}
     {% for node in alert_nodes %}
-        {% if target.name in node.config.enabled_targets %}
+        {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(node, 'enabled_targets', [target.name]) %}
+        {% if target.name in enabled_targets %}
             {% set relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
-            {% do log('Resuming ' ~ level ~ ' alert - ' ~ alert_relation, info=true) %}
+            {% do log('Resuming alert - ' ~ relation, info=true) %}
             {% do dbt_dataengineers_materializations.snowflake_resume_alert_statement(relation) %}
         {% endif %}
     {% endfor %}

@@ -1,0 +1,25 @@
+version: 2
+
+macros:
+  - name: materialization_external_access_integration_snowflake
+    description: |
+      Materialization for managing Snowflake External Access Integration objects via dbt.
+      Creates an integration that allows UDFs and procedures to access external network locations.
+      Supports referencing secrets, network rules, and API authentication integrations by ref.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `authentication_secrets` (list) — Fully qualified secret names to allow
+      - `authentication_secrets_refs` (list) — dbt ref names for secrets (resolved automatically)
+      - `network_rules` (list) — Fully qualified network rule names
+      - `network_rules_refs` (list) — dbt ref names for network rules (resolved automatically)
+      - `api_authentication_integrations` (list) — API authentication integration names
+      - `api_authentication_integrations_refs` (list) — dbt ref names for API auth integrations
+      - `role_for_creation` (string, default: 'developers') — Role used to create the integration in local-dev
+      - `roles_for_use` (list, default: ['dataops_admin']) — Roles granted USAGE on the integration
+    docs:
+      show: true
+
+  - name: snowflake_create_external_access_integration_statement
+    description: Generates the CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION DDL with network rules, secrets, and role grants.
+    docs:
+      show: false

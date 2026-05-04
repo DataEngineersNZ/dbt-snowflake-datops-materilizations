@@ -1,29 +1,56 @@
 version: 2
 
 macros:
-  - name: snowflake_create_external_user_defined_functions_statement
+  - name: materialization_user_defined_function_snowflake
     description: |
-      Create an external user defined function in Snowflake.
+      Materialization for managing Snowflake User Defined Function (UDF) objects via dbt.
+      Supports SQL, JavaScript, Java, Python, and external (API-based) functions.
+      The model body contains the function logic.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `preferred_language` (string, default: 'SQL') — Function language: SQL, JAVASCRIPT, JAVA, PYTHON
+      - `parameters` (string, default: '') — Parameter list, e.g. `'P_INPUT VARCHAR'`
+      - `is_secure` (bool, default: false) — Create as a secure function
+      - `immutable` (bool, default: false) — Mark the function as immutable
+      - `return_type` (string, default: 'varchar') — Return type of the function
+      - `override_name` (string, default: model alias) — Override the function name
+      - `null_input_behavior` (string, default: 'called on null input') — Null input behavior
+      - `is_external` (bool, default: false) — Create as an external function
+      - `api_integration_dev` / `api_integration_prod` (string) — API integration for external functions
+      - `api_uri_dev` / `api_uri_prod` (string) — API URI for external functions
+      - `runtime_version` (string) — Runtime version for Java/Python functions
+      - `packages` (list) — Package dependencies for Java/Python functions
+      - `external_access_integrations` (list) — External access integrations for Python/Java functions
+      - `external_access_integrations_refs` (list) — dbt ref names for external access integrations
+      - `secrets` (mapping) — Secrets available to the function
+      - `handler_name` (string) — Handler function name for Java/Python functions
+      - `imports` (list) — Import paths for Java/Python functions
+      - `target_path` (string) — Target path for Java function JARs
+      - `memoizable` (bool) — Enable memoization for SQL functions
+    docs:
+      show: true
+
+  - name: snowflake_create_external_user_defined_functions_statement
+    description: Generates the CREATE EXTERNAL FUNCTION DDL statement with API integration and URI.
     docs:
       show: false
 
   - name: snowflake_create_java_user_defined_functions_statement
-    description: |
-      Create a Java user defined function in Snowflake.
+    description: Generates the CREATE FUNCTION DDL for Java UDFs with runtime, packages, handler, and imports.
     docs:
       show: false
+
   - name: snowflake_create_javascript_user_defined_functions_statement
-    description: |
-      Create a JavaScript user defined function in Snowflake.
+    description: Generates the CREATE FUNCTION DDL for JavaScript UDFs.
     docs:
       show: false
+
   - name: snowflake_create_python_user_defined_functions_statement
-    description: |
-      Create a Python user defined function in Snowflake.
+    description: Generates the CREATE FUNCTION DDL for Python UDFs with runtime, packages, handler, and imports.
     docs:
       show: false
+
   - name: snowflake_create_sql_user_defined_functions_statement
-    description: |
-      Create a SQL user defined function in Snowflake.
+    description: Generates the CREATE FUNCTION DDL for SQL UDFs with optional memoization.
     docs:
       show: false

@@ -1,0 +1,18 @@
+version: 2
+
+macros:
+  - name: snowflake__alter_column_comment
+    description: |
+      Overrides the default dbt adapter macro for altering column comments in Snowflake.
+      Handles materialized views, dynamic tables, and standard tables/views by detecting
+      the relation type from information_schema when not available on the relation object.
+    docs:
+      show: false
+
+  - name: snowflake__alter_relation_comment
+    description: |
+      Overrides the default dbt adapter macro for altering relation-level comments in Snowflake.
+      Detects the correct relation type (table, view, dynamic table) to use the appropriate
+      COMMENT ON statement, querying information_schema when the type is not available.
+    docs:
+      show: false

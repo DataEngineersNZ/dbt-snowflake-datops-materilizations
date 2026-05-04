@@ -1,11 +1,31 @@
 version: 2
 
 macros:
+  - name: materialization_stream_snowflake
+    description: |
+      Materialization for managing Snowflake Stream objects via dbt.
+      Creates a stream on an internal table or an external table depending on the configured source type.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `source_model` (string, required) — Name of the source table or view to track
+      - `source_schema` (string, default: current schema) — Schema of the source object
+      - `source_database` (string, default: current database) — Database of the source object
+      - `source_database_prefix` (string, default: none) — Prefix for environment-specific database variable lookup
+      - `source_type` (string, default: 'internal') — Source type: 'internal' for tables or 'external' for external tables
+    docs:
+      show: true
 
   - name: snowflake_create_stream_statement
+    description: Generates a CREATE STREAM IF NOT EXISTS statement on an internal table.
+    docs:
+      show: false
+
+  - name: snowflake_create_external_stream_statement
+    description: Generates a CREATE STREAM IF NOT EXISTS statement on an external table with INSERT_ONLY = TRUE.
     docs:
       show: false
 
   - name: snowflake_drop_stream_statement
+    description: Generates a DROP STREAM IF EXISTS statement.
     docs:
       show: false

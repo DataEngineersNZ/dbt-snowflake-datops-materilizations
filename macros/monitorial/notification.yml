@@ -1,32 +1,84 @@
 version: 2
 
 macros:
-  - name: enable_monitorial_monitors
+  - name: materialization_monitorial_snowflake
     description: |
-      Enables the monitorial monitors for a given environment.
+      Materialization for managing Monitorial alert and task objects in Snowflake via dbt.
+      Creates alerts or serverless tasks that evaluate a SQL condition and dispatch notifications
+      via API or email when the condition is met. Supports both warehouse-based alerts and serverless tasks.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `is_serverless` (bool, default: false) — Use a serverless task instead of a warehouse-based alert
+      - `warehouse_name_or_size` (string, default: 'pc_monitorial_wh') — Warehouse name or size
+      - `object_type` (string, default: 'alert') — Object type to create: 'alert' or 'task'
+      - `schedule` (string, default: '60 MINUTE') — Cron or interval schedule
+      - `severity` (string, default: 'error') — Severity level for the notification
+      - `environment` (string, default: target.name) — Environment identifier included in the notification
+      - `display_message` (string, default: model alias) — Message displayed in the notification
+      - `prereq` (string, default: '') — Prerequisite SQL executed before the condition check
+      - `api_key` (string) — API key for Monitorial API delivery
+      - `message_type` (string, default: 'USER_ALERT') — Monitorial message type
+      - `delivery_type` (string, default: 'api') — Delivery method: 'api' or 'email'
+      - `email_integration` (string) — Snowflake notification integration for email delivery
+      - `api_function` (string) — Fully qualified Snowflake function for API dispatch
+      - `error_integration` (string) — Error notification integration for serverless tasks
+      - `enabled_targets` (list, default: [target.name]) — Target environments where the monitor is active
     docs:
       show: true
+
+  - name: enable_monitorial_monitors
+    description: |
+      Hook macro to resume all monitorial monitors after a dbt run.
+      Add this to your `on-run-end` hook to automatically resume monitorial alerts and tasks.
+
+      ```yml
+      on-run-end:
+        - "{% raw %}{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}{% endraw %}"
+      ```
+    docs:
+      show: true
+
+  - name: resume_monitorial_monitors
+    description: Iterates over monitorial nodes and resumes each alert or task that is enabled for the current target.
+    docs:
+      show: false
+
   - name: snowflake_create_or_replace_monitorial_alert_api_statement
+    description: Generates the CREATE OR REPLACE ALERT DDL for a Monitorial alert with API delivery.
     docs:
       show: false
+
   - name: snowflake_create_or_replace_monitorial_alert_email_statement
+    description: Generates the CREATE OR REPLACE ALERT DDL for a Monitorial alert with email delivery.
     docs:
       show: false
+
   - name: snowflake_create_or_replace_monitorial_task_api_statement
+    description: Generates the CREATE OR REPLACE TASK DDL for a serverless Monitorial task with API delivery.
     docs:
       show: false
+
   - name: snowflake_create_or_replace_monitorial_task_email_statement
+    description: Generates the CREATE OR REPLACE TASK DDL for a serverless Monitorial task with email delivery.
     docs:
       show: false
+
   - name: snowflake_resume_monitorial_alert_statement
+    description: Generates the ALTER ALERT ... RESUME statement for a Monitorial alert.
     docs:
       show: false
+
   - name: snowflake_resume_monitorial_task_statement
+    description: Generates the ALTER TASK ... RESUME statement for a Monitorial serverless task.
     docs:
       show: false
+
   - name: snowflake_suspend_monitorial_alert_statement
+    description: Generates the ALTER ALERT ... SUSPEND statement for a Monitorial alert.
     docs:
       show: false
+
   - name: snowflake_suspend_monitorial_task_statement
+    description: Generates the ALTER TASK ... SUSPEND statement for a Monitorial serverless task.
     docs:
       show: false

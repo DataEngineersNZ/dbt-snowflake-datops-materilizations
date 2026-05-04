@@ -1,0 +1,41 @@
+version: 2
+
+macros:
+  - name: materialization_immutable_table_snowflake
+    description: |
+      Materialization for managing Snowflake immutable (append-only) table objects via dbt.
+      Creates a table using CREATE TABLE AS SELECT and skips re-creation if the table already exists
+      (unless `create_or_replace` is set). Supports standard tables, transient tables, and hybrid tables.
+      Handles automatic migration from transient to permanent tables.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `transient` (bool, default: false) — Create as a transient table
+      - `is_hybrid` (bool, default: false) — Create as a hybrid table with primary keys and column constraints
+      - `if_not_exists` (bool, default: true) — Use IF NOT EXISTS (ignored when `create_or_replace` is true)
+      - `create_or_replace` (bool, default: false) — Use CREATE OR REPLACE instead of IF NOT EXISTS
+      - `data_retention_in_days` (int) — Time Travel retention period in days
+      - `max_data_extension_in_days` (int) — Maximum data extension time in days
+      - `change_tracking` (bool, default: false) — Enable change tracking on the table
+      - `primary_keys` (list) — Column names for the primary key (hybrid tables only)
+    docs:
+      show: true
+
+  - name: create_immutable_table_as
+    description: Generates the CREATE TABLE AS statement for standard and transient immutable tables with optional data retention and change tracking.
+    docs:
+      show: false
+
+  - name: create_immutable_hybrid_table
+    description: Generates the CREATE HYBRID TABLE DDL with column definitions, primary keys, auto-increment, and unique constraints.
+    docs:
+      show: false
+
+  - name: check_if_transient
+    description: Queries information_schema to determine whether an existing table is transient, used to decide if a drop-and-recreate is needed.
+    docs:
+      show: false
+
+  - name: persist_table_docs
+    description: Applies table and column comments from dbt model descriptions when `persist_docs` is enabled.
+    docs:
+      show: false

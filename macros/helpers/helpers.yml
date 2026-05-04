@@ -1,0 +1,34 @@
+version: 2
+
+macros:
+  - name: config_meta_get
+    description: |
+      Compatibility wrapper for accessing custom config keys across dbt Core and dbt Fusion.
+      In dbt Core, custom configs are top-level keys. In dbt Fusion, they must be nested under `meta`.
+      This helper checks both locations, allowing the package to work on both engines.
+
+      **Parameters:**
+      - `key` (string) — The config key to look up
+      - `default` (any, default: none) — Value to return if the key is not found in either location
+
+      **Usage:**
+      ```sql
+      {% raw %}{%- set my_value = dbt_dataengineers_materializations.config_meta_get('my_key', 'fallback') -%}{% endraw %}
+      ```
+    docs:
+      show: true
+
+  - name: config_meta_require
+    description: |
+      Like `config_meta_get` but raises a compiler error if the key is not found.
+      Use this for required configuration values that must be explicitly set by the user.
+
+      **Parameters:**
+      - `key` (string) — The required config key to look up
+
+      **Usage:**
+      ```sql
+      {% raw %}{%- set my_value = dbt_dataengineers_materializations.config_meta_require('my_key') -%}{% endraw %}
+      ```
+    docs:
+      show: true
