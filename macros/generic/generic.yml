@@ -8,8 +8,3 @@ macros:
       The model body SQL is executed as-is within a transaction.
     docs:
       show: true
-
-  - name: snowflake_generic_statement
-    description: Wraps raw SQL with a trailing semicolon for execution as a generic DDL statement.
-    docs:
-      show: false

@@ -1,22 +1,18 @@
 /*
-  This materialization is used for creating any type of object
-  The idea behind this materialization is for ability to define a DDL statement that needs to be executed but isn't current
-  available based on its own materialisation.
-  This should be used as a last resort.
-  Adapted from https://github.com/venkatra/dbt_hacks
-
+  This materialization is used for creating any type of object.
+  Use this as a last resort for DDL that isn't covered by other materializations.
 */
 {%- materialization generic, adapter='snowflake' -%}
 
-    {% set target_relation = api.Relation.create(database=database, schema=schema, identifier=model['alias']) %}
-
-    {{ run_hooks(pre_hooks) }}
+    {%- set target_relation = api.Relation.create(
+        database=database,
+        schema=schema,
+        identifier=model['alias']
+    ) -%}
 
     {%- call statement('main') -%}
-      {{ dbt_dataengineers_materializations.snowflake_generic_statement(sql) }}
+        {{ sql }};
     {%- endcall -%}
-
-    {{ run_hooks(post_hooks) }}
 
     {{ return({'relations': [target_relation]}) }}
 
