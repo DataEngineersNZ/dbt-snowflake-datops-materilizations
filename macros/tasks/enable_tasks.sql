@@ -2,60 +2,87 @@
     {% if execute %}
     {% if flags.WHICH in ['run', 'build'] %}
         {% do log("START: Locating tasks to resume", info=True) %}
-        {% set top_level_tasks = [] %}
-        {% set child_level_tasks = [] %}
-        {% set child_level_tasks_to_enable = [] %}
+
+        {# Collect all task nodes and classify them #}
+        {% set root_tasks = [] %}
+        {% set child_tasks = [] %}
+        {% set seen_root_ids = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+
         {% for node in nodes %}
             {% if node.config.materialized == "task" %}
-                {% set top_parent = dbt_dataengineers_materializations.snowflake_get_task_top_parent_node(node) %}
-                {% if top_parent %}
-                    {% do top_level_tasks.append(top_parent) %}
+                {% set task_after = dbt_dataengineers_materializations.node_config_get(node, 'task_after', '') %}
+                {% if task_after | length > 0 %}
+                    {% do child_tasks.append(node) %}
+                {% else %}
+                    {# This is a root task (has schedule, no task_after) #}
+                    {% if node.unique_id not in seen_root_ids %}
+                        {% do root_tasks.append(node) %}
+                        {% do seen_root_ids.append(node.unique_id) %}
+                    {% endif %}
                 {% endif %}
-                {% do child_level_tasks.append(node) %}
             {% endif %}
         {% endfor %}
 
-        {% for node in child_level_tasks %}
-            {% set task_after = dbt_dataengineers_materializations.node_config_get(node, 'task_after', '') %}
-            {% if task_after | length > 0 %}
-                {% do child_level_tasks_to_enable.append(node) %}
+        {# Also find root tasks that are parents of child tasks but might not be in the current selection #}
+        {% for node in child_tasks %}
+            {% set top_parent = dbt_dataengineers_materializations.snowflake_get_task_top_parent_node(node) %}
+            {% if top_parent and top_parent.unique_id not in seen_root_ids %}
+                {% do root_tasks.append(top_parent) %}
+                {% do seen_root_ids.append(top_parent.unique_id) %}
             {% endif %}
         {% endfor %}
 
-        {% if top_level_tasks|count > 0 %}
-            {% do dbt_dataengineers_materializations.suspended_tasks('root', top_level_tasks) %}
-        {% endif %}
+        {# Sort child tasks by depth (deepest first) so we resume bottom-up #}
+        {% set child_tasks_with_depth = [] %}
+        {% for node in child_tasks %}
+            {% set ns = namespace(depth=0, current=node) %}
+            {% for i in range(100) %}
+                {% set parent = dbt_dataengineers_materializations.snowflake_get_task_parent_node(ns.current) %}
+                {% if parent %}
+                    {% set ns.depth = ns.depth + 1 %}
+                    {% set ns.current = parent %}
+                {% endif %}
+            {% endfor %}
+            {% do child_tasks_with_depth.append({'node': node, 'depth': ns.depth}) %}
+        {% endfor %}
 
-        {% if child_level_tasks_to_enable|count > 0 %}
-            {% do dbt_dataengineers_materializations.resume_suspended_tasks('child', child_level_tasks_to_enable) %}
-        {% endif %}
-
-        {% if top_level_tasks|count > 0 %}
-            {% do dbt_dataengineers_materializations.resume_suspended_tasks('root', top_level_tasks) %}
-        {% endif %}
-    {% endif %}
-    {% endif %}
-{% endmacro %}
-
-{% macro resume_suspended_tasks(level, task_nodes) %}
-        {% for task_node in task_nodes %}
+        {# Step 1: Suspend all root tasks (must be done before modifying any child) #}
+        {% do log("Suspending " ~ root_tasks|count ~ " root task(s)", info=True) %}
+        {% for task_node in root_tasks %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
                 {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
-                {% do log('Resuming ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
-                {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
-            {% endif %}
-        {% endfor %}
-{% endmacro %}
-
-{% macro suspended_tasks(level, task_nodes) %}
-        {% for task_node in task_nodes %}
-            {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
-            {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
-                {% do log('Suspending ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
+                {% do log('  Suspending root task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(task_relation) %}
             {% endif %}
         {% endfor %}
+
+        {# Step 2: Resume child tasks deepest-first (bottom-up ordering) #}
+        {% set sorted_children = child_tasks_with_depth | sort(attribute='depth', reverse=true) %}
+        {% do log("Resuming " ~ sorted_children|count ~ " child task(s)", info=True) %}
+        {% for item in sorted_children %}
+            {% set task_node = item.node %}
+            {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
+            {% if target.name in enabled_targets %}
+                {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
+                {% do log('  Resuming child task (depth ' ~ item.depth ~ ') - ' ~ task_relation, info=true) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
+            {% endif %}
+        {% endfor %}
+
+        {# Step 3: Resume root tasks last (top-down, after all children are resumed) #}
+        {% do log("Resuming " ~ root_tasks|count ~ " root task(s)", info=True) %}
+        {% for task_node in root_tasks %}
+            {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
+            {% if target.name in enabled_targets %}
+                {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
+                {% do log('  Resuming root task - ' ~ task_relation, info=true) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
+            {% endif %}
+        {% endfor %}
+
+        {% do log("DONE: Task resume complete", info=True) %}
+    {% endif %}
+    {% endif %}
 {% endmacro %}
