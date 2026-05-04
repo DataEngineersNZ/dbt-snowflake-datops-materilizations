@@ -4,38 +4,38 @@
   of deploying the user defined function in a consistent manner and logic.
 */
 {%- materialization user_defined_function, adapter='snowflake' -%}
-  {%- set preferred_language = config.get('preferred_language', default='SQL') -%}
+  {%- set preferred_language = dbt_dataengineers_materializations.config_meta_get('preferred_language', 'SQL') -%}
   /* common parameters */
-  {%- set parameters = config.get('parameters', default='') -%}
-  {%- set is_secure = config.get('is_secure', default=false) -%}
-  {%- set immutable = config.get('immutable', default=false) -%}
-  {%- set return_type = config.get('return_type', default='varchar' ) -%}
+  {%- set parameters = dbt_dataengineers_materializations.config_meta_get('parameters', '') -%}
+  {%- set is_secure = dbt_dataengineers_materializations.config_meta_get('is_secure', false) -%}
+  {%- set immutable = dbt_dataengineers_materializations.config_meta_get('immutable', false) -%}
+  {%- set return_type = dbt_dataengineers_materializations.config_meta_get('return_type', 'varchar' ) -%}
 
   /* end common parameters */
   /* start external functions */
-  {%- set is_external = config.get('is_external', default=false) -%}
-  {%- set api_integration = config.get('api_integration_dev', default='unknown') -%}
-  {%- set api_uri = config.get('api_uri_dev', default='unknown') -%}
+  {%- set is_external = dbt_dataengineers_materializations.config_meta_get('is_external', false) -%}
+  {%- set api_integration = dbt_dataengineers_materializations.config_meta_get('api_integration_dev', 'unknown') -%}
+  {%- set api_uri = dbt_dataengineers_materializations.config_meta_get('api_uri_dev', 'unknown') -%}
   {%- if target.name == 'prod' -%}
-    {%- set api_uri = config.get('api_uri_prod', default='unknown') -%}
-    {%- set api_integration = config.get('api_integration_prod', default='unknown') -%}
+    {%- set api_uri = dbt_dataengineers_materializations.config_meta_get('api_uri_prod', 'unknown') -%}
+    {%- set api_integration = dbt_dataengineers_materializations.config_meta_get('api_integration_prod', 'unknown') -%}
   {%- endif -%}
   /* end external functions */
 
   /* java only properaties*/
-  {%- set target_path = config.get('target_path', default=none) -%}
+  {%- set target_path = dbt_dataengineers_materializations.config_meta_get('target_path', none) -%}
   /* end java*/
   /* sql only properties*/
-  {%- set memoizable = config.get('memoizable', default=none) -%}
+  {%- set memoizable = dbt_dataengineers_materializations.config_meta_get('memoizable', none) -%}
   /* end sql*/
   /* java / python*/
-  {%- set runtime_version = config.get('runtime_version', default=none) -%}
-  {%- set packages = config.get('packages', default=none) -%}
-  {%- set external_access_integrations = config.get('external_access_integrations', default=[]) %}
-  {%- set external_access_integrations_refs = config.get('external_access_integrations_refs', default=[]) %}
-  {%- set secrets = config.get('secrets', default=none) %}
-  {%- set handler_name = config.get('handler_name', default=none) -%}
-  {%- set imports = config.get('imports', default=none) -%}
+  {%- set runtime_version = dbt_dataengineers_materializations.config_meta_get('runtime_version', none) -%}
+  {%- set packages = dbt_dataengineers_materializations.config_meta_get('packages', none) -%}
+  {%- set external_access_integrations = dbt_dataengineers_materializations.config_meta_get('external_access_integrations', []) %}
+  {%- set external_access_integrations_refs = dbt_dataengineers_materializations.config_meta_get('external_access_integrations_refs', []) %}
+  {%- set secrets = dbt_dataengineers_materializations.config_meta_get('secrets', none) %}
+  {%- set handler_name = dbt_dataengineers_materializations.config_meta_get('handler_name', none) -%}
+  {%- set imports = dbt_dataengineers_materializations.config_meta_get('imports', none) -%}
   {% if imports is not none -%}
     {% if imports|length == 0 %}
         {% set imports = none %}
@@ -43,11 +43,9 @@
   {% endif %}
   /* end java / python*/
 
-  {%- set null_input_behavior = config.get('null_input_behavior', 'called on null input')%}
-  {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
+  {%- set null_input_behavior = dbt_dataengineers_materializations.config_meta_get('null_input_behavior', 'called on null input')%}
+  {%- set identifier = dbt_dataengineers_materializations.config_meta_get('override_name', model['alias'] ) -%}
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
-  {%- set has_transactional_hooks = (hooks | selectattr('transaction', 'equalto', True) | list | length) > 0 %}
-
   {% for integration in external_access_integrations_refs %}
     {% set integration_name = integration ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))|replace('-', '_')   %}
     {% do external_access_integrations.append(integration_name) %}

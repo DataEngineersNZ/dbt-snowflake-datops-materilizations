@@ -8,7 +8,7 @@
 {%- materialization file_format, adapter='snowflake' -%}
     {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
     {%- set identifier = model['alias'] -%}
-    {%- set create_or_replace = config.get('create_or_replace', default=true) -%}
+    {%- set create_or_replace = dbt_dataengineers_materializations.config_meta_get('create_or_replace', true) -%}
     {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
     {% if create_or_replace %}

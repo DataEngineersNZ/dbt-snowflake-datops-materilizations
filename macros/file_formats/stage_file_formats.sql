@@ -1,6 +1,7 @@
 {% macro stage_file_formats(enabled_targets=[target.name], enabled_profiles=[target.profile_name]) %}
+    {% if execute %}
     {% if target.profile_name in enabled_profiles %}
-        {% if flags.WHICH == 'run' or flags.WHICH == 'run-operation' %}
+        {% if flags.WHICH in ['run', 'build', 'run-operation'] %}
             {% if target.name in enabled_targets %}
                 {% set items_to_stage = [] %}
 
@@ -22,6 +23,7 @@
             {% endif %}
         {% endif %}
     {% endif %}
+    {% endif %}
 {% endmacro %}
 
 
@@ -33,7 +35,6 @@
         {% set run_queue = dbt_dataengineers_materializations.get_file_format_build_plan(node) %}
         {% do log(loop_label ~ ' SKIP file format ' ~ node.schema ~ '.' ~ node.name, info = true) if run_queue == [] %}
 
-        {% set width = flags.PRINTER_WIDTH %}
         {% for cmd in run_queue %}
             {# do log(loop_label ~ ' ' ~ cmd, info = true) #}
             {% call statement('runner', fetch_result = True, auto_begin = False) %}

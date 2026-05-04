@@ -5,8 +5,16 @@
     {%- elif relation.type is not none -%}
         {%- set relation_type = relation.type -%}
     {%- else -%}
-        {%- set relation_result = run_query("select table_type from " ~  relation.database ~ ".information_schema.tables where table_name  = upper('" ~ relation.identifier ~ "')") -%}
-        {%- set relation_type = relation_result.columns[0].values()[0] -%}
+        {%- if execute -%}
+            {%- set relation_result = run_query("select table_type from " ~  relation.database ~ ".information_schema.tables where table_name  = upper('" ~ relation.identifier ~ "')") -%}
+            {%- if relation_result and relation_result | length > 0 -%}
+                {%- set relation_type = relation_result.columns[0].values()[0] -%}
+            {%- else -%}
+                {%- set relation_type = 'table' -%}
+            {%- endif -%}
+        {%- else -%}
+            {%- set relation_type = 'table' -%}
+        {%- endif -%}
         {% if relation_type == 'MATERIALIZED VIEW' %}
             {% set relation_type = 'view' %}
         {% endif %}

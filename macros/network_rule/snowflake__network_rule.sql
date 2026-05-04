@@ -3,9 +3,9 @@
 */
 
 {%- materialization network_rule, adapter='snowflake' -%}
-  {%- set rule_type = config.get('rule_type', default='HOST_PORT') -%}
-  {%- set value_list = config.get('value_list', default=[]) -%}
-  {%- set mode = config.get('mode', default='INGRESS') -%}
+  {%- set rule_type = dbt_dataengineers_materializations.config_meta_get('rule_type', 'HOST_PORT') -%}
+  {%- set value_list = dbt_dataengineers_materializations.config_meta_get('value_list', []) -%}
+  {%- set mode = dbt_dataengineers_materializations.config_meta_get('mode', 'INGRESS') -%}
   {%- set identifier = model['alias'] -%}
 
   {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database) -%}

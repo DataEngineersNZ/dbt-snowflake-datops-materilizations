@@ -3,17 +3,17 @@
 */
 
 {%- materialization secret, adapter='snowflake' -%}
-  {%- set secret_type = config.get('type', default='GENERIC_STRING') -%}
-  {%- set secret_string_variable = config.get('secret_string_variable', default=none) -%}
+  {%- set secret_type = dbt_dataengineers_materializations.config_meta_get('type', 'GENERIC_STRING') -%}
+  {%- set secret_string_variable = dbt_dataengineers_materializations.config_meta_get('secret_string_variable', none) -%}
   {%- set secret_string = none -%}
-  {%- set username = config.get('username', default=none) -%}
-  {%- set password_variable = config.get('password_variable', default=none) -%}
+  {%- set username = dbt_dataengineers_materializations.config_meta_get('username', none) -%}
+  {%- set password_variable = dbt_dataengineers_materializations.config_meta_get('password_variable', none) -%}
   {%- set password = none -%}
-  {%- set oauth_refresh_token_variable = config.get('oauth_refresh_token_variable', default=none) -%}
+  {%- set oauth_refresh_token_variable = dbt_dataengineers_materializations.config_meta_get('oauth_refresh_token_variable', none) -%}
   {%- set oauth_refresh_token = none -%}
-  {%- set oauth_refresh_token_expiry_time = config.get('oauth_refresh_token_expiry_time', default=none) -%}
-  {%- set security_integration = config.get('security_integration', default=none) -%}
-  {%- set oauth_scopes = config.get('oauth_scopes', default=none) -%}
+  {%- set oauth_refresh_token_expiry_time = dbt_dataengineers_materializations.config_meta_get('oauth_refresh_token_expiry_time', none) -%}
+  {%- set security_integration = dbt_dataengineers_materializations.config_meta_get('security_integration', none) -%}
+  {%- set oauth_scopes = dbt_dataengineers_materializations.config_meta_get('oauth_scopes', none) -%}
   {%- set identifier = model['alias'] -%}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}

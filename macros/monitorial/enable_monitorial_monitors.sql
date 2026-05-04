@@ -1,5 +1,6 @@
 {% macro enable_monitorial_monitors() %}
-    {% if flags.WHICH == 'run' %}
+    {% if execute %}
+    {% if flags.WHICH in ['run', 'build'] %}
         {% do log("START: Locating monitorial monitors to resume", info=true) %}
         {% set alerts = [] %}
         {% set tasks = [] %}
@@ -21,6 +22,7 @@
             {% do dbt_dataengineers_materializations.resume_monitorial_monitors(tasks, true) %}
         {% endif %}
 
+    {% endif %}
     {% endif %}
 {% endmacro %}
 

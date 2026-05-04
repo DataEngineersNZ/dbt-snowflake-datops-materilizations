@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: integration_test_source
+    schema: "{{ target.schema }}"
+    tables:
+      - name: test_source_table
+        description: Source table for stream and table auto-creation tests
+        columns:
+          - name: id
+            data_type: number
+          - name: name
+            data_type: varchar(100)
+          - name: created_at
+            data_type: timestamp_ntz
+        external:
+          auto_create_table: true
+          auto_maintained: true

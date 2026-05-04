@@ -1,0 +1,30 @@
+name: 'dbt_integration_tests'
+version: '1.0.0'
+config-version: 2
+
+profile: 'dbt_integration_tests'
+
+require-dbt-version: [">=1.3.0", "<3.0.0"]
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+dispatch:
+  - macro_namespace: dbt
+    search_order: [dbt_dataengineers_materializations, dbt]
+
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_file_formats() }}"
+  - "{{ dbt_dataengineers_materializations.stage_stages() }}"
+  - "{{ dbt_dataengineers_materializations.stage_table_sources() }}"
+
+on-run-end:
+  - "{{ dbt_dataengineers_materializations.enable_tasks() }}"
+  - "{{ dbt_dataengineers_materializations.enable_alerts() }}"
+
+vars:
+  # Integration test variables
+  default_monitorial_error_integration: ""

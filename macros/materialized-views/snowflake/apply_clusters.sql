@@ -1,5 +1,5 @@
 {% macro apply_clusters(relation, config) -%}
-    {%- set cluster_by_keys = config.get('cluster_by', default=none) -%}
+    {%- set cluster_by_keys = config.get('cluster_by', none) -%}
 
     {%- if cluster_by_keys is not none and cluster_by_keys is string -%}
         {%- set cluster_by_keys = [cluster_by_keys] -%}

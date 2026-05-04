@@ -6,15 +6,15 @@
 
 {%- materialization task, adapter='snowflake' -%}
 
-  {%- set warehouse_name_or_size = config.get('warehouse_name_or_size', default='xsmall') -%}
-  {%- set is_serverless = config.get('is_serverless', default=true) -%}
-  {%- set task_schedule = config.get('schedule') -%}
-  {%- set task_after = config.get('task_after') -%}
-  {%- set stream_name = config.get('stream_name') -%}
-  {%- set error_integration = config.get('error_integration', default=var('default_monitorial_error_integration', '')) -%}
-  {%- set timeout_ms = config.get('timeout', default=None) -%}
-  {%- set suspend_number = config.get('suspend_after_number_of_failures', default=None) -%}
-  {%- set enabled_targets = config.get('enabled_targets', [target.name]) %}
+  {%- set warehouse_name_or_size = dbt_dataengineers_materializations.config_meta_get('warehouse_name_or_size', 'xsmall') -%}
+  {%- set is_serverless = dbt_dataengineers_materializations.config_meta_get('is_serverless', true) -%}
+  {%- set task_schedule = dbt_dataengineers_materializations.config_meta_get('schedule') -%}
+  {%- set task_after = dbt_dataengineers_materializations.config_meta_get('task_after') -%}
+  {%- set stream_name = dbt_dataengineers_materializations.config_meta_get('stream_name') -%}
+  {%- set error_integration = dbt_dataengineers_materializations.config_meta_get('error_integration', var('default_monitorial_error_integration', '')) -%}
+  {%- set timeout_ms = dbt_dataengineers_materializations.config_meta_get('timeout', None) -%}
+  {%- set suspend_number = dbt_dataengineers_materializations.config_meta_get('suspend_after_number_of_failures', None) -%}
+  {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
 
   {% set target_relation = this %}

@@ -6,16 +6,14 @@
 
 */
 {%- materialization stored_procedure, adapter='snowflake' -%}
-  {%- set preferred_language = config.get('preferred_language', default=SQL) -%}
-  {%- set parameters = config.get('parameters', default='') -%}
-  {%- set identifier = config.get('override_name', default=model['alias'] ) -%}
-  {%- set return_type = config.get('return_type', default='varchar' ) -%}
-  {%- set execute_as = config.get('execute_as', default='owner' ) -%}
-  {%- set include_copy_grants = config.get('include_copy_grants', default=true) -%}
+  {%- set preferred_language = dbt_dataengineers_materializations.config_meta_get('preferred_language', SQL) -%}
+  {%- set parameters = dbt_dataengineers_materializations.config_meta_get('parameters', '') -%}
+  {%- set identifier = dbt_dataengineers_materializations.config_meta_get('override_name', model['alias'] ) -%}
+  {%- set return_type = dbt_dataengineers_materializations.config_meta_get('return_type', 'varchar' ) -%}
+  {%- set execute_as = dbt_dataengineers_materializations.config_meta_get('execute_as', 'owner' ) -%}
+  {%- set include_copy_grants = dbt_dataengineers_materializations.config_meta_get('include_copy_grants', true) -%}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
-
-  {%- set has_transactional_hooks = (hooks | selectattr('transaction', 'equalto', True) | list | length) > 0 %}
 
   -- setup
   {{ run_hooks(pre_hooks, inside_transaction=False) }}

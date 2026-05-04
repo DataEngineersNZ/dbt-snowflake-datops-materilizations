@@ -1,5 +1,6 @@
 {% macro enable_tasks() %}
-    {% if flags.WHICH == 'run' %}
+    {% if execute %}
+    {% if flags.WHICH in ['run', 'build'] %}
         {% do log("START: Locating tasks to resume", info=True) %}
         {% set top_level_tasks = [] %}
         {% set child_level_tasks = [] %}
@@ -32,6 +33,7 @@
         {% if top_level_tasks|count > 0 %}
             {% do dbt_dataengineers_materializations.resume_suspended_tasks('root', top_level_tasks) %}
         {% endif %}
+    {% endif %}
     {% endif %}
 {% endmacro %}
 

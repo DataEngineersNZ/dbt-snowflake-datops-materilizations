@@ -1,5 +1,6 @@
 {% macro enable_alerts() %}
-    {% if flags.WHICH == 'run' %}
+    {% if execute %}
+    {% if flags.WHICH in ['run', 'build'] %}
         {% do log("START: Locating alerts to resume", info=True) %}
         {% set alerts = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
@@ -13,6 +14,7 @@
             {% do dbt_dataengineers_materializations.resume_alerts(alerts, false) %}
         {% endif %}
 
+    {% endif %}
     {% endif %}
 {% endmacro %}
 

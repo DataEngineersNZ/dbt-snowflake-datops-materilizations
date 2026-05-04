@@ -1,0 +1,58 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+  SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+  SNOWFLAKE_PRIVATE_KEY_PATH: /tmp/snowflake_key.p8
+  SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
+  SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+  SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+  SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+  SNOWFLAKE_SCHEMA: DBT_INTEGRATION_TEST
+  INTEGRATION_TEST_SECRET: "test-secret-value"
+  DBT_PROFILES_DIR: .
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: integration_tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt
+        run: pip install dbt-snowflake>=1.9.0
+
+      - name: Write Snowflake private key
+        run: echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Run models (first run - full refresh)
+        run: dbt run --full-refresh --exclude tag:enterprise_only
+
+      - name: Run models (second run - idempotency)
+        run: dbt run --exclude tag:enterprise_only
+
+      - name: Run assertions
+        run: dbt test
+
+      - name: Cleanup test objects
+        if: always()
+        run: dbt run-operation cleanup

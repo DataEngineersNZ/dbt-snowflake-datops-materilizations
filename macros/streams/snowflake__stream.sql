@@ -6,11 +6,11 @@
 
 {%- materialization stream, adapter='snowflake' -%}
 
-  {%- set source_model = config.get('source_model') -%}
-  {%- set source_schema = config.get('source_schema', default=schema) -%}
-  {%- set source_database = config.get('source_database', default=database) -%}
-  {%- set source_database_prefix = config.get('source_database_prefix', default=none) -%}
-  {%- set source_type = config.get('source_type', default='internal') -%}
+  {%- set source_model = dbt_dataengineers_materializations.config_meta_get('source_model') -%}
+  {%- set source_schema = dbt_dataengineers_materializations.config_meta_get('source_schema', schema) -%}
+  {%- set source_database = dbt_dataengineers_materializations.config_meta_get('source_database', database) -%}
+  {%- set source_database_prefix = dbt_dataengineers_materializations.config_meta_get('source_database_prefix', none) -%}
+  {%- set source_type = dbt_dataengineers_materializations.config_meta_get('source_type', 'internal') -%}
 
   {% if source_database_prefix is not none %}
     {% set source_database_var = source_database_prefix ~ "_" ~  target.name|replace('-', '_') %}

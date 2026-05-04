@@ -32,8 +32,8 @@
         {# determine backups and mirgation and comparison tables accoridngly #}
         {% if current_relation_exists_as_table and auto_maintained %}
             {% if source_node.external.retain_previous_version_flg %}
-                {%- set backup_suffix_dt = py_current_timestring() -%}
-                {%- set backup_table_suffix = config.get('backup_table_suffix', default='_DBT_BACKUP_') -%}
+                {%- set backup_suffix_dt = modules.datetime.datetime.now().strftime('%Y%m%d%H%M%S') -%}
+                {%- set backup_table_suffix = dbt_dataengineers_materializations.config_meta_get('backup_table_suffix', '_DBT_BACKUP_') -%}
                 {%- set backup_identifier = identifier + backup_table_suffix + backup_suffix_dt -%}
                 {%- set backup_relation = api.Relation.create(database=database, schema=schema, identifier=backup_identifier, type='table') -%}
                 {% do build_plan.append(dbt_dataengineers_materializations.snowflake_clone_table_relation_if_exists(current_relation, backup_relation)) %}

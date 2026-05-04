@@ -8,7 +8,7 @@
             schema = source_node.schema,
             identifier = source_node.name
         ) %}
-        {% set create_or_replace = source_node.config.get('create_or_replace', default=false) %}
+        {% set create_or_replace = source_node.config.get('meta', {}).get('create_or_replace', source_node.config.get('create_or_replace', false)) %}
 
         {% set sql = render(source_node.get('raw_code')) %}
         {% if create_or_replace %}

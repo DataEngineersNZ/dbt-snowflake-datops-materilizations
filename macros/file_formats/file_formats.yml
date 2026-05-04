@@ -1,7 +1,54 @@
 version: 2
 
 macros:
- 
+  - name: materialization_file_format_snowflake
+    description: |
+      Materialization for managing Snowflake File Format objects via dbt.
+      Creates or replaces a file format with the SQL defined in the model body.
+      File formats are staged via `on-run-start` hooks using `stage_file_formats`.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `create_or_replace` (bool, default: true) — Use CREATE OR REPLACE vs CREATE IF NOT EXISTS
+    docs:
+      show: true
+
+  - name: stage_file_formats
+    description: |
+      Hook macro to create file format objects during a dbt run.
+      Add this to your `on-run-start` hook to ensure file formats are created before models that depend on them.
+
+      ```yml
+      on-run-start:
+        - "{{ dbt_dataengineers_materializations.stage_file_formats() }}"
+      ```
+
+      **Parameters:**
+      - `enabled_targets` (list, default: [target.name]) — Target environments where file formats are staged
+      - `enabled_profiles` (list, default: [target.profile_name]) — Profiles where file formats are staged
+    docs:
+      show: true
+
+  - name: stage_file_format_plans
+    description: Iterates over file format nodes and executes their build plans.
+    docs:
+      show: false
+
+  - name: get_file_format_build_plan
+    description: Dispatch wrapper that delegates to the adapter-specific file format build plan.
+    docs:
+      show: false
+
+  - name: default__get_file_format_build_plan
+    description: Default adapter implementation — raises an error as file format staging is not supported on the default adapter.
+    docs:
+      show: false
+
+  - name: snowflake__get_file_format_build_plan
+    description: Snowflake-specific build plan for file formats. Generates the schema creation and file format DDL statements.
+    docs:
+      show: false
+
   - name: snowflake_create_fileformat_statement
+    description: Generates the CREATE FILE FORMAT DDL statement.
     docs:
       show: false
