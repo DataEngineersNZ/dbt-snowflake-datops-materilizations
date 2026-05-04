@@ -12,9 +12,9 @@
 
         {% set sql = render(source_node.get('raw_code')) %}
         {% if create_or_replace %}
-            {% set build_plan = build_plan + [snowflake_create_or_replace_stage_statement(stage_relation, sql)] %}
+            {% set build_plan = build_plan + [dbt_dataengineers_materializations.snowflake_create_or_replace_stage_statement(stage_relation, sql)] %}
         {% else %}
-            {% set build_plan = build_plan + [snowflake_create_stages_if_not_exist_statement(stage_relation, sql)] %}
+            {% set build_plan = build_plan + [dbt_dataengineers_materializations.snowflake_create_stages_if_not_exist_statement(stage_relation, sql)] %}
         {% endif %}
 
     {% endif %}

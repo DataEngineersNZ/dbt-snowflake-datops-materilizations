@@ -16,7 +16,7 @@
 
                 {# Initial run to cater for  #}
                 {% if items_to_stage|length > 0 %}
-                    {% do stage_file_format_plans(items_to_stage) %}
+                    {% do dbt_dataengineers_materializations.stage_file_format_plans(items_to_stage) %}
                 {% endif %}
             {% else %}
                 {% do log('file formats to create: Not enabled', info = true) %}
@@ -32,7 +32,7 @@
         {% set loop_label = loop.index ~ ' of ' ~ loop.length %}
         {% do log(loop_label ~ ' START file format creation ' ~ node.schema ~ '.' ~ node.name, info = true) -%}
 
-        {% set run_queue = get_file_format_build_plan(node) %}
+        {% set run_queue = dbt_dataengineers_materializations.get_file_format_build_plan(node) %}
         {% do log(loop_label ~ ' SKIP file format ' ~ node.schema ~ '.' ~ node.name, info = true) if run_queue == [] %}
 
         {% for cmd in run_queue %}

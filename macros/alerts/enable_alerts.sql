@@ -11,7 +11,7 @@
         {% endfor %}
 
         {% if alerts|count > 0 %}
-            {% do resume_alerts(alerts, false) %}
+            {% do dbt_dataengineers_materializations.resume_alerts(alerts, false) %}
         {% endif %}
 
     {% endif %}
@@ -23,7 +23,7 @@
         {% if target.name in node.config.enabled_targets %}
             {% set relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
             {% do log('Resuming ' ~ level ~ ' alert - ' ~ alert_relation, info=true) %}
-            {% do snowflake_resume_alert_statement(relation) %}
+            {% do dbt_dataengineers_materializations.snowflake_resume_alert_statement(relation) %}
         {% endif %}
     {% endfor %}
 {% endmacro %}

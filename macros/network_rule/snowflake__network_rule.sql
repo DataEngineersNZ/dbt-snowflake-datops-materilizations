@@ -3,9 +3,9 @@
 */
 
 {%- materialization network_rule, adapter='snowflake' -%}
-  {%- set rule_type = config_meta_get('rule_type', 'HOST_PORT') -%}
-  {%- set value_list = config_meta_get('value_list', []) -%}
-  {%- set mode = config_meta_get('mode', 'INGRESS') -%}
+  {%- set rule_type = dbt_dataengineers_materializations.config_meta_get('rule_type', 'HOST_PORT') -%}
+  {%- set value_list = dbt_dataengineers_materializations.config_meta_get('value_list', []) -%}
+  {%- set mode = dbt_dataengineers_materializations.config_meta_get('mode', 'INGRESS') -%}
   {%- set identifier = model['alias'] -%}
 
   {%- set target_relation = api.Relation.create(identifier=identifier, schema=schema, database=database) -%}
@@ -18,7 +18,7 @@
   -- action statement
 
   {%- call statement('main') -%}
-      {{ snowflake_create_network_rule_statement(target_relation, rule_type, value_list, mode) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_network_rule_statement(target_relation, rule_type, value_list, mode) }}
   {%- endcall -%}
 
 

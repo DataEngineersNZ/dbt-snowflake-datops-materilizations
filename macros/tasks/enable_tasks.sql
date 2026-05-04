@@ -8,7 +8,7 @@
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
         {% for node in nodes %}
             {% if node.config.materialized == "task" %}
-                {% set top_parent = snowflake_get_task_top_parent_node(node) %}
+                {% set top_parent = dbt_dataengineers_materializations.snowflake_get_task_top_parent_node(node) %}
                 {% if top_parent %}
                     {% do top_level_tasks.append(top_parent) %}
                 {% endif %}
@@ -23,15 +23,15 @@
         {% endfor %}
 
         {% if top_level_tasks|count > 0 %}
-            {% do suspended_tasks('root', top_level_tasks) %}
+            {% do dbt_dataengineers_materializations.suspended_tasks('root', top_level_tasks) %}
         {% endif %}
 
         {% if child_level_tasks_to_enable|count > 0 %}
-            {% do resume_suspended_tasks('child', child_level_tasks_to_enable) %}
+            {% do dbt_dataengineers_materializations.resume_suspended_tasks('child', child_level_tasks_to_enable) %}
         {% endif %}
 
         {% if top_level_tasks|count > 0 %}
-            {% do resume_suspended_tasks('root', top_level_tasks) %}
+            {% do dbt_dataengineers_materializations.resume_suspended_tasks('root', top_level_tasks) %}
         {% endif %}
     {% endif %}
     {% endif %}
@@ -42,7 +42,7 @@
             {% if target.name in task_node.config.enabled_targets %}
                 {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
                 {% do log('Resuming ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
-                {% do snowflake_resume_task_statement(task_relation) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
             {% endif %}
         {% endfor %}
 {% endmacro %}
@@ -52,7 +52,7 @@
             {% if target.name in task_node.config.enabled_targets %}
                 {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
                 {% do log('Suspending ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
-                {% do snowflake_suspend_task_statement(task_relation) %}
+                {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(task_relation) %}
             {% endif %}
         {% endfor %}
 {% endmacro %}

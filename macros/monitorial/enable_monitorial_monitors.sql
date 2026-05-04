@@ -16,10 +16,10 @@
         {% endfor %}
 
         {% if alerts|count > 0 %}
-            {% do resume_monitorial_monitors(alerts, false) %}
+            {% do dbt_dataengineers_materializations.resume_monitorial_monitors(alerts, false) %}
         {% endif %}
         {% if tasks|count > 0 %}
-            {% do resume_monitorial_monitors(tasks, true) %}
+            {% do dbt_dataengineers_materializations.resume_monitorial_monitors(tasks, true) %}
         {% endif %}
 
     {% endif %}
@@ -32,10 +32,10 @@
             {% set relation = api.Relation.create(database=node.database, schema=node.schema, identifier=node.name) %}
             {% if is_task %}
                 {% do log('Resuming ' ~ level ~ ' monitorial task - ' ~ task_relation, info=true) %}
-                {% do snowflake_resume_monitorial_task_statement(relation) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_monitorial_task_statement(relation) %}
             {% else %}
                 {% do log('Resuming ' ~ level ~ ' monitorial alert - ' ~ alert_relation, info=true) %}
-                {% do snowflake_resume_monitorial_alert_statement(relation) %}
+                {% do dbt_dataengineers_materializations.snowflake_resume_monitorial_alert_statement(relation) %}
             {% endif %}
         {% endif %}
     {% endfor %}

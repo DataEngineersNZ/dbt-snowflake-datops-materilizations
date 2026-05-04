@@ -6,12 +6,12 @@
 
 */
 {%- materialization stored_procedure, adapter='snowflake' -%}
-  {%- set preferred_language = config_meta_get('preferred_language', 'SQL') -%}
-  {%- set parameters = config_meta_get('parameters', '') -%}
-  {%- set identifier = config_meta_get('override_name', model['alias'] ) -%}
-  {%- set return_type = config_meta_get('return_type', 'varchar' ) -%}
-  {%- set execute_as = config_meta_get('execute_as', 'owner' ) -%}
-  {%- set include_copy_grants = config_meta_get('include_copy_grants', true) -%}
+  {%- set preferred_language = dbt_dataengineers_materializations.config_meta_get('preferred_language', 'SQL') -%}
+  {%- set parameters = dbt_dataengineers_materializations.config_meta_get('parameters', '') -%}
+  {%- set identifier = dbt_dataengineers_materializations.config_meta_get('override_name', model['alias'] ) -%}
+  {%- set return_type = dbt_dataengineers_materializations.config_meta_get('return_type', 'varchar' ) -%}
+  {%- set execute_as = dbt_dataengineers_materializations.config_meta_get('execute_as', 'owner' ) -%}
+  {%- set include_copy_grants = dbt_dataengineers_materializations.config_meta_get('include_copy_grants', true) -%}
 
   {%- set target_relation = api.Relation.create( identifier=identifier, schema=schema, database=database) -%}
 
@@ -30,7 +30,7 @@
   {% endif %}
 
   {% call statement('main') -%}
-    {{ snowflake_create_stored_procedure_statement(target_relation, copy_grants_statement, preferred_language, parameters, return_type, execute_as, sql) }}
+    {{ dbt_dataengineers_materializations.snowflake_create_stored_procedure_statement(target_relation, copy_grants_statement, preferred_language, parameters, return_type, execute_as, sql) }}
   {%- endcall %}
 
       --------------------------------------------------------------------------------------------------------------------

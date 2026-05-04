@@ -1,13 +1,13 @@
 {% materialization immutable_table, adapter='snowflake' -%}
 
     {% set original_query_tag = set_query_tag() %}
-    {%- set is_transient = config_meta_get('transient', false) -%}
-    {%- set if_not_exists = config_meta_get('if_not_exists', true) -%}
-    {%- set create_or_replace = config_meta_get('create_or_replace', false) -%}
-    {%- set data_retention_in_days = config_meta_get('data_retention_in_days', none) -%}
-    {%- set max_data_extension_in_days = config_meta_get('max_data_extension_in_days', none) -%}
-    {%- set enable_change_tracking = config_meta_get('change_tracking', false) -%}
-    {%- set is_hybrid = config_meta_get('is_hybrid', false) -%}
+    {%- set is_transient = dbt_dataengineers_materializations.config_meta_get('transient', false) -%}
+    {%- set if_not_exists = dbt_dataengineers_materializations.config_meta_get('if_not_exists', true) -%}
+    {%- set create_or_replace = dbt_dataengineers_materializations.config_meta_get('create_or_replace', false) -%}
+    {%- set data_retention_in_days = dbt_dataengineers_materializations.config_meta_get('data_retention_in_days', none) -%}
+    {%- set max_data_extension_in_days = dbt_dataengineers_materializations.config_meta_get('max_data_extension_in_days', none) -%}
+    {%- set enable_change_tracking = dbt_dataengineers_materializations.config_meta_get('change_tracking', false) -%}
+    {%- set is_hybrid = dbt_dataengineers_materializations.config_meta_get('is_hybrid', false) -%}
     {%- set grant_config = config.get('grants') %}
 
     {% if create_or_replace %}
@@ -38,27 +38,27 @@
 
     {% if (existing_relation is none or create_or_replace) %}
         {% if is_hybrid %}
-            {% set build_sql = create_immutable_hybrid_table(target_relation, create_statement, model) %}
+            {% set build_sql = dbt_dataengineers_materializations.create_immutable_hybrid_table(target_relation, create_statement, model) %}
         {% else %}
-            {% set build_sql = create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
+            {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
         {% endif %}
     {% elif existing_relation.is_view  %}
         {#-- Can't overwrite a view with a table - we must drop --#}
         {{ log("Dropping relation " ~ target_relation ~ " because it is a " ~ existing_relation.type ~ " and this model is a immutable table.") }}
         {% do adapter.drop_relation(existing_relation) %}
         {% if is_hybrid %}
-            {% set build_sql = create_immutable_hybrid_table(target_relation, create_statement) %}
+            {% set build_sql = dbt_dataengineers_materializations.create_immutable_hybrid_table(target_relation, create_statement) %}
         {% else %}
-            {% set build_sql = create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
+            {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
         {% endif %}
-    {% elif check_if_transient(existing_relation.schema, existing_relation.identifier) %}
+    {% elif dbt_dataengineers_materializations.check_if_transient(existing_relation.schema, existing_relation.identifier) %}
         {% if create_or_replace or allow_transient_removal %}
             {{ log("Dropping relation " ~ target_relation ~ " because it is a transient table.", info=True) }}
             {% do adapter.drop_relation(existing_relation) %}
             {% if is_hybrid %}
-                {% set build_sql = create_immutable_hybrid_table(target_relation, create_statement) %}
+                {% set build_sql = dbt_dataengineers_materializations.create_immutable_hybrid_table(target_relation, create_statement) %}
             {% else %}
-                {% set build_sql = create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
+                {% set build_sql = dbt_dataengineers_materializations.create_immutable_table_as(target_relation, create_statement, is_transient, data_retention_in_days, max_data_extension_in_days, enable_change_tracking, sql) %}
             {% endif %}
         {% endif %}
     {% else %}
@@ -78,7 +78,7 @@
 
     {% set should_revoke = should_revoke(existing_relation, full_refresh_mode=True) %}
     {% do apply_grants(target_relation, grant_config, should_revoke=should_revoke) %}
-    {% do persist_table_docs(target_relation, model) %}
+    {% do dbt_dataengineers_materializations.persist_table_docs(target_relation, model) %}
 
     {% do unset_query_tag(original_query_tag) %}
 

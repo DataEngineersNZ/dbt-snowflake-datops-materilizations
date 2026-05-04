@@ -18,8 +18,8 @@
 
         {% set sql = render(source_node.get('raw_code')) %}
         {% set build_plan = build_plan + [
-                create_external_schema(source_node),
-                snowflake_create_fileformat_statement(create_statement, stage_relation, sql)] %}
+                dbt_dataengineers_materializations.create_external_schema(source_node),
+                dbt_dataengineers_materializations.snowflake_create_fileformat_statement(create_statement, stage_relation, sql)] %}
 
 
     {% endif %}

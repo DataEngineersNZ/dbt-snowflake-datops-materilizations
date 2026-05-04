@@ -3,14 +3,14 @@
 */
 
 {%- materialization external_access_integration, adapter='snowflake' -%}
-  {%- set authentication_secrets = config_meta_get('authentication_secrets', []) -%}
-  {%- set authentication_secrets_refs = config_meta_get('authentication_secrets_refs', []) -%}
-  {%- set network_rules = config_meta_get('network_rules', []) -%}
-  {%- set network_rules_refs = config_meta_get('network_rules_refs', []) -%}
-  {%- set api_authentication_integrations = config_meta_get('api_authentication_integrations', []) -%}
-  {%- set api_authentication_integrations_refs = config_meta_get('api_authentication_integrations_refs', []) -%}
-  {%- set role_for_creation = config_meta_get('role_for_creation', 'developers') -%}
-  {%- set roles_for_use = config_meta_get('roles_for_use', ['dataops_admin']) -%}
+  {%- set authentication_secrets = dbt_dataengineers_materializations.config_meta_get('authentication_secrets', []) -%}
+  {%- set authentication_secrets_refs = dbt_dataengineers_materializations.config_meta_get('authentication_secrets_refs', []) -%}
+  {%- set network_rules = dbt_dataengineers_materializations.config_meta_get('network_rules', []) -%}
+  {%- set network_rules_refs = dbt_dataengineers_materializations.config_meta_get('network_rules_refs', []) -%}
+  {%- set api_authentication_integrations = dbt_dataengineers_materializations.config_meta_get('api_authentication_integrations', []) -%}
+  {%- set api_authentication_integrations_refs = dbt_dataengineers_materializations.config_meta_get('api_authentication_integrations_refs', []) -%}
+  {%- set role_for_creation = dbt_dataengineers_materializations.config_meta_get('role_for_creation', 'developers') -%}
+  {%- set roles_for_use = dbt_dataengineers_materializations.config_meta_get('roles_for_use', ['dataops_admin']) -%}
   {%- set identifier = model['alias'] ~ "_" ~  target.name|replace('local-dev', database|replace(var('target_database_replacement'), ''))|replace('-', '_')  %}
 
   -- setup
@@ -38,7 +38,7 @@
  {% endfor %}
 
   {%- call statement('main') -%}
-      {{ snowflake_create_external_access_integration_statement(identifier|upper, authentication_secrets, network_rules, api_authentication_integrations, role_for_creation, ns.original_role, roles_for_use) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_external_access_integration_statement(identifier|upper, authentication_secrets, network_rules, api_authentication_integrations, role_for_creation, ns.original_role, roles_for_use) }}
   {%- endcall -%}
 
 

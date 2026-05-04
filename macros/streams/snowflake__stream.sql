@@ -6,11 +6,11 @@
 
 {%- materialization stream, adapter='snowflake' -%}
 
-  {%- set source_model = config_meta_get('source_model') -%}
-  {%- set source_schema = config_meta_get('source_schema', schema) -%}
-  {%- set source_database = config_meta_get('source_database', database) -%}
-  {%- set source_database_prefix = config_meta_get('source_database_prefix', none) -%}
-  {%- set source_type = config_meta_get('source_type', 'internal') -%}
+  {%- set source_model = dbt_dataengineers_materializations.config_meta_get('source_model') -%}
+  {%- set source_schema = dbt_dataengineers_materializations.config_meta_get('source_schema', schema) -%}
+  {%- set source_database = dbt_dataengineers_materializations.config_meta_get('source_database', database) -%}
+  {%- set source_database_prefix = dbt_dataengineers_materializations.config_meta_get('source_database_prefix', none) -%}
+  {%- set source_type = dbt_dataengineers_materializations.config_meta_get('source_type', 'internal') -%}
 
   {% if source_database_prefix is not none %}
     {% set source_database_var = source_database_prefix ~ "_" ~  target.name|replace('-', '_') %}
@@ -33,9 +33,9 @@
 
   {%- call statement('main') -%}
     {% if source_type == 'external' %}
-      {{ snowflake_create_external_stream_statement(target_relation, source_relation) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_external_stream_statement(target_relation, source_relation) }}
     {% else %}
-      {{ snowflake_create_stream_statement(target_relation, source_relation) }}
+      {{ dbt_dataengineers_materializations.snowflake_create_stream_statement(target_relation, source_relation) }}
     {% endif %}
   {%- endcall -%}
 
