@@ -32,6 +32,10 @@
     {{ run_hooks(post_hooks, inside_transaction=False) }}
 
     -- return
-    {{ return({'relations': [target_relation]}) }}
+    {% if target_relation is not none %}
+        {{ return({'relations': [target_relation]}) }}
+    {% else %}
+        {{ return({'relations': []}) }}
+    {% endif %}
 
 {%- endmaterialization -%}
