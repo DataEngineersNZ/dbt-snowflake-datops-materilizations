@@ -12,7 +12,7 @@
   {%- set task_after = dbt_dataengineers_materializations.config_meta_get('task_after') -%}
   {%- set stream_name = dbt_dataengineers_materializations.config_meta_get('stream_name') -%}
   {%- set error_integration = dbt_dataengineers_materializations.config_meta_get('error_integration', var('default_monitorial_error_integration', '')) -%}
-  {%- set timeout_ms = dbt_dataengineers_materializations.config_meta_get('timeout', None) -%}
+  {%- set timeout_ms = dbt_dataengineers_materializations.config_meta_get('timeout', none) -%}
   {%- set suspend_number = dbt_dataengineers_materializations.config_meta_get('suspend_after_number_of_failures', none) -%}
   {%- set enabled_targets = dbt_dataengineers_materializations.config_meta_get('enabled_targets', [target.name]) %}
   {%- set is_enabled = target.name in enabled_targets -%}
@@ -60,7 +60,8 @@
     {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(target_relation) %}
   {% endif %}
   {% if top_parent %}
-    {% if target.name in top_parent.config.enabled_targets %}
+    {% set top_parent_enabled_targets = dbt_dataengineers_materializations.node_config_get(top_parent, 'enabled_targets', [target.name]) %}
+    {% if target.name in top_parent_enabled_targets %}
       {{ log('resuming '~ top_parent_relation, info=True) }}
       {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(top_parent_relation) %}
     {% endif %}

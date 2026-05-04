@@ -7,31 +7,17 @@
 
 */
 {%- materialization generic, adapter='snowflake' -%}
+
     {% set target_relation = api.Relation.create(database=database, schema=schema, identifier=model['alias']) %}
-    --------------------------------------------------------------------------------------------------------------------
 
-    -- setup
-    {{ run_hooks(pre_hooks, inside_transaction=False) }}
+    {{ run_hooks(pre_hooks) }}
 
-    -- `BEGIN` happens here:
-    {{ run_hooks(pre_hooks, inside_transaction=True) }}
-
-    --------------------------------------------------------------------------------------------------------------------
-
-    -- build model
     {%- call statement('main') -%}
       {{ dbt_dataengineers_materializations.snowflake_generic_statement(sql) }}
     {%- endcall -%}
 
-   --------------------------------------------------------------------------------------------------------------------
-    {{ run_hooks(post_hooks, inside_transaction=True) }}
+    {{ run_hooks(post_hooks) }}
 
-    -- `COMMIT` happens here
-    {{ adapter.commit() }}
-
-    {{ run_hooks(post_hooks, inside_transaction=False) }}
-
-    -- return
     {{ return({'relations': [target_relation]}) }}
 
 {%- endmaterialization -%}

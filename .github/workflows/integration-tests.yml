@@ -41,8 +41,7 @@ jobs:
         run: |
           printf '%s\n' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > /tmp/snowflake_key.p8
           chmod 600 /tmp/snowflake_key.p8
-          echo "Key file size: $(wc -c < /tmp/snowflake_key.p8) bytes"
-          head -1 /tmp/snowflake_key.p8
+          echo "Key file written ($(wc -c < /tmp/snowflake_key.p8) bytes)"
 
       - name: Verify package structure
         run: |
@@ -59,9 +58,9 @@ jobs:
 
       - name: Pre-create infrastructure (on-run-start hooks)
         run: |
-          dbt run-operation stage_file_formats --profiles-dir . || true
-          dbt run-operation stage_stages --profiles-dir . || true
-          dbt run-operation stage_table_sources --profiles-dir . || true
+          dbt run-operation stage_file_formats --profiles-dir .
+          dbt run-operation stage_stages --profiles-dir .
+          dbt run-operation stage_table_sources --profiles-dir .
 
       - name: Run models (first run - full refresh)
         run: dbt run --full-refresh --exclude tag:enterprise_only --profiles-dir .
@@ -71,8 +70,8 @@ jobs:
 
       - name: Post-run enable (on-run-end hooks)
         run: |
-          dbt run-operation enable_tasks --profiles-dir . || true
-          dbt run-operation enable_alerts --profiles-dir . || true
+          dbt run-operation enable_tasks --profiles-dir .
+          dbt run-operation enable_alerts --profiles-dir .
 
       - name: Run assertions
         run: dbt test --profiles-dir .

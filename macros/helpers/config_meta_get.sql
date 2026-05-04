@@ -34,3 +34,16 @@
         {{ return(none) }}
     {%- endif -%}
 {% endmacro %}
+
+{# Helper to read custom config from a graph node object (used in on-run-end hooks).
+   Checks node.config.meta first, then falls back to node.config top-level. #}
+{% macro node_config_get(node, key, default=none) %}
+    {%- set meta = node.config.get("meta", none) if node.config is mapping else none -%}
+    {%- if meta is not none and meta is mapping and key in meta -%}
+        {{ return(meta[key]) }}
+    {%- elif key in node.config -%}
+        {{ return(node.config[key]) }}
+    {%- else -%}
+        {{ return(default) }}
+    {%- endif -%}
+{% endmacro %}

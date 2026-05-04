@@ -17,7 +17,8 @@
         {% endfor %}
 
         {% for node in child_level_tasks %}
-            {% if node.config.task_after | length > 0 %}
+            {% set task_after = dbt_dataengineers_materializations.node_config_get(node, 'task_after', '') %}
+            {% if task_after | length > 0 %}
                 {% do child_level_tasks_to_enable.append(node) %}
             {% endif %}
         {% endfor %}
@@ -39,7 +40,8 @@
 
 {% macro resume_suspended_tasks(level, task_nodes) %}
         {% for task_node in task_nodes %}
-            {% if target.name in task_node.config.enabled_targets %}
+            {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
+            {% if target.name in enabled_targets %}
                 {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
                 {% do log('Resuming ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
@@ -49,7 +51,8 @@
 
 {% macro suspended_tasks(level, task_nodes) %}
         {% for task_node in task_nodes %}
-            {% if target.name in task_node.config.enabled_targets %}
+            {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
+            {% if target.name in enabled_targets %}
                 {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
                 {% do log('Suspending ' ~ level ~ ' task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(task_relation) %}
