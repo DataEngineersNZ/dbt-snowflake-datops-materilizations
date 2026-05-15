@@ -1,0 +1,167 @@
+name: Populate PR Description
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  update-pr-description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update PR description
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const branch = pr.head.ref.toLowerCase();
+
+            // Get commits
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 250,
+            });
+
+            const commitMessages = commits
+              .map(c => c.commit.message.split('\n')[0])
+              .filter(msg => !msg.startsWith('[skip]'));
+
+            const commitList = commitMessages
+              .map(msg => `- ${msg}`)
+              .join('\n');
+
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 300,
+            });
+
+            const filenames = files.map(f => f.filename);
+            const hasChangelog = filenames.some(f => f === 'CHANGELOG.md');
+            const hasVersionBump = filenames.some(f => f === 'dbt_project.yml');
+            const hasReadme = filenames.some(f => f === 'README.md');
+
+            // --- Detect PR purpose from branch name and commit messages ---
+            const allCommitText = commitMessages.join(' ').toLowerCase();
+
+            const isBreaking = allCommitText.includes('breaking change')
+              || allCommitText.includes('breaking:')
+              || branch.startsWith('breaking/');
+
+            const isBugfix = branch.startsWith('fix/')
+              || branch.startsWith('bugfix/')
+              || branch.startsWith('hotfix/')
+              || allCommitText.includes('fix:')
+              || allCommitText.includes('bug fix');
+
+            const isFeature = branch.startsWith('feature/')
+              || branch.startsWith('feat/')
+              || allCommitText.includes('feat:');
+
+            // --- Generate description from changed files ---
+            const macroFiles = filenames.filter(f => f.startsWith('macros/') && f.endsWith('.sql'));
+            const testFiles = filenames.filter(f => f.includes('test') || f.includes('integration_tests/'));
+            const workflowFiles = filenames.filter(f => f.startsWith('.github/'));
+            const docFiles = filenames.filter(f => f.endsWith('.md') || f.endsWith('.yml') && !f.startsWith('.github/'));
+
+            const descParts = [];
+            if (macroFiles.length > 0) {
+              const macroNames = macroFiles.map(f => '`' + f.split('/').pop().replace('.sql', '') + '`');
+              const unique = [...new Set(macroNames)];
+              descParts.push(`Modifies ${unique.length} macro(s): ${unique.join(', ')}`);
+            }
+            if (testFiles.length > 0) {
+              descParts.push(`Includes test changes (${testFiles.length} file(s))`);
+            }
+            if (workflowFiles.length > 0) {
+              descParts.push(`Updates CI/CD workflows (${workflowFiles.length} file(s))`);
+            }
+            if (docFiles.length > 0) {
+              const docNames = docFiles.map(f => '`' + f.split('/').pop() + '`');
+              const unique = [...new Set(docNames)];
+              descParts.push(`Updates documentation: ${unique.join(', ')}`);
+            }
+
+            const generatedDesc = descParts.length > 0
+              ? descParts.map(p => `- ${p}`).join('\n')
+              : `Changes across ${filenames.length} file(s).`;
+
+            // Read existing body or use empty string
+            const body = pr.body || '';
+            let newBody = body;
+
+            // --- Fill in PR Purpose checkboxes ---
+            function checkPurpose(text, label, checked) {
+              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const re = new RegExp(`- \\[[ x]\\] ${escaped}`);
+              const replacement = checked ? `- [x] ${label}` : `- [ ] ${label}`;
+              return re.test(text) ? text.replace(re, replacement) : text;
+            }
+
+            newBody = checkPurpose(newBody, 'Bug fix (no breaking changes)', isBugfix && !isBreaking);
+            newBody = checkPurpose(newBody, 'New functionality', isFeature && !isBreaking);
+            newBody = checkPurpose(newBody, 'Breaking change', isBreaking);
+
+            // --- Fill in Description if it is still the template placeholder ---
+            const descSection = '## Description';
+            const commitsSection = '## Commits';
+            if (newBody.includes(descSection) && newBody.includes(commitsSection)) {
+              const descIdx = newBody.indexOf(descSection);
+              const commitsIdx = newBody.indexOf(commitsSection);
+              const between = newBody.substring(descIdx + descSection.length, commitsIdx).trim();
+              // Only fill if empty or still the HTML comment placeholder
+              if (!between || between === '<!-- A clear and concise description of what has changed -->') {
+                const before = newBody.substring(0, descIdx + descSection.length);
+                const after = newBody.substring(commitsIdx);
+                newBody = `${before}\n\n${generatedDesc}\n\n${after}`;
+              }
+            }
+
+            // --- Fill in Commits section ---
+            const nextSection = '## Checklist';
+            if (newBody.includes(commitsSection) && newBody.includes(nextSection)) {
+              const commitsIdx = newBody.indexOf(commitsSection);
+              const checklistIdx = newBody.indexOf(nextSection);
+              if (checklistIdx > commitsIdx) {
+                const before = newBody.substring(0, commitsIdx + commitsSection.length);
+                const after = newBody.substring(checklistIdx);
+                newBody = `${before}\n\n${commitList}\n\n${after}`;
+              }
+            }
+
+            // --- Auto-check checklist items based on changed files ---
+            function setCheck(text, label, checked) {
+              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const re = new RegExp(`- \\[[ x]\\] ${escaped}`);
+              const replacement = checked ? `- [x] ${label}` : `- [ ] ${label}`;
+              return re.test(text) ? text.replace(re, replacement) : text;
+            }
+
+            if (hasChangelog) {
+              newBody = setCheck(newBody, 'Added an entry to CHANGELOG.md using the format `## VERSION - Title`', true);
+            }
+            if (hasVersionBump) {
+              newBody = setCheck(newBody, 'Updated the version in `dbt_project.yml` (if this is a release)', true);
+            }
+            if (hasReadme) {
+              newBody = setCheck(newBody, 'Updated the README.md (if applicable)', true);
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: newBody,
+            });

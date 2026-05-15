@@ -1,23 +1,22 @@
 ## Pull Request Purpose
 
-- [ ] bug fix PR with no breaking changes — please ensure the base branch is `main`
-- [ ] new functionality — please ensure the base branch is the latest `main` branch
-- [ ] a breaking change — please ensure the base branch is the latest `main` branch
+- [ ] Bug fix (no breaking changes)
+- [ ] New functionality
+- [ ] Breaking change
 
 ## Description
-<!---
-A clear and concise description of what has changed
---->
 
-## Notes for reviewer
-<!---
-Any additional notes for the reviewer of the Pull Request
---->
+<!-- A clear and concise description of what has changed -->
+
+## Commits
+
+<!-- Auto-populated by CI — do not edit this section -->
 
 ## Checklist
 
-- [ ] I have verified that these changes work locally via my sandbox
-- [ ] Added tests & descriptions to my macros (and models if applicable)
-- [ ] Pushed code into test
+- [ ] I have verified that these changes work locally
+- [ ] Added tests and descriptions to macros (and models if applicable)
+- [ ] Integration tests pass
 - [ ] Updated the README.md (if applicable)
-- [ ] I have added an entry to CHANGELOG.md
+- [ ] Added an entry to CHANGELOG.md using the format `## VERSION - Title`
+- [ ] Updated the version in `dbt_project.yml` (if this is a release)

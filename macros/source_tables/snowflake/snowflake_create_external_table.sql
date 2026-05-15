@@ -27,11 +27,23 @@
         {%- endif -%}
     )
     {% if partitions %} PARTITION BY ({{partitions|map(attribute='name')|join(', ')}}) {% endif %}
-    LOCATION =  {{external.location | replace("@", "@" ~ relation.database ~ ".")}} {# stage #}
+    {%- set loc = external.location -%}
+    {%- set loc_after_at = loc.split('@')[1] if '@' in loc else loc -%}
+    {%- set loc_stage_part = loc_after_at.split('/')[0] -%}
+    {%- if loc_stage_part.split('.') | length >= 3 -%}
+    LOCATION = {{loc}} {# stage — already fully qualified #}
+    {%- else -%}
+    LOCATION = {{loc | replace("@", "@" ~ relation.database ~ ".")}} {# stage #}
+    {%- endif -%}
     {% if external.auto_refresh in (true, false) -%}
       AUTO_REFRESH = {{external.auto_refresh}}
     {%- endif %}
     {% if external.pattern -%} PATTERN = '{{external.pattern}}' {%- endif %}
     {% if external.integration -%} INTEGRATION = '{{external.integration}}' {%- endif %}
-    FILE_FORMAT = {{relation.database ~ "." ~ external.file_format}}
+    {%- set ff = external.file_format -%}
+    {%- if ff.split('.') | length >= 3 -%}
+    FILE_FORMAT = {{ff}}
+    {%- else -%}
+    FILE_FORMAT = {{relation.database ~ "." ~ ff}}
+    {%- endif -%}
 {% endmacro %}

@@ -1,8 +1,40 @@
 # dbt_dataengineers_materializations
 
-This [dbt](https://github.com/dbt-labs/dbt) package contains custom materializations for managing Snowflake infrastructure objects via dbt. It supports both **dbt Core** (>=1.3.0) and the **dbt Fusion engine** (2.x).
+<!-- OVERVIEW -->
+Package name: `dbt_dataengineers_materializations`
+Version: 1.0.1
+Platform: Snowflake
+Engines: dbt Core (>=1.9.0), dbt Fusion (2.x)
+Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
 
-> require-dbt-version: [">=1.3.0", "<3.0.0"]
+> require-dbt-version: [">=1.9.0", "<3.0.0"]
+
+----
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Reference](#quick-reference)
+- [Complete Setup](#complete-setup)
+- [dbt Fusion Compatibility](#dbt-fusion-compatibility)
+- [Hooks](#hooks)
+- [Materializations](#materializations)
+  - [Monitorial Alerts](#monitorial-alerts)
+  - [Alerts](#alerts)
+  - [Stored Procedures](#stored-procedures)
+  - [File Formats](#file-formats)
+  - [Tasks](#tasks)
+  - [Streams](#streams)
+  - [Tables (Auto-Created Source Tables)](#tables-auto-created-source-tables)
+  - [External Tables](#external-tables)
+  - [Immutable Tables](#immutable-tables)
+  - [Stages](#stages)
+  - [Secrets](#secrets)
+  - [Network Rules](#network-rules)
+  - [External Access Integration](#external-access-integration)
+  - [User Defined Functions](#user-defined-functions)
+  - [Materialized View](#materialized-view)
+- [Comments](#comments)
 
 ----
 
@@ -11,13 +43,13 @@ This [dbt](https://github.com/dbt-labs/dbt) package contains custom materializat
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.0.0"
+    revision: "1.0.1"
 ```
 
 For Snowflake Agent Materialization add the following:
 ```yaml
   - git: https://github.com/monitorial-io/dbt-snowflake-cortex.git
-    revision: "1.0.0"
+    revision: "1.3.0"
 ```
 
 ----
@@ -71,6 +103,8 @@ vars:
   default_monitorial_delivery_type: "api"
 ```
 
+### Hook Summary
+
 | Hook | Type | Purpose |
 |---|---|---|
 | `stage_file_formats` | on-run-start | Pre-creates file format objects |
@@ -86,14 +120,14 @@ All on-run-start hooks accept `enabled_targets` and `enabled_profiles` parameter
 
 ## dbt Fusion Compatibility
 
-This package supports both **dbt Core** and **dbt Fusion**. In Fusion, custom config keys must be nested under `meta`. All examples in this README use the Fusion-compatible `meta` style.
+This package supports both dbt Core and dbt Fusion. In Fusion, custom config keys must be nested under `meta`. All examples in this README use the Fusion-compatible `meta` style.
 
-**dbt Core style (also works, for backwards compatibility):**
+dbt Core style (also works, for backwards compatibility):
 ```sql
 {{ config(materialized='task', schedule='60 MINUTE', enabled_targets=['prod']) }}
 ```
 
-**dbt Fusion style (recommended, used throughout this README):**
+dbt Fusion style (recommended, used throughout this README):
 ```sql
 {{ config(materialized='task', meta={'schedule': '60 MINUTE', 'enabled_targets': ['prod']}) }}
 ```
@@ -113,41 +147,45 @@ Both styles work transparently via the `config_meta_get` helper. Custom config k
 
 ### on-run-start
 
-**stage_file_formats** - Pre-creates file format objects.
+`stage_file_formats` - Pre-creates file format objects.
 ```yaml
 - "{{ dbt_dataengineers_materializations.stage_file_formats(['prod', 'test']) }}"
 ```
 
-**stage_stages** - Pre-creates stage objects.
+`stage_stages` - Pre-creates stage objects.
 ```yaml
 - "{{ dbt_dataengineers_materializations.stage_stages(['prod', 'test']) }}"
 ```
 
-**stage_table_sources** - Auto-creates and maintains source tables from YML definitions.
+`stage_table_sources` - Auto-creates and maintains source tables from YML definitions.
 ```yaml
 - "{{ dbt_dataengineers_materializations.stage_table_sources(['prod', 'test']) }}"
 ```
 
 ### on-run-end
 
-**enable_tasks** - Resumes tasks (suspends roots, resumes children, resumes roots).
+`enable_tasks` - Resumes tasks (suspends roots, resumes children, resumes roots).
 ```yaml
 - "{{ dbt_dataengineers_materializations.enable_tasks() }}"
 ```
 
-**enable_alerts** - Resumes alerts.
+`enable_alerts` - Resumes alerts.
 ```yaml
 - "{{ dbt_dataengineers_materializations.enable_alerts() }}"
 ```
 
-**enable_monitorial_monitors** - Resumes monitorial objects.
+`enable_monitorial_monitors` - Resumes monitorial objects.
 ```yaml
 - "{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}"
 ```
 
 ----
 
-## Monitorial Alerts
+## Materializations
+
+### Monitorial Alerts
+
+Materialization name: `monitorial`
 
 ```sql
 {{
@@ -161,6 +199,8 @@ Both styles work transparently via the `config_meta_get` helper. Custom config k
     )
 }}
 ```
+
+Config options:
 
 | property | description | required | default |
 |---|---|---|---|
@@ -185,7 +225,11 @@ Properties marked * can be set as global variables. See [Complete Setup](#comple
 
 For more information visit [https://www.monitorial.io/](https://www.monitorial.io/)
 
-## Alerts
+----
+
+### Alerts
+
+Materialization name: `alert`
 
 ```sql
 {{
@@ -201,6 +245,8 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 }}
 ```
 
+Config options:
+
 | property | description | required | default |
 |---|---|---|---|
 | `is_serverless` | use serverless compute | no | `false` |
@@ -209,7 +255,11 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 | `action` | action SQL when condition is true | no | none |
 | `enabled_targets` | targets where active | no | `[target.name]` |
 
-## Stored Procedures
+----
+
+### Stored Procedures
+
+Materialization name: `stored_procedure`
 
 ```sql
 {{
@@ -225,6 +275,8 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 }}
 ```
 
+Config options:
+
 | property | description | required | default |
 |---|---|---|---|
 | `preferred_language` | language (`sql`) | no | `sql` |
@@ -234,7 +286,11 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 | `execute_as` | `OWNER` or `CALLER` | no | `owner` |
 | `include_copy_grants` | include copy grants | no | `true` |
 
-## File Formats
+----
+
+### File Formats
+
+Materialization name: `file_format`
 
 ```sql
 {{ config(materialized='file_format', meta={'create_or_replace': true}) }}
@@ -244,13 +300,19 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
     compression = none
 ```
 
+Config options:
+
 | property | description | required | default |
 |---|---|---|---|
 | `create_or_replace` | `CREATE OR REPLACE` vs `CREATE IF NOT EXISTS` | no | `true` |
 
-[Snowflake CREATE FILE FORMAT docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html)
+Reference: [Snowflake CREATE FILE FORMAT docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html)
 
-## Tasks
+----
+
+### Tasks
+
+Materialization name: `task`
 
 ```sql
 {{
@@ -266,6 +328,8 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 }}
 ```
 
+Config options:
+
 | property | description | required | default |
 |---|---|---|---|
 | `is_serverless` | serverless or dedicated warehouse | no | `true` |
@@ -280,21 +344,27 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 
 * One of `schedule` or `task_after` is required.
 
-**Root task:**
+Root task example:
 ```sql
 {{ config(materialized='task', meta={'schedule': 'using cron 0 6 * * * Pacific/Auckland', 'enabled_targets': ['prod']}) }}
 ```
 
-**Child task:**
+Child task example:
 ```sql
 {{ config(materialized='task', meta={'task_after': 'parent_task_name', 'enabled_targets': ['prod']}) }}
 ```
 
-## Streams
+----
+
+### Streams
+
+Materialization name: `stream`
 
 ```sql
 {{ config(materialized='stream', meta={'source_schema': 'raw', 'source_model': 'customers'}) }}
 ```
+
+Config options:
 
 | property | description | required | default |
 |---|---|---|---|
@@ -304,12 +374,16 @@ For more information visit [https://www.monitorial.io/](https://www.monitorial.i
 | `source_database_prefix` | variable prefix for dynamic database resolution | no | none |
 | `source_type` | `internal` or `external` | no | `internal` |
 
-**External stream:**
+External stream example:
 ```sql
 {{ config(materialized='stream', meta={'source_model': 'events', 'source_type': 'external'}) }}
 ```
 
-## Tables (Auto-Created Source Tables)
+----
+
+### Tables (Auto-Created Source Tables)
+
+Defined in YML source definitions. The `stage_table_sources` on-run-start hook processes these.
 
 ```yaml
 sources:
@@ -326,12 +400,14 @@ sources:
           auto_maintained: true
 ```
 
+Config options:
+
 | property | description | required | default |
 |---|---|---|---|
 | `auto_create_table` | create the table via dbt | yes | `false` |
 | `auto_maintained` | maintain schema changes | no | `false` |
 
-### External Tables with Snowpipe
+#### Snowpipe Integration
 
 ```yaml
 external:
@@ -355,13 +431,96 @@ external:
 
 Force full refresh: `dbt run --vars '{"ext_full_refresh": true}'`
 
-## Immutable Tables
+----
+
+### External Tables
+
+External tables are created via the `snowflake_create_external_table` macro, invoked by the `stage_table_sources` hook when a source has `external` properties with `location` and `file_format` defined.
+
+Reference: [Snowflake CREATE EXTERNAL TABLE docs](https://docs.snowflake.net/manuals/sql-reference/sql/create-external-table.html)
+
+#### Naming: Partial vs Fully Qualified
+
+The `location` and `file_format` properties support both partially qualified and fully qualified names.
+
+**Partially qualified (schema-level) -- database is auto-prepended from the relation:**
+
+```yaml
+external:
+  location: "@my_schema.my_stage/path/"
+  file_format: "my_schema.my_format"
+```
+
+Produces:
+- `LOCATION = @MY_DATABASE.my_schema.my_stage/path/`
+- `FILE_FORMAT = MY_DATABASE.my_schema.my_format`
+
+**Fully qualified (database.schema.object) -- used as-is, no prefix added:**
+
+```yaml
+external:
+  location: "@other_db.my_schema.my_stage/path/"
+  file_format: "other_db.my_schema.my_format"
+```
+
+Produces:
+- `LOCATION = @other_db.my_schema.my_stage/path/`
+- `FILE_FORMAT = other_db.my_schema.my_format`
+
+This is useful when the stage or file format resides in a different database than the external table.
+
+#### Detection Logic
+
+The macro counts the number of dot-separated parts in the object reference (ignoring any `/path` suffix for location). If there are 3 or more parts, the reference is treated as fully qualified. Otherwise, `relation.database` is prepended.
+
+#### Full External Table YML Example
+
+```yaml
+sources:
+  - name: my_source
+    tables:
+      - name: raw_events
+        columns:
+          - name: event_id
+            data_type: varchar
+          - name: event_data
+            data_type: variant
+        external:
+          location: "@other_db.raw_schema.events_stage/incoming/"
+          file_format: "other_db.raw_schema.json_format"
+          auto_refresh: true
+          pattern: ".*[.]json"
+          integration: "my_storage_integration"
+          partitions:
+            - name: event_date
+              data_type: date
+              expression: "to_date(split_part(metadata$filename, '/', 1), 'YYYY-MM-DD')"
+```
+
+Config options:
+
+| property | description | required | default |
+|---|---|---|---|
+| `location` | Stage location. Prefix with `@`. Supports partial (`@schema.stage`) or FQDN (`@db.schema.stage`). May include a path suffix (`/path/`). | yes | |
+| `file_format` | File format reference. Supports partial (`schema.format`) or FQDN (`db.schema.format`). | yes | |
+| `auto_refresh` | Enable auto-refresh | no | |
+| `pattern` | File name pattern filter | no | |
+| `integration` | Storage integration name | no | |
+| `partitions` | List of partition columns with `name`, `data_type`, `expression` | no | |
+
+----
+
+### Immutable Tables
+
+Materialization name: `immutable_table`
 
 ```sql
 {{ config(materialized='immutable_table') }}
 
 SELECT id, name FROM {{ source('raw', 'reference_data') }}
 ```
+
+Config options:
 
 | property | description | required | default |
 |---|---|---|---|
@@ -373,14 +532,14 @@ SELECT id, name FROM {{ source('raw', 'reference_data') }}
 | `change_tracking` | enable change tracking (ignored if hybrid) | no | `false` |
 | `is_hybrid` | create as hybrid table | no | `false` |
 
-**Example: Transient table with time travel**
+Transient table with time travel example:
 ```sql
 {{ config(materialized='immutable_table', meta={'transient': true, 'data_retention_in_days': 7}) }}
 
 SELECT * FROM {{ source('raw', 'audit_log') }}
 ```
 
-### Hybrid Tables
+#### Hybrid Tables
 
 ```sql
 {{ config(materialized='immutable_table', meta={'is_hybrid': true, 'primary_keys': ['col_1']}) }}
@@ -388,7 +547,11 @@ SELECT * FROM {{ source('raw', 'audit_log') }}
 
 Set `is_unique: true` in column meta for unique constraints. Primary keys default to `auto_increment: true`.
 
-## Stages
+----
+
+### Stages
+
+Materialization name: `stage`
 
 ```sql
 {{ config(materialized='stage', meta={'create_or_replace': true}) }}
@@ -401,17 +564,25 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
   storage_integration = DATAOPS_TEMPLATE_EXTERNAL
 ```
 
+Config options:
+
 | property | description | default |
 |---|---|---|
 | `create_or_replace` | create or replace the stage | `false` |
 
-[Snowflake CREATE STAGE docs](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html)
+Reference: [Snowflake CREATE STAGE docs](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html)
 
-## Secrets
+----
+
+### Secrets
+
+Materialization name: `secret`
 
 ```sql
 {{ config(materialized='secret', meta={'type': 'GENERIC_STRING', 'secret_string_variable': 'MY_VAR'}) }}
 ```
+
+Config options:
 
 | property | description | applicable for | default |
 |---|---|---|---|
@@ -426,11 +597,17 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
 
 > Do not hardcode secrets. Use environment variables.
 
-## Network Rules
+----
+
+### Network Rules
+
+Materialization name: `network_rule`
 
 ```sql
 {{ config(materialized='network_rule', meta={'rule_type': 'HOST_PORT', 'mode': 'EGRESS', 'value_list': ['example.com:443']}) }}
 ```
+
+Config options:
 
 | property | description | default |
 |---|---|---|
@@ -438,7 +615,11 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
 | `mode` | `INGRESS`, `INTERNAL_STAGE`, `EGRESS` | `INGRESS` |
 | `value_list` | network identifiers | |
 
-## External Access Integration
+----
+
+### External Access Integration
+
+Materialization name: `external_access_integration`
 
 ```sql
 {{
@@ -454,6 +635,8 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
 }}
 ```
 
+Config options:
+
 | property | description | default |
 |---|---|---|
 | `authentication_secrets` / `_refs` | secrets (fully qualified / ref names) | `[]` |
@@ -464,14 +647,21 @@ Set `is_unique: true` in column meta for unique constraints. Primary keys defaul
 
 > Requires `CREATE INTEGRATION` privilege. Integration name appends `target.name`.
 
-## User Defined Functions
+----
 
-### SQL
+### User Defined Functions
+
+Materialization name: `user_defined_function`
+
+#### SQL UDF
+
 ```sql
 {{ config(materialized='user_defined_function', meta={'return_type': 'float', 'parameters': 'x float, y float'}) }}
 
 AS 'SELECT x + y'
 ```
+
+Config options (all UDF types):
 
 | property | description | default |
 |---|---|---|
@@ -483,28 +673,37 @@ AS 'SELECT x + y'
 | `parameters` | params as string | |
 | `override_name` | override name | `model['alias']` |
 
-### JavaScript
+#### JavaScript UDF
+
 ```sql
 {{ config(materialized='user_defined_function', meta={'preferred_language': 'javascript', 'return_type': 'float'}) }}
 ```
-Additional: `null_input_behavior` (default: `CALLED ON NULL INPUT`)
 
-### Java
+Additional config: `null_input_behavior` (default: `CALLED ON NULL INPUT`)
+
+#### Java UDF
+
 ```sql
 {{ config(materialized='user_defined_function', meta={'preferred_language': 'java', 'handler_name': "'pkg.MyClass'", 'target_path': "'@~/myjar.jar'", 'runtime_version': '11', 'return_type': 'varchar'}) }}
 ```
-Additional: `runtime_version`, `packages`, `external_access_integrations`/`_refs`, `secrets`, `handler_name`, `imports`, `target_path`, `null_input_behavior`
 
-### Python
+Additional config: `runtime_version`, `packages`, `external_access_integrations`/`_refs`, `secrets`, `handler_name`, `imports`, `target_path`, `null_input_behavior`
+
+#### Python UDF
+
 ```sql
 {{ config(materialized='user_defined_function', meta={'preferred_language': 'python', 'runtime_version': '3.8', 'packages': ['numpy'], 'handler_name': 'udf', 'return_type': 'variant'}) }}
 ```
-Additional: `runtime_version`, `packages`, `handler_name`, `external_access_integrations`, `secrets`, `imports`, `null_input_behavior`
 
-### External Functions
+Additional config: `runtime_version`, `packages`, `handler_name`, `external_access_integrations`, `secrets`, `imports`, `null_input_behavior`
+
+#### External Functions
+
 ```sql
 {{ config(materialized='user_defined_function', meta={'is_external': true, 'api_integration_dev': 'DEV_INT', 'api_integration_prod': 'PROD_INT', 'api_uri_dev': 'https://dev.example.com', 'api_uri_prod': 'https://prod.example.com', 'return_type': 'variant'}) }}
 ```
+
+Config options (external only):
 
 | property | description | default |
 |---|---|---|
@@ -514,11 +713,17 @@ Additional: `runtime_version`, `packages`, `handler_name`, `external_access_inte
 | `api_uri_dev` | API URI for dev | `unknown` |
 | `api_uri_prod` | API URI for prod | `unknown` |
 
-## Materialized View
+----
+
+### Materialized View
+
+Materialization name: `snowflake_materialized_view`
 
 ```sql
 {{ config(materialized='snowflake_materialized_view', cluster_by='field_1, field_2', meta={'secure': false, 'automatic_clustering': false}) }}
 ```
+
+Config options:
 
 | property | description | default |
 |---|---|---|
@@ -526,9 +731,11 @@ Additional: `runtime_version`, `packages`, `handler_name`, `external_access_inte
 | `cluster_by` | clustering expression | none |
 | `automatic_clustering` | auto-resume reclustering | `false` |
 
-Supports `persist_docs` (relation only). [Snowflake MV docs](https://docs.snowflake.com/en/user-guide/views-materialized.html)
+Supports `persist_docs` (relation only). Reference: [Snowflake MV docs](https://docs.snowflake.com/en/user-guide/views-materialized.html)
 
 > MVs require enterprise accounts. If base table is recreated, MV must also be recreated.
+
+----
 
 ## Comments
 

@@ -7,6 +7,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
   SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
@@ -79,3 +83,23 @@ jobs:
       - name: Cleanup test objects
         if: always()
         run: dbt run-operation cleanup --profiles-dir .
+
+      - name: Update PR checklist — integration tests passed
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const label = 'Integration tests pass';
+            const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`- \\[[ x]\\] ${escaped}`);
+            if (re.test(body)) {
+              const newBody = body.replace(re, `- [x] ${label}`);
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                body: newBody,
+              });
+            }

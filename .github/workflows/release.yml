@@ -1,0 +1,67 @@
+name: Tag and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from dbt_project.yml
+        id: version
+        run: |
+          VERSION=$(grep "^version:" dbt_project.yml | sed "s/version: *['\"]//;s/['\"]//")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $VERSION"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git rev-parse "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.version }} already exists — skipping release."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.version }} does not exist — will create release."
+          fi
+
+      - name: Extract changelog for this version
+        if: steps.check_tag.outputs.exists == 'false'
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Extract content between "## VERSION" and the next "## " header
+          NOTES=$(awk -v ver="## $VERSION " -v ver2="## $VERSION$" '
+            BEGIN { found=0 }
+            /^## / {
+              if (found) exit
+              if (index($0, ver) == 1 || $0 ~ ver2) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md)
+
+          # Write to file to preserve multiline content
+          echo "$NOTES" > /tmp/release_notes.md
+          echo "Release notes:"
+          cat /tmp/release_notes.md
+
+      - name: Create GitHub release
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            --title "${{ steps.version.outputs.version }}" \
+            --notes-file /tmp/release_notes.md \
+            --target "${{ github.sha }}"
