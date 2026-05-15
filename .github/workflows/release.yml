@@ -21,7 +21,7 @@ jobs:
       - name: Extract version from dbt_project.yml
         id: version
         run: |
-          VERSION=$(grep "^version:" dbt_project.yml | sed "s/version: *['\"]//;s/['\"]//")
+          VERSION=$(python3 -c "import yaml; print(yaml.safe_load(open('dbt_project.yml'))['version'])")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Detected version: $VERSION"
 

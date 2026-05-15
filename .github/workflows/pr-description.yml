@@ -74,7 +74,7 @@ jobs:
             const macroFiles = filenames.filter(f => f.startsWith('macros/') && f.endsWith('.sql'));
             const testFiles = filenames.filter(f => f.includes('test') || f.includes('integration_tests/'));
             const workflowFiles = filenames.filter(f => f.startsWith('.github/'));
-            const docFiles = filenames.filter(f => f.endsWith('.md') || f.endsWith('.yml') && !f.startsWith('.github/'));
+            const docFiles = filenames.filter(f => (f.endsWith('.md') || f.endsWith('.yml')) && !f.startsWith('.github/'));
 
             const descParts = [];
             if (macroFiles.length > 0) {
