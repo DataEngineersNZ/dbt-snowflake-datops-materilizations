@@ -1,6 +1,6 @@
 # dbt_dataengineers_materializations Changelog
 
-## 0.2.12.2 - External Table FQDN Support
+## 0.2.13 - External Table FQDN Support
 
 * Fixed `snowflake_create_external_table` macro to accept fully qualified names (database.schema.object) for both `location` and `file_format` properties. Previously, the macro always prepended `relation.database`, which produced invalid double-prefixed references when a FQDN was already provided. The macro now detects whether the reference is already fully qualified and only prepends the database when needed.
 
