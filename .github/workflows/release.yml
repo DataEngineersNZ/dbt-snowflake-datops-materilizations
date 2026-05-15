@@ -42,11 +42,13 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           # Use Python for exact string matching (no regex dot issues)
+          # Outputs: release title (from header) and release notes (body)
           python3 -c "
           import sys
           version = sys.argv[1]
           header_prefix = '## ' + version
           found = False
+          title = ''
           lines = []
           for line in open('CHANGELOG.md'):
               stripped = line.rstrip()
@@ -55,11 +57,18 @@ jobs:
                       break
                   if stripped == header_prefix or stripped.startswith(header_prefix + ' ') or stripped.startswith(header_prefix + '\t'):
                       found = True
+                      title = stripped[3:].strip()
                       continue
               if found:
                   lines.append(line.rstrip())
-          print('\n'.join(lines))
-          " "$VERSION" > /tmp/release_notes.md
+          print('TITLE=' + title)
+          with open('/tmp/release_notes.md', 'w') as f:
+              f.write('\n'.join(lines))
+          " "$VERSION" > /tmp/release_meta.txt
+
+          TITLE=$(grep '^TITLE=' /tmp/release_meta.txt | cut -d= -f2-)
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "Release title: $TITLE"
           echo "Release notes:"
           cat /tmp/release_notes.md
 
@@ -69,6 +78,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${{ steps.version.outputs.version }}" \
-            --title "${{ steps.version.outputs.version }}" \
+            --title "${{ steps.changelog.outputs.title }}" \
             --notes-file /tmp/release_notes.md \
             --target "${{ github.sha }}"
