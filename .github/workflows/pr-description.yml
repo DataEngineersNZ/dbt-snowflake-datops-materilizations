@@ -1,0 +1,189 @@
+name: Populate PR Description
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  update-pr-description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update PR description
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const branch = pr.head.ref.toLowerCase();
+            const SENTINEL = '<!-- PR_TEMPLATE_INSERTED -->';
+
+            // Get commits
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 250,
+            });
+
+            const skipRe = /^\[(skip ci|ci skip|skip actions|no ci|skip)\]/i;
+            const commitMessages = commits
+              .map(c => c.commit.message.split('\n')[0])
+              .filter(msg => !skipRe.test(msg));
+
+            const commitList = commitMessages
+              .map(msg => `- ${msg}`)
+              .join('\n');
+
+            // Get changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 300,
+            });
+
+            const filenames = files.map(f => f.filename);
+            const hasChangelog = filenames.some(f => f === 'CHANGELOG.md');
+            const hasVersionBump = filenames.some(f => f === 'dbt_project.yml');
+            const hasReadme = filenames.some(f => f === 'README.md');
+
+            // --- Detect PR purpose from branch name and commit messages ---
+            const allCommitText = commitMessages.join(' ').toLowerCase();
+
+            const isBreaking = allCommitText.includes('breaking change')
+              || allCommitText.includes('breaking:')
+              || branch.startsWith('breaking/');
+
+            const isBugfix = branch.startsWith('fix/')
+              || branch.startsWith('bugfix/')
+              || branch.startsWith('hotfix/')
+              || allCommitText.includes('fix:')
+              || allCommitText.includes('bug fix');
+
+            const isFeature = branch.startsWith('feature/')
+              || branch.startsWith('feat/')
+              || allCommitText.includes('feat:');
+
+            // --- Generate description from changed files ---
+            const macroFiles = filenames.filter(f => f.startsWith('macros/') && f.endsWith('.sql'));
+            const testFiles = filenames.filter(f => f.includes('test') || f.includes('integration_tests/'));
+            const workflowFiles = filenames.filter(f => f.startsWith('.github/'));
+            const docFiles = filenames.filter(f => (f.endsWith('.md') || f.endsWith('.yml')) && !f.startsWith('.github/'));
+
+            const descParts = [];
+            if (macroFiles.length > 0) {
+              const macroNames = macroFiles.map(f => '`' + f.split('/').pop().replace('.sql', '') + '`');
+              const unique = [...new Set(macroNames)];
+              descParts.push(`Modifies ${unique.length} macro(s): ${unique.join(', ')}`);
+            }
+            if (testFiles.length > 0) {
+              descParts.push(`Includes test changes (${testFiles.length} file(s))`);
+            }
+            if (workflowFiles.length > 0) {
+              descParts.push(`Updates CI/CD workflows (${workflowFiles.length} file(s))`);
+            }
+            if (docFiles.length > 0) {
+              const docNames = docFiles.map(f => '`' + f.split('/').pop() + '`');
+              const unique = [...new Set(docNames)];
+              descParts.push(`Updates documentation: ${unique.join(', ')}`);
+            }
+
+            const generatedDesc = descParts.length > 0
+              ? descParts.map(p => `- ${p}`).join('\n')
+              : `Changes across ${filenames.length} file(s).`;
+
+            // --- Read existing body ---
+            const body = pr.body || '';
+            let newBody = body;
+
+            // --- If template not present, inject it at the top ---
+            if (!newBody.includes(SENTINEL)) {
+              const userContent = newBody.trim();
+              const template = [
+                SENTINEL,
+                '## Pull Request Purpose',
+                '',
+                '<!-- Auto-detected from branch name and commit messages -->',
+                '',
+                '- [ ] Bug fix (no breaking changes)',
+                '- [ ] New functionality',
+                '- [ ] Breaking change',
+                '',
+                '## Description',
+                '',
+                '<!-- AUTO:DESC:BEGIN -->',
+                userContent || '',
+                '<!-- AUTO:DESC:END -->',
+                '',
+                '## Commits',
+                '',
+                '<!-- AUTO:COMMITS:BEGIN -->',
+                '<!-- AUTO:COMMITS:END -->',
+                '',
+                '## Checklist',
+                '',
+                '- [ ] I have verified that these changes work locally',
+                '- [ ] Added tests and descriptions to macros (and models if applicable)',
+                '- [ ] Integration tests pass <!-- auto-checked by CI on success -->',
+                '- [ ] Updated the README.md (if applicable) <!-- auto-checked when README.md is in the diff -->',
+                '- [ ] Added an entry to CHANGELOG.md using the format `## VERSION - Title` <!-- auto-checked when CHANGELOG.md is in the diff -->',
+                '- [ ] Updated the version in `dbt_project.yml` (if this is a release) <!-- auto-checked when dbt_project.yml is in the diff -->',
+              ].join('\n');
+              newBody = template;
+            }
+
+            // --- Shared helper: tick an unchecked checkbox (only tick, never untick) ---
+            function tickCheckbox(text, label) {
+              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const re = new RegExp(`- \\[ \\] ${escaped}`);
+              return re.test(text) ? text.replace(re, `- [x] ${label}`) : text;
+            }
+
+            // --- Fill in PR Purpose checkboxes ---
+            if (isBugfix && !isBreaking) newBody = tickCheckbox(newBody, 'Bug fix (no breaking changes)');
+            if (isFeature && !isBreaking) newBody = tickCheckbox(newBody, 'New functionality');
+            if (isBreaking) newBody = tickCheckbox(newBody, 'Breaking change');
+
+            // --- Helper: replace content between AUTO markers ---
+            function replaceAutoSection(text, sectionName, content) {
+              const beginMarker = `<!-- AUTO:${sectionName}:BEGIN -->`;
+              const endMarker = `<!-- AUTO:${sectionName}:END -->`;
+              const beginIdx = text.indexOf(beginMarker);
+              const endIdx = text.indexOf(endMarker);
+              if (beginIdx === -1 || endIdx === -1 || endIdx <= beginIdx) return text;
+              const before = text.substring(0, beginIdx + beginMarker.length);
+              const after = text.substring(endIdx);
+              return `${before}\n${content}\n${after}`;
+            }
+
+            // --- Fill in auto-managed Description section ---
+            newBody = replaceAutoSection(newBody, 'DESC', generatedDesc);
+
+            // --- Fill in auto-managed Commits section ---
+            newBody = replaceAutoSection(newBody, 'COMMITS', commitList);
+
+            // --- Auto-check checklist items based on changed files ---
+            if (hasChangelog) {
+              newBody = tickCheckbox(newBody, 'Added an entry to CHANGELOG.md using the format `## VERSION - Title`');
+            }
+            if (hasVersionBump) {
+              newBody = tickCheckbox(newBody, 'Updated the version in `dbt_project.yml` (if this is a release)');
+            }
+            if (hasReadme) {
+              newBody = tickCheckbox(newBody, 'Updated the README.md (if applicable)');
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: newBody,
+            });

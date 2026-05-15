@@ -1,5 +1,14 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.1 - External Table FQDN Support
+
+### Changes
+* Updated `require-dbt-version` minimum from `>=1.3.0` to `>=1.9.0`
+* Updated `dbt-snowflake-cortex` (Snowflake Agent Materialization) recommended revision from `1.0.0` to `1.3.0`
+
+### Bug Fixes
+* Fixed `snowflake_create_external_table` macro to accept fully qualified names (database.schema.object) for both `location` and `file_format` properties. Previously, the macro always prepended `relation.database`, which produced invalid double-prefixed references when a FQDN was already provided. The macro now detects whether the reference is already fully qualified and only prepends the database when needed.
+
 ## 1.0.0 - dbt Fusion Compatibility & Documentation
 
 Major release with dbt Fusion engine compatibility and comprehensive documentation.
