@@ -28,7 +28,7 @@ jobs:
       - name: Check if tag already exists
         id: check_tag
         run: |
-          if git rev-parse "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+          if git rev-parse --verify "refs/tags/${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Tag ${{ steps.version.outputs.version }} already exists — skipping release."
           else
@@ -41,18 +41,25 @@ jobs:
         id: changelog
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          # Extract content between "## VERSION" and the next "## " header
-          NOTES=$(awk -v ver="## $VERSION " -v ver2="## $VERSION$" '
-            BEGIN { found=0 }
-            /^## / {
-              if (found) exit
-              if (index($0, ver) == 1 || $0 ~ ver2) { found=1; next }
-            }
-            found { print }
-          ' CHANGELOG.md)
-
-          # Write to file to preserve multiline content
-          echo "$NOTES" > /tmp/release_notes.md
+          # Use Python for exact string matching (no regex dot issues)
+          python3 -c "
+          import sys
+          version = sys.argv[1]
+          header_prefix = '## ' + version
+          found = False
+          lines = []
+          for line in open('CHANGELOG.md'):
+              stripped = line.rstrip()
+              if stripped.startswith('## '):
+                  if found:
+                      break
+                  if stripped == header_prefix or stripped.startswith(header_prefix + ' ') or stripped.startswith(header_prefix + '\t'):
+                      found = True
+                      continue
+              if found:
+                  lines.append(line.rstrip())
+          print('\n'.join(lines))
+          " "$VERSION" > /tmp/release_notes.md
           echo "Release notes:"
           cat /tmp/release_notes.md
 

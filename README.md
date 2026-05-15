@@ -473,6 +473,8 @@ This is useful when the stage or file format resides in a different database tha
 
 The macro counts the number of dot-separated parts in the object reference (ignoring any `/path` suffix for location). If there are 3 or more parts, the reference is treated as fully qualified. Otherwise, `relation.database` is prepended.
 
+> **Limitation:** Quoted Snowflake identifiers containing dots (e.g., `"my.db"."my.schema"."my.format"`) are not supported by this detection. The dot-split heuristic will miscount parts in quoted identifiers with embedded dots. Use unquoted identifiers or pass them without the database prefix and let the macro prepend it.
+
 #### Full External Table YML Example
 
 ```yaml

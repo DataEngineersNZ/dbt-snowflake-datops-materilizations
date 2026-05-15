@@ -89,11 +89,16 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const pr = context.payload.pull_request;
+            // Fetch current PR body to avoid overwriting concurrent updates
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
             const body = pr.body || '';
             const label = 'Integration tests pass';
             const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const re = new RegExp(`- \\[[ x]\\] ${escaped}`);
+            const re = new RegExp(`- \\[ \\] ${escaped}`);
             if (re.test(body)) {
               const newBody = body.replace(re, `- [x] ${label}`);
               await github.rest.pulls.update({

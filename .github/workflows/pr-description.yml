@@ -23,6 +23,7 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const branch = pr.head.ref.toLowerCase();
+            const SENTINEL = '<!-- PR_TEMPLATE_INSERTED -->';
 
             // Get commits
             const { data: commits } = await github.rest.pulls.listCommits({
@@ -32,9 +33,10 @@ jobs:
               per_page: 250,
             });
 
+            const skipRe = /^\[(skip ci|ci skip|skip actions|no ci|skip)\]/i;
             const commitMessages = commits
               .map(c => c.commit.message.split('\n')[0])
-              .filter(msg => !msg.startsWith('[skip]'));
+              .filter(msg => !skipRe.test(msg));
 
             const commitList = commitMessages
               .map(msg => `- ${msg}`)
@@ -98,65 +100,85 @@ jobs:
               ? descParts.map(p => `- ${p}`).join('\n')
               : `Changes across ${filenames.length} file(s).`;
 
-            // Read existing body or use empty string
+            // --- Read existing body ---
             const body = pr.body || '';
             let newBody = body;
 
-            // --- Fill in PR Purpose checkboxes ---
-            function checkPurpose(text, label, checked) {
+            // --- If template not present, inject it at the top ---
+            if (!newBody.includes(SENTINEL)) {
+              const userContent = newBody.trim();
+              const template = [
+                SENTINEL,
+                '## Pull Request Purpose',
+                '',
+                '<!-- Auto-detected from branch name and commit messages -->',
+                '',
+                '- [ ] Bug fix (no breaking changes)',
+                '- [ ] New functionality',
+                '- [ ] Breaking change',
+                '',
+                '## Description',
+                '',
+                '<!-- AUTO:DESC:BEGIN -->',
+                userContent || '',
+                '<!-- AUTO:DESC:END -->',
+                '',
+                '## Commits',
+                '',
+                '<!-- AUTO:COMMITS:BEGIN -->',
+                '<!-- AUTO:COMMITS:END -->',
+                '',
+                '## Checklist',
+                '',
+                '- [ ] I have verified that these changes work locally',
+                '- [ ] Added tests and descriptions to macros (and models if applicable)',
+                '- [ ] Integration tests pass <!-- auto-checked by CI on success -->',
+                '- [ ] Updated the README.md (if applicable) <!-- auto-checked when README.md is in the diff -->',
+                '- [ ] Added an entry to CHANGELOG.md using the format `## VERSION - Title` <!-- auto-checked when CHANGELOG.md is in the diff -->',
+                '- [ ] Updated the version in `dbt_project.yml` (if this is a release) <!-- auto-checked when dbt_project.yml is in the diff -->',
+              ].join('\n');
+              newBody = template;
+            }
+
+            // --- Shared helper: tick an unchecked checkbox (only tick, never untick) ---
+            function tickCheckbox(text, label) {
               const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const re = new RegExp(`- \\[[ x]\\] ${escaped}`);
-              const replacement = checked ? `- [x] ${label}` : `- [ ] ${label}`;
-              return re.test(text) ? text.replace(re, replacement) : text;
+              const re = new RegExp(`- \\[ \\] ${escaped}`);
+              return re.test(text) ? text.replace(re, `- [x] ${label}`) : text;
             }
 
-            newBody = checkPurpose(newBody, 'Bug fix (no breaking changes)', isBugfix && !isBreaking);
-            newBody = checkPurpose(newBody, 'New functionality', isFeature && !isBreaking);
-            newBody = checkPurpose(newBody, 'Breaking change', isBreaking);
+            // --- Fill in PR Purpose checkboxes ---
+            if (isBugfix && !isBreaking) newBody = tickCheckbox(newBody, 'Bug fix (no breaking changes)');
+            if (isFeature && !isBreaking) newBody = tickCheckbox(newBody, 'New functionality');
+            if (isBreaking) newBody = tickCheckbox(newBody, 'Breaking change');
 
-            // --- Fill in Description if it is still the template placeholder ---
-            const descSection = '## Description';
-            const commitsSection = '## Commits';
-            if (newBody.includes(descSection) && newBody.includes(commitsSection)) {
-              const descIdx = newBody.indexOf(descSection);
-              const commitsIdx = newBody.indexOf(commitsSection);
-              const between = newBody.substring(descIdx + descSection.length, commitsIdx).trim();
-              // Only fill if empty or still the HTML comment placeholder
-              if (!between || between === '<!-- A clear and concise description of what has changed -->') {
-                const before = newBody.substring(0, descIdx + descSection.length);
-                const after = newBody.substring(commitsIdx);
-                newBody = `${before}\n\n${generatedDesc}\n\n${after}`;
-              }
+            // --- Helper: replace content between AUTO markers ---
+            function replaceAutoSection(text, sectionName, content) {
+              const beginMarker = `<!-- AUTO:${sectionName}:BEGIN -->`;
+              const endMarker = `<!-- AUTO:${sectionName}:END -->`;
+              const beginIdx = text.indexOf(beginMarker);
+              const endIdx = text.indexOf(endMarker);
+              if (beginIdx === -1 || endIdx === -1 || endIdx <= beginIdx) return text;
+              const before = text.substring(0, beginIdx + beginMarker.length);
+              const after = text.substring(endIdx);
+              return `${before}\n${content}\n${after}`;
             }
 
-            // --- Fill in Commits section ---
-            const nextSection = '## Checklist';
-            if (newBody.includes(commitsSection) && newBody.includes(nextSection)) {
-              const commitsIdx = newBody.indexOf(commitsSection);
-              const checklistIdx = newBody.indexOf(nextSection);
-              if (checklistIdx > commitsIdx) {
-                const before = newBody.substring(0, commitsIdx + commitsSection.length);
-                const after = newBody.substring(checklistIdx);
-                newBody = `${before}\n\n${commitList}\n\n${after}`;
-              }
-            }
+            // --- Fill in auto-managed Description section ---
+            newBody = replaceAutoSection(newBody, 'DESC', generatedDesc);
+
+            // --- Fill in auto-managed Commits section ---
+            newBody = replaceAutoSection(newBody, 'COMMITS', commitList);
 
             // --- Auto-check checklist items based on changed files ---
-            function setCheck(text, label, checked) {
-              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const re = new RegExp(`- \\[[ x]\\] ${escaped}`);
-              const replacement = checked ? `- [x] ${label}` : `- [ ] ${label}`;
-              return re.test(text) ? text.replace(re, replacement) : text;
-            }
-
             if (hasChangelog) {
-              newBody = setCheck(newBody, 'Added an entry to CHANGELOG.md using the format `## VERSION - Title`', true);
+              newBody = tickCheckbox(newBody, 'Added an entry to CHANGELOG.md using the format `## VERSION - Title`');
             }
             if (hasVersionBump) {
-              newBody = setCheck(newBody, 'Updated the version in `dbt_project.yml` (if this is a release)', true);
+              newBody = tickCheckbox(newBody, 'Updated the version in `dbt_project.yml` (if this is a release)');
             }
             if (hasReadme) {
-              newBody = setCheck(newBody, 'Updated the README.md (if applicable)', true);
+              newBody = tickCheckbox(newBody, 'Updated the README.md (if applicable)');
             }
 
             await github.rest.pulls.update({
