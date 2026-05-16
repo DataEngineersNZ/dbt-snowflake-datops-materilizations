@@ -1,0 +1,21 @@
+version: 2
+
+macros:
+  - name: materialization_data_metric_function_snowflake
+    description: |
+      Materialization for managing Snowflake Data Metric Function (DMF) objects via dbt.
+      Creates or replaces a data metric function with the SQL defined in the model body as the DMF expression.
+      DMFs are used for data quality monitoring — they accept one or more TABLE arguments and return a NUMBER.
+
+      **Config options (set under `meta` for Fusion compatibility):**
+      - `table_arguments` (string, **required**) — The TABLE argument signature, e.g. `'arg_t TABLE(arg_c1 NUMBER, arg_c2 NUMBER)'`
+      - `is_secure` (bool, default: false) — Create as a secure data metric function
+      - `comment` (string, default: none) — Optional comment for the DMF
+      - `override_name` (string, default: model alias) — Override the DMF name
+    docs:
+      show: true
+
+  - name: snowflake_create_data_metric_function_statement
+    description: Generates the CREATE OR REPLACE DATA METRIC FUNCTION DDL statement with table arguments, optional security, and comment.
+    docs:
+      show: false

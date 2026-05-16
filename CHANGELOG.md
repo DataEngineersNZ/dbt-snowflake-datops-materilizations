@@ -1,5 +1,14 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.2 - Data Metric Function Materialization
+
+### New Features
+* Added `data_metric_function` materialization for managing Snowflake Data Metric Functions (DMFs) via dbt
+* DMFs are used for data quality monitoring — they accept one or more TABLE arguments and return a NUMBER
+* Config options: `table_arguments` (required), `is_secure`, `comment`, `override_name`
+* Added macro documentation (`data_metric_functions.yml`)
+* Added integration test (`test_data_metric_function.sql`)
+
 ## 1.0.1 - External Table FQDN Support
 
 ### Changes

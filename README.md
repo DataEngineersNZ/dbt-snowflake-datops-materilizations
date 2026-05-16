@@ -2,10 +2,10 @@
 
 <!-- OVERVIEW -->
 Package name: `dbt_dataengineers_materializations`
-Version: 1.0.1
+Version: 1.0.2
 Platform: Snowflake
 Engines: dbt Core (>=1.9.0), dbt Fusion (2.x)
-Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
+Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
 
 > require-dbt-version: [">=1.9.0", "<3.0.0"]
 
@@ -33,6 +33,7 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
   - [Network Rules](#network-rules)
   - [External Access Integration](#external-access-integration)
   - [User Defined Functions](#user-defined-functions)
+  - [Data Metric Functions](#data-metric-functions)
   - [Materialized View](#materialized-view)
 - [Comments](#comments)
 
@@ -43,7 +44,7 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.0.1"
+    revision: "1.0.2"
 ```
 
 For Snowflake Agent Materialization add the following:
@@ -70,6 +71,7 @@ For Snowflake Agent Materialization add the following:
 | `network_rule` | Network Rule | `rule_type`, `value_list`, `mode` | [Network Rules](#network-rules) |
 | `external_access_integration` | External Access Integration | `network_rules`, `authentication_secrets` | [External Access Integration](#external-access-integration) |
 | `user_defined_function` | UDF (SQL/Python/Java/JS/External) | `preferred_language`, `return_type`, `parameters` | [User Defined Functions](#user-defined-functions) |
+| `data_metric_function` | Data Metric Function (DMF) | `table_arguments`, `is_secure`, `comment` | [Data Metric Functions](#data-metric-functions) |
 | `snowflake_materialized_view` | Materialized View | `secure`, `cluster_by`, `automatic_clustering` | [Materialized View](#materialized-view) |
 
 ----
@@ -714,6 +716,53 @@ Config options (external only):
 | `api_integration_prod` | API integration for prod | `unknown` |
 | `api_uri_dev` | API URI for dev | `unknown` |
 | `api_uri_prod` | API URI for prod | `unknown` |
+
+----
+
+### Data Metric Functions
+
+Materialization name: `data_metric_function`
+
+Data Metric Functions (DMFs) are used for Snowflake data quality monitoring. They accept one or more TABLE arguments and always return a NUMBER. The model body provides the SQL expression.
+
+```sql
+{{ config(
+    materialized='data_metric_function',
+    meta={
+        'table_arguments': 'arg_t TABLE(arg_c1 NUMBER, arg_c2 NUMBER)',
+        'is_secure': false,
+        'comment': 'Count rows with NULL values'
+    }
+) }}
+
+SELECT COUNT(*) FROM arg_t WHERE arg_c1 IS NULL OR arg_c2 IS NULL
+```
+
+Config options:
+
+| property | description | default |
+|---|---|---|
+| `table_arguments` | TABLE argument signature (required) | *(required)* |
+| `is_secure` | create as secure DMF | `false` |
+| `comment` | comment for the DMF | none |
+| `override_name` | override DMF name | `model['alias']` |
+
+Multiple table arguments are supported for referential checks:
+
+```sql
+{{ config(
+    materialized='data_metric_function',
+    meta={
+        'table_arguments': 'arg_t1 TABLE(arg_c1 INT), arg_t2 TABLE(arg_c2 INT)'
+    }
+) }}
+
+SELECT COUNT(*) FROM arg_t1 WHERE arg_c1 NOT IN (SELECT arg_c2 FROM arg_t2)
+```
+
+Reference: [Snowflake Custom DMF docs](https://docs.snowflake.com/en/user-guide/data-quality-custom-dmfs)
+
+> DMFs require Enterprise Edition accounts.
 
 ----
 
