@@ -3,3 +3,7 @@ target/
 dbt_packages/
 logs/
 dbt_internal_packages/
+.cortex/
+plans/
+integration_tests/.user.yml
+integration_tests/package-lock.yml
