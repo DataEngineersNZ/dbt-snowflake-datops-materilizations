@@ -1,6 +1,6 @@
 # dbt_dataengineers_materializations Changelog
 
-## 0.2.14 - External Table Load Date
+## 0.2.14.1 - External Table Load Date
 
 * Changed `snowflake_create_external_table` so that the `load_date` column is now `load_date` instead of `current_date` due to a recent snowflake behaviour change not allowing non-deterministic functions in virtual column definitions for external tables
 

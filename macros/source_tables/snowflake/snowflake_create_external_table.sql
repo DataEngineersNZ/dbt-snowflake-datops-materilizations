@@ -10,7 +10,7 @@
     CREATE OR REPLACE EXTERNAL TABLE {{ relation.include(database=(not temporary), schema=(not temporary)) }}
     (
         file_name VARCHAR(500) AS metadata$filename,
-        load_date TIMESTAMP_LTZ(7) AS load_date{{- ',' if partitions or columns|length > 0 -}}
+        load_date TIMESTAMP_LTZ(7) AS metadata$load_date{{- ',' if partitions or columns|length > 0 -}}
         {%- if columns or partitions -%}
             {%- if partitions -%}{%- for partition in partitions %}
                 {{partition.name}} {{partition.data_type}} AS {{partition.expression}}{{- ',' if not loop.last or columns|length > 0 -}}
