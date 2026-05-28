@@ -2,7 +2,7 @@
 
 <!-- OVERVIEW -->
 Package name: `dbt_dataengineers_materializations`
-Version: 1.0.2
+Version: 1.0.3
 Platform: Snowflake
 Engines: dbt Core (>=1.9.0), dbt Fusion (2.x)
 Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
@@ -44,7 +44,7 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.0.2"
+    revision: "1.0.3"
 ```
 
 For Snowflake Agent Materialization add the following:
