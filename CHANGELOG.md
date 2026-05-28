@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.3 - External Table Load Date Fix
+
+### Bug Fixes
+* Changed `snowflake_create_external_table` macro to use `metadata$file_last_modified` instead of `current_timestamp` as the column expression for the `load_date` column. Snowflake no longer allows `current_timestamp` as a virtual column expression in external tables.
+
 ## 1.0.2 - Data Metric Function Materialization
 
 ### New Features
