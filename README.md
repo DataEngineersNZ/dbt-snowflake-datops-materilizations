@@ -408,7 +408,7 @@ Config options:
 |---|---|---|---|
 | `auto_create_table` | create the table via dbt | yes | `false` |
 | `auto_maintained` | maintain schema changes | no | `false` |
-| `disable_full_refresh` | prevent table replacement during `--full-refresh` runs | no | `false` |
+| `disable_full_refresh` | prevent table replacement during `--full-refresh` runs (internal tables only, not external/snowpipe) | no | `false` |
 
 #### Snowpipe Integration
 

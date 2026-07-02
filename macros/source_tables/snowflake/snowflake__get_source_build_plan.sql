@@ -1,11 +1,15 @@
-{% macro snowflake__get_source_build_plan(source_node, is_first_run, auto_maintained) %}
+{% macro snowflake__get_source_build_plan(source_node, is_first_run, auto_maintained, full_refresh_mode_override=none) %}
     {% set build_plan = [] %}
 
     {# Setup our variables which are re-usable #}
     {%- set identifier = source_node.name -%}
     {%- set schema = source_node.schema -%}
     {%- set database = source_node.database -%}
-    {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
+    {%- if full_refresh_mode_override is not none -%}
+        {%- set full_refresh_mode = full_refresh_mode_override -%}
+    {%- else -%}
+        {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
+    {%- endif -%}
     {%- if full_refresh_mode and source_node.external.get('disable_full_refresh', false) -%}
         {%- set full_refresh_mode = false -%}
     {%- endif -%}
