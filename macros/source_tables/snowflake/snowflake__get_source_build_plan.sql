@@ -6,7 +6,7 @@
     {%- set schema = source_node.schema -%}
     {%- set database = source_node.database -%}
     {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
-    {%- if source_node.external.get('disable_full_refresh', false) -%}
+    {%- if full_refresh_mode and source_node.external.get('disable_full_refresh', false) -%}
         {%- set full_refresh_mode = false -%}
     {%- endif -%}
     {%- set migration_table_suffix = '_DBT_MIG' -%}
@@ -22,7 +22,7 @@
 
         {%- set current_relation_exists_as_table = (current_relation is not none and current_relation.is_table) -%}
         {%- set current_relation_exists_as_view = (current_relation is not none and current_relation.is_view) -%}
-        {%- set create_or_replace = (current_relation is none or full_refresh_mode) -%}
+        {%- set create_or_replace = (current_relation is none or full_refresh_mode or current_relation_exists_as_view) -%}
         {%- set stream_name = dbt_dataengineers_materializations.snowflake_get_stream_name(identifier) -%}
         {%- set stream_relation = api.Relation.create(schema=schema, identifier=stream_name) -%}
 
