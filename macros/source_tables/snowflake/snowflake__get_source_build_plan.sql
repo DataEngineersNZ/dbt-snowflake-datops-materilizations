@@ -1,11 +1,18 @@
-{% macro snowflake__get_source_build_plan(source_node, is_first_run, auto_maintained) %}
+{% macro snowflake__get_source_build_plan(source_node, is_first_run, auto_maintained, full_refresh_mode_override=none) %}
     {% set build_plan = [] %}
 
     {# Setup our variables which are re-usable #}
     {%- set identifier = source_node.name -%}
     {%- set schema = source_node.schema -%}
     {%- set database = source_node.database -%}
-    {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
+    {%- if full_refresh_mode_override is not none -%}
+        {%- set full_refresh_mode = full_refresh_mode_override -%}
+    {%- else -%}
+        {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
+    {%- endif -%}
+    {%- if full_refresh_mode and source_node.external.get('disable_full_refresh', false) -%}
+        {%- set full_refresh_mode = false -%}
+    {%- endif -%}
     {%- set migration_table_suffix = '_DBT_MIG' -%}
     {%- set comparison_table_suffix = '_DBT_COMP' -%}
 
@@ -19,7 +26,7 @@
 
         {%- set current_relation_exists_as_table = (current_relation is not none and current_relation.is_table) -%}
         {%- set current_relation_exists_as_view = (current_relation is not none and current_relation.is_view) -%}
-        {%- set create_or_replace = (current_relation is none or full_refresh_mode) -%}
+        {%- set create_or_replace = (current_relation is none or full_refresh_mode or current_relation_exists_as_view) -%}
         {%- set stream_name = dbt_dataengineers_materializations.snowflake_get_stream_name(identifier) -%}
         {%- set stream_relation = api.Relation.create(schema=schema, identifier=stream_name) -%}
 
