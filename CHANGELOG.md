@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.4 - Disable Full Refresh for Source Tables
+
+### New Features
+* Added `disable_full_refresh` property for source tables. When set to `true` under `external:`, the table will not be dropped and recreated during `--full-refresh` runs. This protects critical source tables from accidental replacement.
+
 ## 1.0.3 - External Table Load Date Fix
 
 ### Bug Fixes

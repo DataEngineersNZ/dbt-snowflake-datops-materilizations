@@ -16,3 +16,14 @@ sources:
         external:
           auto_create_table: true
           auto_maintained: true
+      - name: test_source_table_no_full_refresh
+        description: Source table with full refresh disabled
+        columns:
+          - name: id
+            data_type: number
+          - name: name
+            data_type: varchar(100)
+        external:
+          auto_create_table: true
+          auto_maintained: true
+          disable_full_refresh: true

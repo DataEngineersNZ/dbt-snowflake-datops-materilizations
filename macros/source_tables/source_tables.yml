@@ -45,7 +45,10 @@ macros:
       show: false
 
   - name: snowflake__get_source_build_plan
-    description: Snowflake-specific build plan for creating and maintaining internal source tables.
+    description: |
+      Snowflake-specific build plan for creating and maintaining internal source tables.
+      Respects the `disable_full_refresh` property on source nodes — when set to `true`,
+      the table will not be dropped and recreated during `--full-refresh` runs.
     docs:
       show: false
 

@@ -6,6 +6,9 @@
     {%- set schema = source_node.schema -%}
     {%- set database = source_node.database -%}
     {%- set full_refresh_mode = (flags.FULL_REFRESH == True) -%}
+    {%- if source_node.external.get('disable_full_refresh', false) -%}
+        {%- set full_refresh_mode = false -%}
+    {%- endif -%}
     {%- set migration_table_suffix = '_DBT_MIG' -%}
     {%- set comparison_table_suffix = '_DBT_COMP' -%}
 
