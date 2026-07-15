@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.5 - Immutable Table Change Tracking Fix
+
+### Bug Fixes
+* Fixed Jinja type error in `immutable_table` materialization when `change_tracking` is enabled. The `| upper` filter was applied directly to a boolean value, causing `"tried to use + operator on unsupported types string and bool"`. Replaced with an explicit conditional (`'TRUE' if ... else 'FALSE'`) to produce valid SQL.
+
 ## 1.0.4 - Disable Full Refresh for Source Tables
 
 ### New Features

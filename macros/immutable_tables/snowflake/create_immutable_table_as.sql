@@ -11,7 +11,7 @@
     max_data_extension_time_in_days = {{ max_data_extension_in_days }}
 {%- endif -%}
 {%- endif -%}
-    change_tracking = {{ enable_change_tracking | upper }}
+    change_tracking = {{ 'TRUE' if enable_change_tracking else 'FALSE' }}
 as
     {{ sql }}
 ;
