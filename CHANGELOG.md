@@ -1,5 +1,11 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.6 - Gitignore & Alignment with Legacy Branch
+
+### Changes
+* Added `.cortex/`, `integration_tests/.user.yml`, and `integration_tests/package-lock.yml` to `.gitignore`
+* Aligned `snowflake_create_external_table` macro formatting with `hotfix/0.2.12.2` branch
+
 ## 1.0.5 - Immutable Table Change Tracking Fix
 
 ### Bug Fixes
