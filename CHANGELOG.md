@@ -1,5 +1,10 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.7 - Parent Tasks
+
+### Bug Fixes
+* Updated `snowflake__task` macro so that when suspending the database for parent tasks are in the current working database
+
 ## 1.0.6 - Gitignore & Alignment with Legacy Branch
 
 ### Changes

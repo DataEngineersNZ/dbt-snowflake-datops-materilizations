@@ -42,7 +42,7 @@
     -- First, suspend the top parent task if there is one
     {% set top_parent = dbt_dataengineers_materializations.snowflake_get_task_top_parent_node(model) %}
     {% if top_parent %}
-      {% set top_parent_relation = api.Relation.create(database=top_parent.database, schema=top_parent.schema, identifier=top_parent.name) %}
+      {% set top_parent_relation = api.Relation.create(database=database, schema=top_parent.schema, identifier=top_parent.name) %}
       {{ log('suspending '~ top_parent_relation, info=True) }}
       {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(top_parent_relation) %}
     {% endif %}

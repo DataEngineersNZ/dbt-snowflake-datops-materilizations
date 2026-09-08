@@ -2,7 +2,7 @@
 
 <!-- OVERVIEW -->
 Package name: `dbt_dataengineers_materializations`
-Version: 1.0.3
+Version: 1.0.7
 Platform: Snowflake
 Engines: dbt Core (>=1.9.0), dbt Fusion (2.x)
 Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
