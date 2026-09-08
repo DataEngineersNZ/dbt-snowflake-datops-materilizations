@@ -42,6 +42,11 @@
     -- First, suspend the top parent task if there is one
     {% set top_parent = dbt_dataengineers_materializations.snowflake_get_task_top_parent_node(model) %}
     {% if top_parent %}
+      {#-- NOTE: ref() cannot be used here. top_parent may be several levels up the DAG and is
+           not a statically-declared dependency of the current model, so calling ref() on it
+           trips dbt's "unable to infer all dependencies" compiler check. Use the current
+           run's own `database` (guaranteed fresh for this invocation) rather than
+           top_parent.database, which can be stale if a manifest is reused across environments. --#}
       {% set top_parent_relation = api.Relation.create(database=database, schema=top_parent.schema, identifier=top_parent.name) %}
       {{ log('suspending '~ top_parent_relation, info=True) }}
       {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(top_parent_relation) %}

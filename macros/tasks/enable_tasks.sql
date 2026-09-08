@@ -1,6 +1,9 @@
 {% macro enable_tasks() %}
     {% if execute %}
-    {% if flags.WHICH in ['run', 'build'] %}
+    {#-- 'run-operation' must stay allowed: it's how the on-run-end hook is invoked
+         explicitly (e.g. in CI, or by a user running this macro directly). Only
+         parse-only invocations (compile, parse, list, debug, etc.) should be excluded. --#}
+    {% if flags.WHICH in ['run', 'build', 'run-operation'] %}
         {% do log("START: Locating tasks to resume", info=True) %}
 
         {# Collect all task nodes and classify them #}
@@ -52,7 +55,7 @@
         {% for task_node in root_tasks %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
+                {% set task_relation = ref(task_node.package_name, task_node.name) %}
                 {% do log('  Suspending root task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(task_relation) %}
             {% endif %}
@@ -65,7 +68,7 @@
             {% set task_node = item.node %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
+                {% set task_relation = ref(task_node.package_name, task_node.name) %}
                 {% do log('  Resuming child task (depth ' ~ item.depth ~ ') - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
             {% endif %}
@@ -76,7 +79,7 @@
         {% for task_node in root_tasks %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=task_node.database, schema=task_node.schema, identifier=task_node.name) %}
+                {% set task_relation = ref(task_node.package_name, task_node.name) %}
                 {% do log('  Resuming root task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
             {% endif %}
