@@ -1,5 +1,13 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.0.7 - Parent Tasks
+
+### Bug Fixes
+* Fixed `snowflake_get_task_parent_node` never detecting a parent task for a normal single-level `task_after` chain (a `depends_on.nodes|count > 1` guard silently made the top-parent suspend/resume logic dead code for any task with exactly one dependency, which is the common case). Corrected to `> 0`.
+* Fixed `snowflake__task` materialization suspending the top-parent task in the wrong database when the current run's resolved `database` differs from the value cached on the parent's graph node (e.g. a manifest reused across environments). The relation is now built from the current invocation's `database`, which is always fresh, instead of the parent node's own `database` attribute.
+* Applied `ref(package_name, name)`-based relation resolution to `enable_tasks` (root and child task suspend/resume), replacing manual `api.Relation.create()` calls built from raw graph node attributes, for the same reason.
+* Fixed `enable_tasks`, `enable_alerts`, and `enable_monitorial_monitors` being a no-op when invoked via `dbt run-operation` — exactly how the documented `on-run-end` setup and CI both invoke them. Their `flags.WHICH in ['run', 'build']` guard now also allows `'run-operation'`.
+
 ## 1.0.6 - Gitignore & Alignment with Legacy Branch
 
 ### Changes

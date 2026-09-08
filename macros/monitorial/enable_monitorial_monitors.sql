@@ -1,6 +1,8 @@
 {% macro enable_monitorial_monitors() %}
     {% if execute %}
-    {% if flags.WHICH in ['run', 'build'] %}
+    {#-- 'run-operation' must stay allowed: it's how the on-run-end hook is invoked
+         explicitly (e.g. in CI, or by a user running this macro directly). --#}
+    {% if flags.WHICH in ['run', 'build', 'run-operation'] %}
         {% do log("START: Locating monitorial monitors to resume", info=true) %}
         {% set alerts = [] %}
         {% set tasks = [] %}

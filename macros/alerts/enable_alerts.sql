@@ -1,6 +1,8 @@
 {% macro enable_alerts() %}
     {% if execute %}
-    {% if flags.WHICH in ['run', 'build'] %}
+    {#-- 'run-operation' must stay allowed: it's how the on-run-end hook is invoked
+         explicitly (e.g. in CI, or by a user running this macro directly). --#}
+    {% if flags.WHICH in ['run', 'build', 'run-operation'] %}
         {% do log("START: Locating alerts to resume", info=True) %}
         {% set alerts = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
