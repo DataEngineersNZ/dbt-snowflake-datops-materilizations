@@ -53,17 +53,20 @@
         {#-- NOTE: ref() cannot be used here. These task nodes are discovered by walking the
              graph (root/parent tasks of whatever was selected) and are not statically-declared
              dependencies of this operation, so calling ref() on them trips dbt's dependency-graph
-             validation (see the identical note in snowflake__task.sql). Build the relation from
-             the current invocation's `target.database` (guaranteed fresh) instead. Use
-             `task_node.alias` (the node's actual created identifier), not `task_node.name`
-             (its logical/file name) — they diverge whenever a task model sets a custom alias. --#}
+             validation (see the identical note in snowflake__task.sql). Build the relation via
+             `resolve_node_database()`, which uses the node's own `database` config if the task
+             explicitly overrides it, and otherwise falls back to the current invocation's
+             `target.database` (guaranteed fresh even if a manifest is reused across
+             environments — see the 1.0.7 changelog entry). Use `task_node.alias` (the node's
+             actual created identifier), not `task_node.name` (its logical/file name) — they
+             diverge whenever a task model sets a custom alias. --#}
 
         {# Step 1: Suspend all root tasks (must be done before modifying any child) #}
         {% do log("Suspending " ~ root_tasks|count ~ " root task(s)", info=True) %}
         {% for task_node in root_tasks %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=target.database, schema=task_node.schema, identifier=task_node.alias) %}
+                {% set task_relation = api.Relation.create(database=dbt_dataengineers_materializations.resolve_node_database(task_node), schema=task_node.schema, identifier=task_node.alias) %}
                 {% do log('  Suspending root task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(task_relation) %}
             {% endif %}
@@ -76,7 +79,7 @@
             {% set task_node = item.node %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=target.database, schema=task_node.schema, identifier=task_node.alias) %}
+                {% set task_relation = api.Relation.create(database=dbt_dataengineers_materializations.resolve_node_database(task_node), schema=task_node.schema, identifier=task_node.alias) %}
                 {% do log('  Resuming child task (depth ' ~ item.depth ~ ') - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
             {% endif %}
@@ -87,7 +90,7 @@
         {% for task_node in root_tasks %}
             {% set enabled_targets = dbt_dataengineers_materializations.node_config_get(task_node, 'enabled_targets', [target.name]) %}
             {% if target.name in enabled_targets %}
-                {% set task_relation = api.Relation.create(database=target.database, schema=task_node.schema, identifier=task_node.alias) %}
+                {% set task_relation = api.Relation.create(database=dbt_dataengineers_materializations.resolve_node_database(task_node), schema=task_node.schema, identifier=task_node.alias) %}
                 {% do log('  Resuming root task - ' ~ task_relation, info=true) %}
                 {% do dbt_dataengineers_materializations.snowflake_resume_task_statement(task_relation) %}
             {% endif %}
