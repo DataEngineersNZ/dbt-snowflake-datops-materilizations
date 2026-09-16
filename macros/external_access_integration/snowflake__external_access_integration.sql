@@ -68,7 +68,10 @@
 
        NOTE: mirrors ref()'s own resolution order — a match in the *current* model's package
        always wins over matches in dependency packages, so a same-named model in a dependency
-       package is not ambiguous unless there's no local match.
+       package is not ambiguous unless there's no local match. `model` is only bound during an
+       actual model/materialization execution — it isn't defined when this macro is called from
+       a plain `run-operation` context (e.g. `assert_resolve_relation_ref`), so fall back to no
+       package preference (every match is "other") rather than erroring on an undefined `model`.
 
        NOTE: also mirrors ref()'s versioned-model behavior — an unversioned `ref('name')` binds
        to whichever version has `latest_version == version`. Multiple version nodes sharing a
@@ -77,12 +80,13 @@
        precedence tier. --#}
   {% set ref_ns = namespace(found_node=none) %}
   {% if execute %}
+    {% set current_package = model.package_name if model is defined else none %}
     {% set nodes = graph.nodes.values() if graph.nodes else [] %}
     {% set local_matches = [] %}
     {% set other_matches = [] %}
     {% for node in nodes %}
       {% if node.name == ref_name %}
-        {% if node.package_name == model.package_name %}
+        {% if current_package is not none and node.package_name == current_package %}
           {% do local_matches.append(node) %}
         {% else %}
           {% do other_matches.append(node) %}
