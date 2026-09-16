@@ -27,14 +27,14 @@
     {% endfor %}
   {% endif %}
   -- action statement
- {% for seret_name in authentication_secrets_refs %}
-       {% do authentication_secrets.append(ref(seret_name).include(database=true)) %}
+ {% for secret_name in authentication_secrets_refs %}
+      {% do authentication_secrets.append(dbt_dataengineers_materializations.resolve_relation_ref(secret_name)) %}
  {% endfor %}
  {% for rule_name in network_rules_refs %}
-       {% do network_rules.append(ref(rule_name).include(database=true)) %}
+      {% do network_rules.append(dbt_dataengineers_materializations.resolve_relation_ref(rule_name)) %}
  {% endfor %}
  {% for api_integration_name in api_authentication_integrations_refs %}
-       {% do api_authentication_integrations.append(ref(api_integration_name).include(database=true)) %}
+      {% do api_authentication_integrations.append(dbt_dataengineers_materializations.resolve_relation_ref(api_integration_name)) %}
  {% endfor %}
 
   {%- call statement('main') -%}
@@ -52,3 +52,65 @@
   {{ return({'relations': []}) }}
 
 {%- endmaterialization -%}
+
+{% macro resolve_relation_ref(ref_name) %}
+  {#-- NOTE: ref() cannot be used here. These names come from this materialization's own
+       config (network_rules_refs / authentication_secrets_refs / api_authentication_integrations_refs),
+       not from the model's own compiled SQL, so they are not statically-declared dependencies
+       of this node — calling ref() on them trips dbt Fusion's dependency-graph validation
+       with `JinjaError: not a key type: ref not found for package...` (see the identical
+       note in enable_tasks.sql / snowflake__task.sql). Look the node up in the graph and
+       build the relation via `resolve_node_relation()` instead.
+
+       NOTE: `found_node` must be a namespace attribute, not a plain `{% set %}` variable —
+       Jinja's `{% for %}` block has its own scope, so a plain `{% set %}` inside the loop
+       would never be visible after `{% endfor %}`.
+
+       NOTE: mirrors ref()'s own resolution order — a match in the *current* model's package
+       always wins over matches in dependency packages, so a same-named model in a dependency
+       package is not ambiguous unless there's no local match. `model` is only bound during an
+       actual model/materialization execution — it isn't defined when this macro is called from
+       a plain `run-operation` context (e.g. `assert_resolve_relation_ref`), so fall back to no
+       package preference (every match is "other") rather than erroring on an undefined `model`.
+
+       NOTE: also mirrors ref()'s versioned-model behavior — an unversioned `ref('name')` binds
+       to whichever version has `latest_version == version`. Multiple version nodes sharing a
+       name are therefore not ambiguous; pick the latest version among them the same way ref()
+       would, and only raise the ambiguity error for genuinely distinct nodes within the same
+       precedence tier. --#}
+  {% set ref_ns = namespace(found_node=none) %}
+  {% if execute %}
+    {% set current_package = model.package_name if model is defined else none %}
+    {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+    {% set local_matches = [] %}
+    {% set other_matches = [] %}
+    {% for node in nodes %}
+      {% if node.name == ref_name %}
+        {% if current_package is not none and node.package_name == current_package %}
+          {% do local_matches.append(node) %}
+        {% else %}
+          {% do other_matches.append(node) %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    {% set candidates = local_matches if local_matches | length > 0 else other_matches %}
+    {% set latest_ns = namespace(node=none) %}
+    {% for candidate in candidates %}
+      {% if candidate.version is not none and candidate.version == candidate.latest_version %}
+        {% set latest_ns.node = candidate %}
+      {% endif %}
+    {% endfor %}
+    {% if latest_ns.node is not none %}
+      {% set ref_ns.found_node = latest_ns.node %}
+    {% elif candidates | length == 1 %}
+      {% set ref_ns.found_node = candidates[0] %}
+    {% elif candidates | length > 1 %}
+      {% do exceptions.raise_compiler_error("external_access_integration: ref '" ~ ref_name ~ "' is ambiguous — " ~ candidates | length ~ " models with that name were found in the " ~ ("current" if local_matches | length > 0 else "dependency") ~ " package(s), and none is a resolvable 'latest' version. Use a unique model name or specify a version.") %}
+    {% endif %}
+  {% endif %}
+  {% if ref_ns.found_node is none %}
+    {% do exceptions.raise_compiler_error("external_access_integration: could not resolve ref '" ~ ref_name ~ "' — no model with that name was found in the graph. Ensure it is defined in this project.") %}
+  {% endif %}
+  {% set relation = dbt_dataengineers_materializations.resolve_node_relation(ref_ns.found_node).include(database=True) %}
+  {{ return(relation) }}
+{% endmacro %}

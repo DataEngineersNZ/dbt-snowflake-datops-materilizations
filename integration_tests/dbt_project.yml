@@ -18,3 +18,4 @@ dispatch:
 
 vars:
   default_monitorial_error_integration: ""
+  target_database_replacement: ""
