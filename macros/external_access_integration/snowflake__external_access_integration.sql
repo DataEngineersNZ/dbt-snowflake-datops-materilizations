@@ -27,14 +27,14 @@
     {% endfor %}
   {% endif %}
   -- action statement
- {% for seret_name in authentication_secrets_refs %}
-       {% do authentication_secrets.append(ref(seret_name).include(database=true)) %}
+ {% for secret_name in authentication_secrets_refs %}
+      {% do authentication_secrets.append(dbt_dataengineers_materializations.resolve_relation_ref(secret_name)) %}
  {% endfor %}
  {% for rule_name in network_rules_refs %}
-       {% do network_rules.append(ref(rule_name).include(database=true)) %}
+      {% do network_rules.append(dbt_dataengineers_materializations.resolve_relation_ref(rule_name)) %}
  {% endfor %}
  {% for api_integration_name in api_authentication_integrations_refs %}
-       {% do api_authentication_integrations.append(ref(api_integration_name).include(database=true)) %}
+      {% do api_authentication_integrations.append(dbt_dataengineers_materializations.resolve_relation_ref(api_integration_name)) %}
  {% endfor %}
 
   {%- call statement('main') -%}
@@ -52,3 +52,28 @@
   {{ return({'relations': []}) }}
 
 {%- endmaterialization -%}
+
+{% macro resolve_relation_ref(ref_name) %}
+  {#-- NOTE: ref() cannot be used here. These names come from this materialization's own
+       config (network_rules_refs / authentication_secrets_refs / api_authentication_integrations_refs),
+       not from the model's own compiled SQL, so they are not statically-declared dependencies
+       of this node — calling ref() on them trips dbt Fusion's dependency-graph validation
+       with `JinjaError: not a key type: ref not found for package...` (see the identical
+       note in enable_tasks.sql / snowflake__task.sql). Look the node up in the graph and
+       build the relation from the current invocation's `target.database` (guaranteed
+       fresh) instead. --#}
+  {% set found_node = none %}
+  {% if execute %}
+    {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+    {% for node in nodes %}
+      {% if node.name == ref_name %}
+        {% set found_node = node %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% if found_node is none %}
+    {% do exceptions.raise_compiler_error("external_access_integration: could not resolve ref '" ~ ref_name ~ "' — no model with that name was found in the graph. Ensure it is defined in this project.") %}
+  {% endif %}
+  {% set relation = api.Relation.create(database=target.database, schema=found_node.schema, identifier=found_node.name).include(database=True) %}
+  {{ return(relation) }}
+{% endmacro %}

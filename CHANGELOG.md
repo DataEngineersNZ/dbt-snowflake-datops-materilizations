@@ -1,5 +1,14 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.1.0 - dbt 2.0 (Fusion) Compatibility Fix for enable_tasks
+
+### Bug Fixes
+* Fixed `enable_tasks` failing under dbt 2.0 / Fusion with `JinjaError: not a key type: ref not found for package: <pkg>, model: <name>`. The 1.0.7 change routed root/parent task relation resolution through `ref(package_name, name)`, but those task nodes are discovered by walking the graph and are not statically-declared dependencies of the `enable_tasks` operation — Fusion enforces stricter dependency-graph validation than dbt Core and rejects such dynamic `ref()` calls. `snowflake__task.sql` already documented and avoided this exact pattern for its own top-parent lookup; `enable_tasks` now uses the same fix — `api.Relation.create()` built from the current invocation's `target.database` plus the node's own `schema`/`name` — instead of `ref()`.
+* Fixed the same dynamic-`ref()` pattern in `external_access_integration`: `network_rules_refs`, `authentication_secrets_refs`, and `api_authentication_integrations_refs` were resolved with `ref(name)` inside the materialization macro, which is never a statically-declared dependency of the model and is rejected by dbt Fusion for the same reason as `enable_tasks`. Added a `resolve_relation_ref` helper that looks the node up in the graph and builds an `api.Relation.create()` from the current invocation's `target.database` instead. Since removing `ref()` also removes the only mechanism giving dbt build-order awareness of these referenced objects, models using `*_refs` config now need an explicit `-- depends_on: {{ ref('...') }}` comment for each ref to guarantee correct build order (documented and exercised in `test_external_access_integration.sql`).
+
+### CI
+* Added `integration-tests-fusion` job to `integration-tests.yml`, running the same integration suite against dbt Fusion (2.x, installed via the official dbt Labs installer) alongside the existing dbt Core job. Marked `continue-on-error` for now so it acts as a compatibility signal rather than a merge gate until Fusion coverage is proven stable.
+
 ## 1.0.7 - Parent Tasks
 
 ### Bug Fixes

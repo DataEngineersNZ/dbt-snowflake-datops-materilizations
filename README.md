@@ -2,12 +2,12 @@
 
 <!-- OVERVIEW -->
 Package name: `dbt_dataengineers_materializations`
-Version: 1.0.7
+Version: 1.1.0
 Platform: Snowflake
-Engines: dbt Core (>=1.9.0), dbt Fusion (2.x)
+Engines: dbt Core (>=1.9.4), dbt Fusion (2.x)
 Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
 
-> require-dbt-version: [">=1.9.0", "<3.0.0"]
+> require-dbt-version: [">=1.9.4", "<3.0.0"]
 
 ----
 
@@ -44,13 +44,15 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.0.3"
+    revision: "1.1.0"
 ```
 
-For Snowflake Agent Materialization add the following:
+For Snowflake Cortex Materializations add the following:
 ```yaml
-  - git: https://github.com/monitorial-io/dbt-snowflake-cortex.git
-    revision: "1.3.0"
+  - package: monitorial-io/dbt_monitorial_snowflake_cortex
+    version: 1.3.1
+  - package: Snowflake-Labs/dbt_semantic_view
+    version: 1.0.6
 ```
 
 ----
@@ -627,6 +629,8 @@ Config options:
 Materialization name: `external_access_integration`
 
 ```sql
+-- depends_on: {{ ref('my_secret') }}
+-- depends_on: {{ ref('my_rule') }}
 {{
     config(
         materialized='external_access_integration',
@@ -651,6 +655,8 @@ Config options:
 | `roles_for_use` | roles granted USAGE | `['developers']` |
 
 > Requires `CREATE INTEGRATION` privilege. Integration name appends `target.name`.
+>
+> The `_refs` options are resolved inside the materialization macro, not in the model's own compiled SQL, so dbt can't see them as dependencies on its own. Add a `-- depends_on: {{ ref('...') }}` comment for each ref (as shown above) so dbt builds those objects first.
 
 ----
 
