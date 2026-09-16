@@ -45,13 +45,13 @@
       {#-- NOTE: ref() cannot be used here. top_parent may be several levels up the DAG and is
            not a statically-declared dependency of the current model, so calling ref() on it
            trips dbt's "unable to infer all dependencies" compiler check. Build the relation via
-           `resolve_node_database()`, which uses top_parent's own `database` config if it
-           explicitly overrides it, and otherwise falls back to the current invocation's own
-           `database` (guaranteed fresh for this invocation, rather than top_parent.database,
-           which can be stale if a manifest is reused across environments).
-           Use `top_parent.alias` (the node's actual created identifier), not `top_parent.name`
-           (its logical/file name) — they diverge whenever a task model sets a custom alias. --#}
-      {% set top_parent_relation = api.Relation.create(database=dbt_dataengineers_materializations.resolve_node_database(top_parent), schema=top_parent.schema, identifier=top_parent.alias) %}
+           `resolve_node_relation()`, which resolves top_parent's database (respecting an explicit
+           override, else falling back to the current invocation's `database`, guaranteed fresh
+           rather than top_parent.database which can be stale if a manifest is reused across
+           environments), its `alias` (not `name`, which diverges for custom-aliased tasks), and
+           its own quote policy (so quoted identifiers aren't silently re-rendered with adapter
+           defaults). --#}
+      {% set top_parent_relation = dbt_dataengineers_materializations.resolve_node_relation(top_parent) %}
       {{ log('suspending '~ top_parent_relation, info=True) }}
       {% do dbt_dataengineers_materializations.snowflake_suspend_task_statement(top_parent_relation) %}
     {% endif %}
