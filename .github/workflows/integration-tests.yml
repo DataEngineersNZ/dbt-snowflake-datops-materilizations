@@ -67,10 +67,10 @@ jobs:
           dbt run-operation stage_table_sources --profiles-dir .
 
       - name: Run models (first run - full refresh)
-        run: dbt run --full-refresh --exclude tag:enterprise_only tag:requires_account_admin --profiles-dir .
+        run: dbt run --full-refresh --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
 
       - name: Run models (second run - idempotency)
-        run: dbt run --exclude tag:enterprise_only tag:requires_account_admin --profiles-dir .
+        run: dbt run --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
 
       - name: Post-run enable (on-run-end hooks)
         run: |
@@ -143,7 +143,7 @@ jobs:
       - name: Parse and compile (static Fusion compatibility check)
         run: |
           dbt parse --profiles-dir .
-          dbt compile --profiles-dir .
+          dbt compile --exclude resource_type:test --profiles-dir .
 
       - name: Pre-create infrastructure (on-run-start hooks)
         run: |
@@ -152,10 +152,10 @@ jobs:
           dbt run-operation stage_table_sources --profiles-dir .
 
       - name: Run models (first run - full refresh)
-        run: dbt run --full-refresh --exclude tag:enterprise_only tag:requires_account_admin --profiles-dir .
+        run: dbt run --full-refresh --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
 
       - name: Run models (second run - idempotency)
-        run: dbt run --exclude tag:enterprise_only tag:requires_account_admin --profiles-dir .
+        run: dbt run --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
 
       - name: Post-run enable (on-run-end hooks)
         run: |

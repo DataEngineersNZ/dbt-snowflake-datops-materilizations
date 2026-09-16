@@ -7,9 +7,9 @@ readme_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 content = r'''# dbt_dataengineers_materializations
 
-This [dbt](https://github.com/dbt-labs/dbt) package contains custom materializations for managing Snowflake infrastructure objects via dbt. It supports both **dbt Core** (>=1.3.0) and the **dbt Fusion engine** (2.x).
+This [dbt](https://github.com/dbt-labs/dbt) package contains custom materializations for managing Snowflake infrastructure objects via dbt. It supports both **dbt Core** (>=1.9.4) and the **dbt Fusion engine** (2.x).
 
-> require-dbt-version: [">=1.3.0", "<3.0.0"]
+> require-dbt-version: [">=1.9.4", "<3.0.0"]
 
 ---
 
@@ -20,15 +20,17 @@ Add the following to your `packages.yml` file:
 ```yaml
 packages:
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.0.0"
+    revision: "1.1.0"
 ```
 
-For Snowflake Agent Materialization add the following to your `packages.yml` file:
+For Snowflake Cortex Materializations add the following to your `packages.yml` file:
 
 ```yaml
 packages:
-  - git: https://github.com/monitorial-io/dbt-snowflake-cortex.git
-    revision: "1.0.0"
+  - package: monitorial-io/dbt_monitorial_snowflake_cortex
+    version: 1.3.1
+  - package: Snowflake-Labs/dbt_semantic_view
+    version: 1.0.6
 ```
 
 ---
