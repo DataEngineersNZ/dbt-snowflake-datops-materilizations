@@ -25,6 +25,12 @@ macros:
       **Parameters:**
       - `enabled_targets` (list, default: [target.name]) — Target environments where file formats are staged
       - `enabled_profiles` (list, default: [target.profile_name]) — Profiles where file formats are staged
+
+      Only file formats within the current dbt invocation's node selection (`--select`/`--exclude`)
+      are staged; a file format that exists solely because an installed package defines a
+      `file_format`-materialized node outside that selection is left untouched. When selection
+      information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping
+      by the current/root project instead. See `scope_nodes_to_selection`.
     docs:
       show: true
 

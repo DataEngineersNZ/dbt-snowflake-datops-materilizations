@@ -1,65 +1,36 @@
 # dbt_dataengineers_materializations
 
-<!-- OVERVIEW -->
-Package name: `dbt_dataengineers_materializations`
-Version: 1.1.1
-Platform: Snowflake
-Engines: dbt Core (>=1.9.4), dbt Fusion (2.x)
-Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
+This [dbt](https://github.com/dbt-labs/dbt) package contains custom materializations for managing Snowflake infrastructure objects via dbt. It supports both **dbt Core** (>=1.9.4) and the **dbt Fusion engine** (2.x).
 
 > require-dbt-version: [">=1.9.4", "<3.0.0"]
 
-----
-
-## Table of Contents
-
-- [Installation](#installation)
-- [Quick Reference](#quick-reference)
-- [Complete Setup](#complete-setup)
-- [dbt Fusion Compatibility](#dbt-fusion-compatibility)
-- [Hooks](#hooks)
-- [Materializations](#materializations)
-  - [Monitorial Alerts](#monitorial-alerts)
-  - [Alerts](#alerts)
-  - [Stored Procedures](#stored-procedures)
-  - [File Formats](#file-formats)
-  - [Tasks](#tasks)
-  - [Streams](#streams)
-  - [Tables (Auto-Created Source Tables)](#tables-auto-created-source-tables)
-  - [External Tables](#external-tables)
-  - [Immutable Tables](#immutable-tables)
-  - [Stages](#stages)
-  - [Secrets](#secrets)
-  - [Network Rules](#network-rules)
-  - [External Access Integration](#external-access-integration)
-  - [User Defined Functions](#user-defined-functions)
-  - [Data Metric Functions](#data-metric-functions)
-  - [Materialized View](#materialized-view)
-- [Comments](#comments)
-
-----
+---
 
 ## Installation
 
 Add the following to your `packages.yml` file:
+
 ```yaml
+packages:
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
     revision: "1.1.1"
 ```
 
-For Snowflake Cortex Materializations add the following:
+For Snowflake Cortex Materializations add the following to your `packages.yml` file:
+
 ```yaml
+packages:
   - package: monitorial-io/dbt_monitorial_snowflake_cortex
     version: 1.3.1
   - package: Snowflake-Labs/dbt_semantic_view
     version: 1.0.6
 ```
 
-----
+---
 
 ## Quick Reference
 
-| Materialization | Creates | Key Configs | Section |
+| Materialization | Creates | Key Config | Section |
 |---|---|---|---|
 | `monitorial` | Snowflake Alert/Task for Monitorial.io | `schedule`, `severity`, `delivery_type` | [Monitorial Alerts](#monitorial-alerts) |
 | `alert` | Snowflake Alert | `schedule`, `action`, `warehouse_size` | [Alerts](#alerts) |
@@ -67,26 +38,30 @@ For Snowflake Cortex Materializations add the following:
 | `file_format` | File Format | `create_or_replace` | [File Formats](#file-formats) |
 | `task` | Snowflake Task | `schedule`/`task_after`, `is_serverless` | [Tasks](#tasks) |
 | `stream` | Stream on table/view | `source_model`, `source_schema` | [Streams](#streams) |
-| `immutable_table` | Table (CREATE IF NOT EXISTS) | `transient`, `is_hybrid`, `create_or_replace` | [Immutable Tables](#immutable-tables) |
+| `immutable_table` | Table (CREATE IF NOT EXISTS) | `is_transient`, `is_hybrid`, `create_or_replace` | [Immutable Tables](#immutable-tables) |
 | `stage` | Internal/External Stage | `create_or_replace` | [Stages](#stages) |
 | `secret` | Secret object | `type`, `secret_string_variable` | [Secrets](#secrets) |
 | `network_rule` | Network Rule | `rule_type`, `value_list`, `mode` | [Network Rules](#network-rules) |
 | `external_access_integration` | External Access Integration | `network_rules`, `authentication_secrets` | [External Access Integration](#external-access-integration) |
-| `user_defined_function` | UDF (SQL/Python/Java/JS/External) | `preferred_language`, `return_type`, `parameters` | [User Defined Functions](#user-defined-functions) |
-| `data_metric_function` | Data Metric Function (DMF) | `table_arguments`, `is_secure`, `comment` | [Data Metric Functions](#data-metric-functions) |
+| `generic` | Any DDL (freeform SQL) | none | [Generic](#generic) |
+| `user_defined_function` | UDF (SQL/Python/Java/JS) | `preferred_language`, `return_type`, `parameters` | [User Defined Functions](#user-defined-functions) |
 | `snowflake_materialized_view` | Materialized View | `secure`, `cluster_by`, `automatic_clustering` | [Materialized View](#materialized-view) |
 
-----
+---
 
 ## Complete Setup
 
-Add the following to your `dbt_project.yml`:
+Below is a complete `dbt_project.yml` example showing all hooks and variables:
 
 ```yaml
+# dbt_project.yml
+
+# Required: Add dispatch config for comment overrides on materialized views
 dispatch:
   - macro_namespace: dbt
     search_order: [dbt_dataengineers_materializations, dbt]
 
+# Required: Add hooks for infrastructure object management
 on-run-start:
   - "{{ dbt_dataengineers_materializations.stage_file_formats(['prod', 'test']) }}"
   - "{{ dbt_dataengineers_materializations.stage_stages(['prod', 'test']) }}"
@@ -97,6 +72,7 @@ on-run-end:
   - "{{ dbt_dataengineers_materializations.enable_alerts() }}"
   - "{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}"
 
+# Optional: Default variables for Monitorial integration
 vars:
   default_monitorial_email_integration: "EXT_EMAIL_MONITORIAL_INTEGRATION"
   default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
@@ -107,694 +83,866 @@ vars:
   default_monitorial_delivery_type: "api"
 ```
 
-### Hook Summary
+**Hook details:**
 
-| Hook | Type | Purpose |
-|---|---|---|
-| `stage_file_formats` | on-run-start | Pre-creates file format objects |
-| `stage_stages` | on-run-start | Pre-creates stage objects |
-| `stage_table_sources` | on-run-start | Auto-creates/maintains source tables |
-| `enable_tasks` | on-run-end | Resumes task objects (handles DAG ordering) |
-| `enable_alerts` | on-run-end | Resumes alert objects |
-| `enable_monitorial_monitors` | on-run-end | Resumes monitorial objects |
+- **`on-run-start` hooks** run before model execution. Include only the ones you need:
+  - `stage_file_formats` — Pre-creates file format objects so they exist before tables reference them.
+  - `stage_stages` — Pre-creates stage objects. Must run before `stage_table_sources` if your tables reference stages.
+  - `stage_table_sources` — Auto-creates and maintains source tables defined in your YAML sources with `auto_create_table: true`.
 
-All on-run-start hooks accept `enabled_targets` and `enabled_profiles` parameters. They run during `dbt run` and `dbt build`. Add only the hooks you need.
+- **`on-run-end` hooks** run after model execution. Include only the ones matching materializations you use:
+  - `enable_tasks` — Resumes task objects after deployment. Handles DAG ordering automatically (suspends roots first, resumes children, then resumes roots).
+  - `enable_alerts` — Resumes alert objects after deployment.
+  - `enable_monitorial_monitors` — Resumes monitorial alert and task objects after deployment.
 
-----
+---
 
 ## dbt Fusion Compatibility
 
-This package supports both dbt Core and dbt Fusion. In Fusion, custom config keys must be nested under `meta`. All examples in this README use the Fusion-compatible `meta` style.
+This package works with both **dbt Core** and the **dbt Fusion** engine.
 
-dbt Core style (also works, for backwards compatibility):
-```sql
-{{ config(materialized='task', schedule='60 MINUTE', enabled_targets=['prod']) }}
-```
+In dbt Fusion, custom config keys (anything not natively understood by dbt) must be nested under the `meta` key. To support both engines transparently, this package provides two helper macros:
 
-dbt Fusion style (recommended, used throughout this README):
-```sql
-{{ config(materialized='task', meta={'schedule': '60 MINUTE', 'enabled_targets': ['prod']}) }}
-```
+- **`config_meta_get(key, default)`** — Returns the value of `key` from top-level config first, falling back to `config.meta[key]`, then to `default`.
+- **`config_meta_require(key)`** — Same lookup order, but raises a compiler error if the key is not found in either location.
 
-Both styles work transparently via the `config_meta_get` helper. Custom config keys (anything other than `materialized`, `schema`, `database`, `tags`, `grants`, `meta`, `persist_docs`, `cluster_by`, `enabled`) should be placed under `meta`.
+All materializations in this package use these helpers internally, so you can configure models in either style.
 
-### Helper Macros
+**dbt Core style (still supported):**
 
 ```sql
-{%- set schedule = dbt_dataengineers_materializations.config_meta_get('schedule', '60 MINUTE') -%}
-{%- set source_model = dbt_dataengineers_materializations.config_meta_require('source_model') -%}
+{{ config(
+    materialized='task',
+    schedule='60 MINUTE',
+    enabled_targets=['prod']
+) }}
 ```
 
-----
+**dbt Fusion style (required for Fusion):**
+
+```sql
+{{ config(
+    materialized='task',
+    meta={
+        'schedule': '60 MINUTE',
+        'enabled_targets': ['prod']
+    }
+) }}
+```
+
+Both styles work on both engines thanks to the `config_meta_get` wrapper. If you are running on dbt Fusion, place all custom keys (e.g. `schedule`, `enabled_targets`, `source_model`, `severity`, etc.) inside `meta`. Native dbt keys like `materialized`, `tags`, and `enabled` remain at the top level.
+
+---
 
 ## Hooks
 
-### on-run-start
+### on-run-start Hooks
 
-`stage_file_formats` - Pre-creates file format objects.
+#### `stage_file_formats(enabled_targets, enabled_profiles)`
+
+Pre-creates file format objects before model execution so that tables and stages can reference them.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `enabled_targets` | List of target names where this hook should run | `[target.name]` |
+| `enabled_profiles` | List of profile names where this hook should run | `[target.profile_name]` |
+
+Only file formats within the current dbt invocation's node selection (`--select`/`--exclude`) are staged; a file format that exists solely because an installed package defines a `file_format`-materialized node outside that selection is left untouched. When selection information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping by the current/root project instead.
+
 ```yaml
-- "{{ dbt_dataengineers_materializations.stage_file_formats(['prod', 'test']) }}"
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_file_formats(['prod', 'test']) }}"
 ```
 
-`stage_stages` - Pre-creates stage objects.
+#### `stage_stages(enabled_targets, enabled_profiles)`
+
+Pre-creates stage objects. Should run before `stage_table_sources` if your tables reference stages.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `enabled_targets` | List of target names where this hook should run | `[target.name]` |
+| `enabled_profiles` | List of profile names where this hook should run | `[target.profile_name]` |
+
+Only stages within the current dbt invocation's node selection (`--select`/`--exclude`) are staged; a stage that exists solely because an installed package defines a `stage`-materialized node outside that selection is left untouched. When selection information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping by the current/root project instead.
+
 ```yaml
-- "{{ dbt_dataengineers_materializations.stage_stages(['prod', 'test']) }}"
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_stages(['prod', 'test']) }}"
 ```
 
-`stage_table_sources` - Auto-creates and maintains source tables from YML definitions.
+#### `stage_table_sources(enabled_targets, enabled_profiles)`
+
+Auto-creates and maintains source tables defined in your YAML source files where `auto_create_table: true`. Handles internal tables, external tables, and Snowpipe creation. On subsequent runs it detects schema changes and migrates data if configured.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `enabled_targets` | List of target names where this hook should run | `[target.name]` |
+| `enabled_profiles` | List of profile names where this hook should run | `[target.profile_name]` |
+
 ```yaml
-- "{{ dbt_dataengineers_materializations.stage_table_sources(['prod', 'test']) }}"
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_table_sources(['prod', 'test']) }}"
 ```
 
-### on-run-end
+### on-run-end Hooks
 
-`enable_tasks` - Resumes tasks (suspends roots, resumes children, resumes roots).
+#### `enable_tasks()`
+
+Resumes task objects after deployment. Handles Snowflake task DAG ordering automatically:
+
+1. Suspends root tasks (those with a `schedule`)
+2. Resumes child tasks (those with `task_after`)
+3. Resumes root tasks last
+
+Only tasks whose `enabled_targets` include the current `target.name` are resumed, and only tasks within the current dbt invocation's node selection (`--select`/`--exclude`) are considered; a task that exists solely because an installed package defines a `task`-materialized node outside that selection is left untouched. When selection information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping by the current/root project instead.
+
 ```yaml
-- "{{ dbt_dataengineers_materializations.enable_tasks() }}"
+on-run-end:
+  - "{{ dbt_dataengineers_materializations.enable_tasks() }}"
 ```
 
-`enable_alerts` - Resumes alerts.
+#### `enable_alerts()`
+
+Resumes alert objects after deployment. Only alerts whose `enabled_targets` include the current `target.name` are resumed, and only alerts within the current dbt invocation's node selection (`--select`/`--exclude`) are considered, with the same current-project fallback as `enable_tasks`.
+
 ```yaml
-- "{{ dbt_dataengineers_materializations.enable_alerts() }}"
+on-run-end:
+  - "{{ dbt_dataengineers_materializations.enable_alerts() }}"
 ```
 
-`enable_monitorial_monitors` - Resumes monitorial objects.
+#### `enable_monitorial_monitors()`
+
+Resumes monitorial alert and task objects after deployment. Separates serverless (task-based) monitors from dedicated (alert-based) monitors and resumes each appropriately. Only monitors within the current dbt invocation's node selection (`--select`/`--exclude`) are considered, with the same current-project fallback as `enable_tasks`.
+
 ```yaml
-- "{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}"
+on-run-end:
+  - "{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}"
 ```
 
-----
+---
 
 ## Materializations
 
 ### Monitorial Alerts
 
-Materialization name: `monitorial`
+Usage
 
 ```sql
 {{
-    config(
-        materialized='monitorial',
-        meta={
-            'schedule': '60 minute',
-            'display_message': 'alert description',
-            'enabled_targets': ['prod']
-        }
+    config(materialized='monitorial',
+    schedule  = '60 minute',
+    diplay_message = 'your description of what is representing the alert',
+    enabled_targets = ['local-dev', 'test', 'prod']
     )
 }}
 ```
 
-Config options:
+| property                 | description                                                                                                  | required | default                                      |
+|--------------------------|--------------------------------------------------------------------------------------------------------------|----------|----------------------------------------------|
+| `materialized`           | specifies the type of materialization to run                                                                 | yes      | `monitorial`                                 |
+| `is_serverless`          | specifies if the warehouse should be serverless (task object) or dedicated (alert object)                    | no *     | `False`                                      |
+| `warehouse_name_or_size` | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no *     | `pc_monitorial_wh`                           |
+| `object_type`            | specifies the type of object to be created (options are `alert` or `task`)                                   | no *     | `alert`                                      |
+| `schedule`               | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute)             | yes      | `60 minute`                                  |
+| `severity`               | specifies the severity of the alert (options are `Critial`, `Error`, `Warning`, `Info`, `Debug`, `Resolved`) | no       | `error`                                      |
+| `environment`            | specifies the target environment for the alert                                                               | no       | `target.name`                                |
+| `display_message`        | specifies the message to be sent out with the alert                                                          | yes      |                                              |
+| `prereq`                 | specifies the statement that needs to be run to feed into the alert                                          | no       | ``                                           |
+| `api_key`                | specifies the monitorial api key required for authentication                                                 | no *     |                                              |
+| `message_type`           | specifes the type of message to be sent, for example `User Login Failure`                                    | no       | `USER_ALERT`                                 |
+| `delivery_type`          | specifies the type of delivery mechanism for the alert (options are `api` or `email`)                        | no       | `api`                                        |
+| `email_integration`      | specifies the email intgeration that should be used                                                          | no *     | `EXT_EMAIL_MONITORIAL_INTEGRATION`           |
+| `notification_email`     | specifies an override for where the alerts should be emailed to                                              | no *     | `pc_monitorial_db.utils.monitorial_dispatch` |
+| `api_function`           | specifies the external function  that should be used when sending via api                                    | no *     | `EXT_ERROR_INTEGRATION`                      |
+| `error_integration`      | specifies the error intgeration that should be used when using serverless alerts                             | no *     | `EXT_ERROR_MONITORIAL_INTEGRATION`           |
+| `enabled_targets`        | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]`                              |
 
-| property | description | required | default |
-|---|---|---|---|
-| `is_serverless` | serverless (task) or dedicated (alert) | no * | `false` |
-| `warehouse_name_or_size` | warehouse size or name | no * | `pc_monitorial_wh` |
-| `object_type` | `alert` or `task` | no * | `alert` |
-| `schedule` | CRON or minute schedule | yes | `60 minute` |
-| `severity` | `Critical`, `Error`, `Warning`, `Info`, `Debug`, `Resolved` | no | `error` |
-| `environment` | target environment | no | `target.name` |
-| `display_message` | message to send | yes | |
-| `prereq` | pre-requisite statement | no | |
-| `api_key` | monitorial api key | no * | |
-| `message_type` | message type | no | `USER_ALERT` |
-| `delivery_type` | `api` or `email` | no | `api` |
-| `email_integration` | email integration name | no * | `EXT_EMAIL_MONITORIAL_INTEGRATION` |
-| `notification_email` | override email destination | no * | `notifications@monitorial.io` |
-| `api_function` | external function for api delivery | no * | `pc_monitorial_db.utils.monitorial_dispatch` |
-| `error_integration` | error integration for serverless | no * | `EXT_ERROR_MONITORIAL_INTEGRATION` |
-| `enabled_targets` | targets where active | no | `[target.name]` |
+* `is_serverless` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_serverless` variable
+* `warehouse_name_or_size` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_warehouse_name_or_size` variable
+* `object_type` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_object_type` variable
+* `api_key` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_key` variable
+* `delivery_type` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_delivery_type` variable
+* `email_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_email_integration` variable
+* `api_function` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_function` variable
+* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_error_integration` variable
 
-Properties marked * can be set as global variables. See [Complete Setup](#complete-setup).
 
-For more information visit [https://www.monitorial.io/](https://www.monitorial.io/)
+**Example**
 
-----
+```yaml
+vars:
+  ####################################################
+  ### dbt_dataengineers_materializations variables ###
+  ####################################################
+  default_monitorial_email_integration: "EXT_EMAIL_MONITORIAL_INTEGRATION"
+  default_monitorial_api_integration: "EXT_API_MONITORIAL_INTEGRATION"
+  default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
+  default_monitorial_api_function: "pc_monitorial_db.utils.monitorial_dispatch"
+  default_monitorial_serverless: false
+  default_monitorial_object_type: "alert"
+  default_monitorial_notification_email: "notifications@monitorial.io"
+  default_monitorial_warehouse_name_or_size: "pc_monitorial_wh"
+  default_monitorial_api_key: "********************"
+  default_delivery_type: "api"    #options are api or email
+```
+
+For more information on Monitorial.io please visit [https://www.monitorial.io/](https://www.monitorial.io/) or contact us at [info@monitorial.io](mailto:info@monitorial.io)
+
 
 ### Alerts
 
-Materialization name: `alert`
+Usage
 
 ```sql
 {{
-    config(
-        materialized='alert',
-        meta={
-            'schedule': '60 minute',
-            'action': 'INSERT INTO yourtable VALUES (1)',
-            'warehouse_size': 'alert_wh',
-            'enabled_targets': ['local-dev', 'test', 'prod']
-        }
+    config(materialized='alert',
+    is_serverless = False,
+    action='INSERT INTO yourtable (alert_id, alert_name, result) VALUES (1, ''smaple alert'', ''sample result'')',
+    warehouse_size  = 'alert_wh',
+    schedule  = '60 minute',
+    enabled_targets = ['local-dev', 'test', 'prod']
     )
 }}
 ```
 
-Config options:
+| property          | description                                                                                      | required | default         |
+|-------------------|--------------------------------------------------------------------------------------------------|----------|-----------------|
+| `materialized`    | specifies the type of materialisation to run                                                     | yes      | `alert`         |
+| `warehouse_size`  | specifies the warehouse size if serverless otherwise the name of the warehouse to use            | no       | `alert_wh`      |
+| `schedule`        | specifies the schedule for periodically evaluating the condition for the alert. (CRON or minute) | yes      | `60 minute`     |
+| `action`          | specifies the action to run after the  if exists statement                                       | no       | `monitorial`    |
+| `enabled_targets` | specifies if the targets which the alert should be enabled for                                   | no       | `[target.name]` |
 
-| property | description | required | default |
-|---|---|---|---|
-| `is_serverless` | use serverless compute | no | `false` |
-| `warehouse_size` | warehouse name or size | no | `alert_wh` |
-| `schedule` | CRON or minute schedule | yes | `60 minute` |
-| `action` | action SQL when condition is true | no | none |
-| `enabled_targets` | targets where active | no | `[target.name]` |
 
-----
+### We recommended using Monitorial Monitors in preference to custom alerts, as you can send the results to multiple channels and have more control over the message that is sent out.
 
 ### Stored Procedures
 
-Materialization name: `stored_procedure`
+Usage
 
 ```sql
 {{
-    config(
-        materialized='stored_procedure',
-        meta={
-            'preferred_language': 'sql',
-            'override_name': 'SAMPLE_STORE_PROC',
-            'parameters': 'status varchar',
-            'return_type': 'NUMBER(38, 0)'
-        }
-    )
+    config(materialized='stored_procedure',
+    preferred_language = 'sql',
+    override_name = 'SAMPLE_STORE_PROC',
+    parameters = 'status varchar',
+    return_type = 'NUMBER(38, 0)')
 }}
 ```
 
-Config options:
-
-| property | description | required | default |
-|---|---|---|---|
-| `preferred_language` | language (`sql`) | no | `sql` |
-| `override_name` | override procedure name | no | `model['alias']` |
-| `parameters` | parameters as string | no | |
-| `return_type` | return type | no | `varchar` |
-| `execute_as` | `OWNER` or `CALLER` | no | `owner` |
-| `include_copy_grants` | include copy grants | no | `true` |
-
-----
+| property              | description                                                                                              | required | default            |
+|-----------------------|----------------------------------------------------------------------------------------------------------|----------|--------------------|
+| `materialized`        | specifies the type of materialisation to run                                                             | yes      | `stored_procedure` |
+| `preferred_language`  | describes the language the stored procedure is written in                                                | no       | `sql`              |
+| `override_name`       | specifies the name of the stored procedure if this is an overrider stored procedure                      | no       | `model['alias']`   |
+| `parameters`          | specifes the parameters that needs to be passed when calling the stored procedure                        | no       |                    |
+| `return_type`         | specifies the stored procedure return type                                                               | no       | `varchar`          |
+| `execute_as`          | specifies the role that the stored procedure should be executed as. Options include `OWNER` and `CALLER` | no       | `owner`            |
+| `include_copy_grants` | specifies if the stored procedure should include copy grants                                             | no       | `true`             |
 
 ### File Formats
 
-Materialization name: `file_format`
+Usage
 
 ```sql
-{{ config(materialized='file_format', meta={'create_or_replace': true}) }}
+{{
+    config(materialized='file_format', create_or_replace=true)
+}}
+```
+
+| property             | description                                                                                      | required | default       |
+|----------------------|--------------------------------------------------------------------------------------------------|----------|---------------|
+| `materialized`       | specifies the type of materialisation to run                                                     | yes      | `file_format` |
+| `preferred_language` | describes the language the function is written in                                                | no       | `sql`         |
+| `create_or_replace`  | specifies if `create or replace` or `create if not exists` is used when creating the file format | no       | `true`        |
+
+View [Snowflake `create file format` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html) for more information on the available options.
+
+example
+
+```sql
+{{ config(materialized='file_format') }}
 
     type = json
     null_if = ()
     compression = none
+    ignore_utf8_errors = true
 ```
 
-Config options:
+To action the auto-creation of the file format, you need to add the following pre-hook
 
-| property | description | required | default |
-|---|---|---|---|
-| `create_or_replace` | `CREATE OR REPLACE` vs `CREATE IF NOT EXISTS` | no | `true` |
+```yml
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_file_formats(['local-dev', 'unit-test', 'test', 'prod']) }}"
+```
 
-Reference: [Snowflake CREATE FILE FORMAT docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format.html)
 
-----
+| parameter         | description                                                       | default         |
+|-------------------|-------------------------------------------------------------------|-----------------|
+| `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
 
 ### Tasks
 
-Materialization name: `task`
+Usage
 
 ```sql
 {{
-    config(
-        materialized='task',
-        meta={
-            'is_serverless': true,
-            'schedule': 'using cron */2 6-20 * * * Pacific/Auckland',
-            'stream_name': 'stm_orders',
-            'enabled_targets': ['prod']
-        }
-    )
-}}
+    config(materialized='task',
+    is_serverless = true,
+    warehouse_name_or_size = 'xsmall',
+    schedule = 'using cron */2 6-20 * * * Pacific/Auckland',
+    stream_name = 'stm_orders',
+    enabled_targets = ['prod'])
+ }}
 ```
 
-Config options:
+| property                           | description                                                                                                  | required | default         |
+|------------------------------------|--------------------------------------------------------------------------------------------------------------|----------|-----------------|
+| `materialized`                     | specifies the type of materialisation to run                                                                 | yes      | `task`          |
+| `is_serverless`                    | specifies if the warehouse should be serverless or dedicated                                                 | no       | `true`          |
+| `warehouse_name_or_size`           | specifies the warehouse size if serverless otherwise the name of the warehouse to use                        | no       | `xsmall`        |
+| `schedule`                         | specifies the schedule which the task should be run on using CRON expressions                                | no *     |                 |
+| `task_after`                       | specifies the task which this task should be run after                                                       | no *     |                 |
+| `stream_name`                      | specifies the stream which the task should run only if there is data available                               | no       |                 |
+| `error_integration`                | specifes the error integration to use                                                                        | no *     |                 |
+| `timeout`                          | specifies the time limit on a single run of the task before it times out (in milliseconds)                   | no       | `3600000`       |
+| `suspend_after_number_of_failures` | Specifies the number of consecutive failed task runs after which the current task is suspended automatically | no       | `0` (no limit)  |
+| `enabled_targets`                  | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]` |
 
-| property | description | required | default |
-|---|---|---|---|
-| `is_serverless` | serverless or dedicated warehouse | no | `true` |
-| `warehouse_name_or_size` | warehouse size (serverless) or name | no | `xsmall` |
-| `schedule` | CRON schedule (root tasks) | no * | |
-| `task_after` | parent task name (child tasks) | no * | |
-| `stream_name` | stream for WHEN condition | no | |
-| `error_integration` | error integration | no | |
-| `timeout` | time limit in milliseconds | no | |
-| `suspend_after_number_of_failures` | failures before auto-suspend | no | |
-| `enabled_targets` | targets where active | no | `[target.name]` |
 
-* One of `schedule` or `task_after` is required.
+* only one of `schedule` or `task_after` is required.
+* `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_error_integration` variable
 
-Root task example:
-```sql
-{{ config(materialized='task', meta={'schedule': 'using cron 0 6 * * * Pacific/Auckland', 'enabled_targets': ['prod']}) }}
+**Example**
+
+```yaml
+vars:
+  default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
 ```
-
-Child task example:
-```sql
-{{ config(materialized='task', meta={'task_after': 'parent_task_name', 'enabled_targets': ['prod']}) }}
-```
-
-----
 
 ### Streams
 
-Materialization name: `stream`
+Usage
 
 ```sql
-{{ config(materialized='stream', meta={'source_schema': 'raw', 'source_model': 'customers'}) }}
+{{
+    config(materialized='stream',
+    source_schema='sales',
+    source_model='raw_orders')
+}}
 ```
 
-Config options:
+| property                 | description                                                                                     | required | default    |
+|--------------------------|-------------------------------------------------------------------------------------------------|----------|------------|
+| `materialized`           | specifies the type of materialisation to run                                                    | yes      | `stream`   |
+| `source_database`        | specifies the source database if different to the current location                              | no       |            |
+| `source_database_prefix` | specifies the variable prefix to use for dynamic database resolution (see below)                | no       | none       |
+| `source_schema`          | specifies the source table or view schema if different to the current location                  | no       |            |
+| `source_model`           | specifies the source table or view model name to add the stream to                              | yes      |            |
+| `source_type`            | specifies if the source is `internal` or `external`. External streams use `INSERT_ONLY = TRUE`  | no       | `internal` |
 
-| property | description | required | default |
-|---|---|---|---|
-| `source_model` | source table or view name | yes | |
-| `source_schema` | source schema | no | `schema` |
-| `source_database` | source database | no | `database` |
-| `source_database_prefix` | variable prefix for dynamic database resolution | no | none |
-| `source_type` | `internal` or `external` | no | `internal` |
+#### Dynamic Database Resolution with `source_database_prefix`
 
-External stream example:
+When `source_database_prefix` is set, the stream materialization dynamically resolves the source database name using a dbt variable. The variable name is constructed as `{prefix}_{target.name}` (with hyphens replaced by underscores). This is useful for cross-database streams where the database name differs per environment.
+
+Example: if `source_database_prefix = 'raw_db'` and `target.name = 'prod'`, the macro looks up `var('raw_db_prod')` to get the database name.
+
 ```sql
-{{ config(materialized='stream', meta={'source_model': 'events', 'source_type': 'external'}) }}
+{{
+    config(materialized='stream',
+    source_schema='sales',
+    source_model='raw_orders',
+    source_database_prefix='raw_db')
+}}
 ```
 
-----
+#### External Stream Example
 
-### Tables (Auto-Created Source Tables)
+```sql
+{{
+    config(materialized='stream',
+    source_schema='staging',
+    source_model='ext_events',
+    source_type='external')
+}}
+```
 
-Defined in YML source definitions. The `stage_table_sources` on-run-start hook processes these.
+This creates a stream with `INSERT_ONLY = TRUE` on an external table.
 
-```yaml
-sources:
-  - name: my_source
+### Tables
+
+Adds the ability to create the raw tables based on the yml file.
+
+Usage
+
+```yml
     tables:
       - name: raw_customers
-        columns:
-          - name: id
-            data_type: number
-          - name: name
-            data_type: varchar
+        description: Customer Information
         external:
           auto_create_table: true
-          auto_maintained: true
+          auto_maintained: false
 ```
 
-Config options:
+| property            | description                                               | required | default |
+|---------------------|-----------------------------------------------------------|----------|---------|
+| `auto_create_table` | specifies if the table should be created by dbt or not    | yes      | `false` |
+| `auto_maintained`   | specifies if the table should be maintianed by dbt or not | no       | `false` |
 
-| property | description | required | default |
-|---|---|---|---|
-| `auto_create_table` | create the table via dbt | yes | `false` |
-| `auto_maintained` | maintain schema changes | no | `false` |
-| `disable_full_refresh` | prevent table replacement during `--full-refresh` runs (internal tables only, not external/snowpipe) | no | `false` |
+* it's recommended that a separate stream object is created instead of setting up the stream via the table object as the stream doesn't appear on the DAG when created via this method, nor can you reference it using the `ref` macro.
 
-#### Snowpipe Integration
+To action the auto-creation of the tables, you need to add the following pre-hook
+
+```yml
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_table_sources(['local-dev', 'unit-test', 'test', 'prod']) }}"
+```
+
+| parameter         | description                                                       | default         |
+|-------------------|-------------------------------------------------------------------|-----------------|
+| `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
+
+#### External Tables with Snowpipe
+
+You can define external tables with a `location` and optional `snowpipe` configuration to set up auto-ingest pipelines:
 
 ```yaml
-external:
-  auto_create_table: true
-  auto_maintained: true
-  location: "@my_stage/events/"
-  snowpipe:
-    auto_ingest: true
-    aws_sns_topic: "arn:aws:sns:us-east-1:123456789:my-topic"
-  retain_previous_version_flg: true
-  migrate_data_over_flg: true
+tables:
+  - name: raw_events
+    description: Events loaded via Snowpipe
+    external:
+      auto_create_table: true
+      auto_maintained: true
+      location: "@my_stage/events/"
+      snowpipe:
+        auto_ingest: true
+        aws_sns_topic: "arn:aws:sns:us-east-1:123456789:my-topic"
+      retain_previous_version_flg: true
+      migrate_data_over_flg: true
 ```
 
-| property | description | default |
-|---|---|---|
-| `location` | Stage path (e.g., `@my_stage/path/`) | none |
-| `snowpipe.auto_ingest` | Enable auto-ingest | `false` |
-| `snowpipe.aws_sns_topic` | AWS SNS topic ARN | none |
-| `retain_previous_version_flg` | Backup before schema changes | `false` |
-| `migrate_data_over_flg` | Migrate data during schema changes | `false` |
+**External-specific properties:**
 
-Force full refresh: `dbt run --vars '{"ext_full_refresh": true}'`
+| property                    | description                                                                                                                                              | required | default |
+|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| `location`                  | The stage path for the external data source (e.g. `@my_stage/events/`). When set, the table is treated as an external table with Snowpipe or COPY INTO. | no       |         |
+| `snowpipe`                  | Snowpipe configuration object. When present, a pipe is created for auto-ingest loading.                                                                  | no       |         |
+| `snowpipe.auto_ingest`      | Enables automatic ingestion when new files arrive in the stage.                                                                                          | no       | `false` |
+| `snowpipe.aws_sns_topic`    | ARN of the SNS topic for S3 event notifications.                                                                                                         | no       |         |
+| `snowpipe.integration`      | Name of the notification integration for non-AWS setups.                                                                                                 | no       |         |
+| `snowpipe.error_integration`| Name of the error notification integration.                                                                                                              | no       |         |
+| `retain_previous_version_flg` | When `true` and `auto_maintained` is `true`, the previous version of the table is cloned before schema changes are applied, allowing rollback.         | no       | `false` |
+| `migrate_data_over_flg`     | When `true` and `auto_maintained` is `true`, data from the previous table version is migrated into the new table after schema changes.                   | no       | `false` |
 
-----
+**Full refresh:** Set the dbt variable `ext_full_refresh` to `true` to force a full drop-and-recreate of external tables:
 
-### External Tables
-
-External tables are created via the `snowflake_create_external_table` macro, invoked by the `stage_table_sources` hook when a source has `external` properties with `location` and `file_format` defined.
-
-Reference: [Snowflake CREATE EXTERNAL TABLE docs](https://docs.snowflake.net/manuals/sql-reference/sql/create-external-table.html)
-
-#### Naming: Partial vs Fully Qualified
-
-The `location` and `file_format` properties support both partially qualified and fully qualified names.
-
-**Partially qualified (schema-level) -- database is auto-prepended from the relation:**
-
-```yaml
-external:
-  location: "@my_schema.my_stage/path/"
-  file_format: "my_schema.my_format"
+```bash
+dbt run --vars '{"ext_full_refresh": true}'
 ```
-
-Produces:
-- `LOCATION = @MY_DATABASE.my_schema.my_stage/path/`
-- `FILE_FORMAT = MY_DATABASE.my_schema.my_format`
-
-**Fully qualified (database.schema.object) -- used as-is, no prefix added:**
-
-```yaml
-external:
-  location: "@other_db.my_schema.my_stage/path/"
-  file_format: "other_db.my_schema.my_format"
-```
-
-Produces:
-- `LOCATION = @other_db.my_schema.my_stage/path/`
-- `FILE_FORMAT = other_db.my_schema.my_format`
-
-This is useful when the stage or file format resides in a different database than the external table.
-
-#### Detection Logic
-
-The macro counts the number of dot-separated parts in the object reference (ignoring any `/path` suffix for location). If there are 3 or more parts, the reference is treated as fully qualified. Otherwise, `relation.database` is prepended.
-
-> **Limitation:** Quoted Snowflake identifiers containing dots (e.g., `"my.db"."my.schema"."my.format"`) are not supported by this detection. The dot-split heuristic will miscount parts in quoted identifiers with embedded dots. Use unquoted identifiers or pass them without the database prefix and let the macro prepend it.
-
-#### Full External Table YML Example
-
-```yaml
-sources:
-  - name: my_source
-    tables:
-      - name: raw_events
-        columns:
-          - name: event_id
-            data_type: varchar
-          - name: event_data
-            data_type: variant
-        external:
-          location: "@other_db.raw_schema.events_stage/incoming/"
-          file_format: "other_db.raw_schema.json_format"
-          auto_refresh: true
-          pattern: ".*[.]json"
-          integration: "my_storage_integration"
-          partitions:
-            - name: event_date
-              data_type: date
-              expression: "to_date(split_part(metadata$filename, '/', 1), 'YYYY-MM-DD')"
-```
-
-Config options:
-
-| property | description | required | default |
-|---|---|---|---|
-| `location` | Stage location. Prefix with `@`. Supports partial (`@schema.stage`) or FQDN (`@db.schema.stage`). May include a path suffix (`/path/`). | yes | |
-| `file_format` | File format reference. Supports partial (`schema.format`) or FQDN (`db.schema.format`). | yes | |
-| `auto_refresh` | Enable auto-refresh | no | |
-| `pattern` | File name pattern filter | no | |
-| `integration` | Storage integration name | no | |
-| `partitions` | List of partition columns with `name`, `data_type`, `expression` | no | |
-
-----
 
 ### Immutable Tables
 
-Materialization name: `immutable_table`
+An immutable table is a table that is created once and never updated. This is useful for tables that are used for reference data, tables that are used for audit purposes or where you will be populating via other mechanisms such as tasks or stored procedures.
 
-```sql
-{{ config(materialized='immutable_table') }}
-
-SELECT id, name FROM {{ source('raw', 'reference_data') }}
+``` sql
+{{
+    config(materialized='immutable_table')
+}}
 ```
 
-Config options:
+| property                     | description                                                                                                                                                                                                                 | required | default           |
+|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------------|
+| `materialized`               | specifies the type of materialisation to run                                                                                                                                                                                | yes      | `immutable_table` |
+| `is_transient`               | specifies if the table should be created as transient (ignored if is_hybrid is set to true)                                                                                                                                 | no       | `false`           |
+| `if_not_exists`              | specifies if the table should only be created if it doesnt exist                                                                                                                                                            | no       | `true`            |
+| `create_or_replace`          | specifies if the table should be created or replaced                                                                                                                                                                        | no       | `false`           |
+| `data_retention_in_days`     | Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table (ignored if is_hybrid is set to true)                                     | no       |                   |
+| `max_data_extension_in_days` | Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the table to prevent streams on the table from becoming stale (ignored if is_hybrid is set to true) | no       |                   |
+| `enable_change_tracking`     | Specifies whether to enable change tracking on the table  (ignored if is_hybrid is set to true)                                                                                                                             | no       | `false`           |
+| `is_hybrid`                  | Specifies if the table should be created as a hybrid table or not                                                                                                                                                           | no       | `false`           |
 
-| property | description | required | default |
-|---|---|---|---|
-| `transient` | transient table (ignored if hybrid) | no | `false` |
-| `if_not_exists` | only create if not exists | no | `true` |
-| `create_or_replace` | CREATE OR REPLACE | no | `false` |
-| `data_retention_in_days` | Time Travel retention (ignored if hybrid) | no | none |
-| `max_data_extension_in_days` | max retention extension (ignored if hybrid) | no | none |
-| `change_tracking` | enable change tracking (ignored if hybrid) | no | `false` |
-| `is_hybrid` | create as hybrid table | no | `false` |
+### Immutable Tables (Hybrid)
 
-Transient table with time travel example:
-```sql
-{{ config(materialized='immutable_table', meta={'transient': true, 'data_retention_in_days': 7}) }}
+A hybrid immutable table is a table that is created once and never updated. This is useful for tables that are used for reference data, tables that are used for audit purposes or where you will be populating via other mechanisms such as tasks or stored procedures.
 
-SELECT * FROM {{ source('raw', 'audit_log') }}
+``` sql
+{{
+    config(
+        materialized='immutable_table',
+        is_hybrid=true,
+        meta={'primary_keys': ['col_1']})
+}}
 ```
 
-#### Hybrid Tables
+| property            | description                                                       | required | default           |
+|---------------------|-------------------------------------------------------------------|----------|-------------------|
+| `materialized`      | specifies the type of materialisation to run                      | yes      | `immutable_table` |
+| `if_not_exists`     | specifies if the table should only be created if it doesnt exist  | no       | `true`            |
+| `create_or_replace` | specifies if the table should be created or replaced              | no       | `false`           |
+| `is_hybrid`         | Specifies if the table should be created as a hybrid table or not | yes      | `false`           |
+| `primary_keys`      | Specifies which columns make up the primary key for the table     | yes      | `[]`              |
 
-```sql
-{{ config(materialized='immutable_table', meta={'is_hybrid': true, 'primary_keys': ['col_1']}) }}
-```
+To specify a column is `unique` apply the `is_unique=true` via the column meta node
+By default the primary key will be set to `auto_increment=true` to display set `auto_increment=false` in the column meta node
+To specify how the `auto_increment` works you can specify the following
 
-Set `is_unique: true` in column meta for unique constraints. Primary keys default to `auto_increment: true`.
-
-----
+| property                   | default |
+|----------------------------|---------|
+| `auto_increment_start`     | `1`     |
+| `auto_increment_increment` | `1`     |
+| `auto_increment_order`     | `order` |
 
 ### Stages
 
-Materialization name: `stage`
+A stage is a location where data files are stored. You can use a stage to load data into a table or to unload data from a table. You can also use a stage to copy data between tables in different databases.
 
 ```sql
-{{ config(materialized='stage', meta={'create_or_replace': true}) }}
+{{
+    config(materialized='stage')
+}}
+```
+
+| property            | description                                          | required | default |
+|---------------------|------------------------------------------------------|----------|---------|
+| `materialized`      | specifies the type of materialisation to run         | yes      | `stage` |
+| `create_or_replace` | specifies if the stage should be created or replaced | no       | `false` |
+
+View [Snowflake `create stage` documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html) for more information on the available options.
+
+To action the auto-creation of the stages before the tables get created, you need to add the following pre-hook before the `stage_table_sources` pre-hook.
+
+```yml
+on-run-start:
+  - "{{ dbt_dataengineers_materializations.stage_stages(['local-dev', 'unit-test', 'test', 'prod']) }}"
+```
+
+| parameter         | description                                                       | default         |
+|-------------------|-------------------------------------------------------------------|-----------------|
+| `enabled_targets` | specifies if the materialisation should be run in the environment | `[target.name]` |
+
+[Storage Integrations](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.html) need to be maintained separately as you require `Create integration` privilage on the role you are using to set those up and they are global to snowflake instead of per database.
+
+example
+
+```sql
+{{ config(materialized='stage') }}
 
 {% if target.name == 'prod' %}
   url='azure://xxxxxxprod.blob.core.windows.net/external-tables'
-{% else %}
+{% elif target.name == 'test' %}
+  url='azure://xxxxxxtest.blob.core.windows.net/external-tables'
+{% elif target.name == 'dev' %}
   url='azure://xxxxxxdev.blob.core.windows.net/external-tables'
+{% else %}
+  url='azure://xxxxxxsandbox.blob.core.windows.net/external-tables'
 {% endif %}
   storage_integration = DATAOPS_TEMPLATE_EXTERNAL
 ```
 
-Config options:
-
-| property | description | default |
-|---|---|---|
-| `create_or_replace` | create or replace the stage | `false` |
-
-Reference: [Snowflake CREATE STAGE docs](https://docs.snowflake.com/en/sql-reference/sql/create-stage.html)
-
-----
-
 ### Secrets
 
-Materialization name: `secret`
+A secret is a secure object that stores sensitive data such as a password, OAuth token, or private key. Secrets are stored in Snowflake and can be referenced in SQL statements, stored procedures, and user-defined functions.
+
+Usage
 
 ```sql
-{{ config(materialized='secret', meta={'type': 'GENERIC_STRING', 'secret_string_variable': 'MY_VAR'}) }}
-```
-
-Config options:
-
-| property | description | applicable for | default |
-|---|---|---|---|
-| `type` | `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDENTIALS`, `OAUTH2_AUTHORIZATION_CODE` | | `GENERIC_STRING` |
-| `secret_string_variable` | env var name | `GENERIC_STRING` | |
-| `username` | username | `PASSWORD` | |
-| `password_variable` | env var for password | `PASSWORD` | |
-| `security_integration` | security integration | `OAUTH2_*` | |
-| `oauth_scopes` | OAuth scopes | `OAUTH2_CLIENT_CREDENTIALS` | |
-| `oauth_refresh_token_variable` | env var for refresh token | `OAUTH2_AUTHORIZATION_CODE` | |
-| `oauth_refresh_token_expiry_time` | token expiry timestamp | `OAUTH2_AUTHORIZATION_CODE` | |
-
-> Do not hardcode secrets. Use environment variables.
-
-----
-
-### Network Rules
-
-Materialization name: `network_rule`
-
-```sql
-{{ config(materialized='network_rule', meta={'rule_type': 'HOST_PORT', 'mode': 'EGRESS', 'value_list': ['example.com:443']}) }}
-```
-
-Config options:
-
-| property | description | default |
-|---|---|---|
-| `rule_type` | `IPV4`, `AWSVPCEID`, `AZURELINKID`, `HOST_PORT` | `HOST_PORT` |
-| `mode` | `INGRESS`, `INTERNAL_STAGE`, `EGRESS` | `INGRESS` |
-| `value_list` | network identifiers | |
-
-----
-
-### External Access Integration
-
-Materialization name: `external_access_integration`
-
-```sql
--- depends_on: {{ ref('my_secret') }}
--- depends_on: {{ ref('my_rule') }}
 {{
     config(
-        materialized='external_access_integration',
-        meta={
-            'authentication_secrets_refs': ['my_secret'],
-            'network_rules_refs': ['my_rule'],
-            'role_for_creation': 'dataops_admin',
-            'roles_for_use': ['developers']
-        }
+       materialized='secret'
+       , secret_type = 'GENERIC_STRING'
+       , secret_string_variable = "VARIABLE_NAME"
     )
 }}
 ```
 
-Config options:
+| property                          | description                                                                                                                                                                    | Type   | Applicable For                                              | required | default          |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|-------------------------------------------------------------|----------|------------------|
+| `materialized`                    | specifies the type of materialisation to run                                                                                                                                   | string |                                                             | yes      | `secret`         |
+| `secret_type`                     | specifies the type of secret to create. Options include `GENERIC_STRING`, `PASSWORD`, `OAUTH2_CLIENT_CREDNTIALS`, `OAUTH2_AUTHORIZATION_CODE`                                  | string |                                                             | yes      | `GENERIC_STRING` |
+| `secret_string_variable`          | Specifies a variable name which contains the string to store in the secret.                                                                                                    | string | `GENERIC_STRING`                                            | no       |                  |
+| `username`                        | Specifies the username value to store in the secret.                                                                                                                           | string | `PASSWORD`                                                  | no       |                  |
+| `password_variable`               | Specifies a variable name which contains the secret to use with basic authentication.                                                                                          | string | `PASSWORD`                                                  | no       |                  |
+| `oauth_refresh_token_variable`    | Specifies the token as a string that is used to obtain a new access token from the OAuth authorization server when the access token expires.                                   | string | `OAUTH2_AUTHORIZATION_CODE`                                 | no       |                  |
+| `oauth_refresh_token_expiry_time` | Specifies the timestamp as a string when the OAuth refresh token expires.                                                                                                      | string | `OAUTH2_AUTHORIZATION_CODE`                                 | no       |                  |
+| `security_integration`            | Specifies the name value of the Snowflake security integration that connects Snowflake to an external service.                                                                 | string | `OAUTH2_AUTHORIZATION_CODE`,<br/>`OAUTH2_CLIENT_CREDNTIALS` | no       |                  |
+| `oauth_scopes`                    | Specifies a comma-separated list of scopes to use when making a request from the OAuth server by a role with USAGE on the integration during the OAuth client credentials flow | array  | `OAUTH2_CLIENT_CREDNTIALS`                                  | no       |                  |
 
-| property | description | default |
-|---|---|---|
-| `authentication_secrets` / `_refs` | secrets (fully qualified / ref names) | `[]` |
-| `network_rules` / `_refs` | network rules (fully qualified / ref names) | `[]` |
-| `api_authentication_integrations` / `_refs` | security integrations | `[]` |
-| `role_for_creation` | role with CREATE INTEGRATION privilege | `dataops_admin` |
-| `roles_for_use` | roles granted USAGE | `['developers']` |
 
-> Requires `CREATE INTEGRATION` privilege. Integration name appends `target.name`.
->
-> The `_refs` options are resolved inside the materialization macro, not in the model's own compiled SQL, so dbt can't see them as dependencies on its own. Add a `-- depends_on: {{ ref('...') }}` comment for each ref (as shown above) so dbt builds those objects first.
+> The variables should be treated as environment variables and passed in at runtime. The variables should not be hardcoded in the model.
 
-----
+### Network Rules
+
+Usage
+
+```sql
+{{
+    config(
+       materialized='network_rule'
+       , rule_type = 'HOST_PORT'
+       , mode = 'EGRESS'
+       , value_list = ['example.com', 'company.com:443']
+    )
+}}
+```
+
+| property       | description                                                                                                                                                               | required | default        |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------------|
+| `materialized` | specifies the type of materialisation to run                                                                                                                              | yes      | `network_rule` |
+| `rule_type`    | Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type Options include `IPV4`, `AWSVPCEID`, `AZURELINKID`, `HOST_PORT` | yes      | `HOST_PORT`    |
+| `mode`         | Specifies what is restricted by the network rule. Options include `INGRESS`, `INTERNAL_STAGE`, `EGRESS`                                                                   | yes      | `INGRESS`      |
+| `value_list`   | Specifies the network identifiers that will be allowed or blocked                                                                                                         | yes      |                |
+
+### External Access Integration
+
+External access integrations are used to allow UDFs and stored procedures to access external network locations. External access integrations are used to store the credentials required to access the external network location.
+
+Usage
+
+```sql
+{{
+    config(
+       materialized='external_access_integration'
+       , authentication_secrets = [your_secret]
+       , network_rules = ['your_network_rule']
+       , api_authentication_integrations = ['your_api_integration']
+       , role_for_creation = 'dataops_admin'
+       , roles_for_use = 'developers'
+    )
+}}
+```
+
+| property                              | description                                                                                                                                                                                                         | required | default                       |
+|---------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|-------------------------------|
+| `materialized`                        | specifies the type of materialisation to run                                                                                                                                                                        | yes      | `external_access_integration` |
+| `authentication_secrets`              | Specifies the allowed network rules (fully qualified). Only egress rules may be specified                                                                                                                           | no       | []                            |
+| `authentication_secrets_ref`          | Specifies the allowed network rules (ref objects). Only egress rules may be specified                                                                                                                               | no       | []                            |
+| `network_rules`                       | Specifies the secrets (fully qualified) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                               | yes      | []                            |
+| `network_rules_ref`                   | Specifies the secrets (ref objects) that UDF or procedure handler code can use when accessing the external network locations referenced in allowed network rules.                                                   | yes      | []                            |
+| `api_authentication_integrations`     | Specifies the security (fully qualified) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration. | no       | []                            |
+| `api_authentication_integrations_ref` | Specifies the security (ref objects) integrations whose OAuth authorization server issued the secret used by the UDF or procedure. The security integration must be the type used for external API integration.     | no       | []                            |
+| `role_for_creation`                   | Specifies the role which has the Create Integration role granted to it                                                                                                                                              | yes      | `dataops_admin`               |
+| `roles_for_use`                       | Specifies the roles which should be granted the `usage` permission to the integration                                                                                                                               | yes      | `['developers']`              |
+
+> WARNING: A Role with `CREATE INTEGRATION` roles is required to deploy this object as its an Account level object. The deployment will switch roles when deploying locally to the specified in `role_for_creation`
+> The integration name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
+
+### Generic
+
+Where the materialisation is not covered by the other materialisations, you can use the generic materialisation to create the object.
+
+Usage
+
+```sql
+{{
+    config(materialized='generic')
+}}
+```
+
+| property       | description                                  | required | default   |
+|----------------|----------------------------------------------|----------|-----------|
+| `materialized` | specifies the type of materialisation to run | yes      | `generic` |
+
+example
+
+```sql
+{{ config(materialized='generic') }}
+
+CREATE OR REPLACE api integration EXT_API_MONITORIAL_INTEGRATION
+    api_provider = azure_api_management
+    azure_tenant_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    azure_ad_application_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    api_allowed_prefixes = ('https://api.monitorial.io')
+    API_KEY = 'xxxxxxxxxxxxxxxxxxxx'
+    enabled = true;
+```
+
+** Note: ** Integrations require `AccountAdmin` privilages which your `dbt` project should not be running under. It is recommended you adopt `Terraform` to deploy integrtaions out from
 
 ### User Defined Functions
 
-Materialization name: `user_defined_function`
+When creating a user defined function, you can use a number of different languages. The following are the supported languages:
 
-#### SQL UDF
+#### SQL
 
-```sql
-{{ config(materialized='user_defined_function', meta={'return_type': 'float', 'parameters': 'x float, y float'}) }}
-
-AS 'SELECT x + y'
-```
-
-Config options (all UDF types):
-
-| property | description | default |
-|---|---|---|
-| `preferred_language` | UDF language | `SQL` |
-| `is_secure` | secure function | `false` |
-| `immutable` | immutable | `false` |
-| `memoizable` | memoizable | none |
-| `return_type` | return type | (required) |
-| `parameters` | params as string | |
-| `override_name` | override name | `model['alias']` |
-
-#### JavaScript UDF
+To create a user defined function using SQL, you need to add the following config to the top of your model:
 
 ```sql
-{{ config(materialized='user_defined_function', meta={'preferred_language': 'javascript', 'return_type': 'float'}) }}
+{{
+    config(materialized='user_defined_function',
+    preferred_language = 'sql',
+    is_secure = false,
+    immutable = false,
+    return_type = 'float')
+}}
 ```
 
-Additional config: `null_input_behavior` (default: `CALLED ON NULL INPUT`)
+| property             | description                                         | required | default                 |
+|----------------------|-----------------------------------------------------|----------|-------------------------|
+| `materialized`       | specifies the type of materialisation to run        | yes      | `user_defined_function` |
+| `preferred_language` | specifies the landuage for the UDF function         | no       | `SQL`                   |
+| `is_secure`          | specifies the function whether it is secure or not? | no       | `false`                 |
+| `immutable`          | specifies the function is mutable or immutable      | no       | `false`                 |
+| `memoizable`         | specifies the function is memoizable                | no       | `false`                 |
+| `return_type`        | specifies the datatype for the return value         | yes      |                         |
+| `parameters`         | specifies the parameter for the function            | no       |                         |
 
-#### Java UDF
+##### Parameters
+
+Parameters are placed into the template with no parsing. To include multiple parameters, use the syntax:
 
 ```sql
-{{ config(materialized='user_defined_function', meta={'preferred_language': 'java', 'handler_name': "'pkg.MyClass'", 'target_path': "'@~/myjar.jar'", 'runtime_version': '11', 'return_type': 'varchar'}) }}
+{{
+    config(materialized='user_defined_function',
+    preferred_language = 'sql',
+    is_secure = false,
+    immutable = false,
+    return_type = 'float'
+    parameters = 'first int, next float, last varchar')
+}}
 ```
 
-Additional config: `runtime_version`, `packages`, `external_access_integrations`/`_refs`, `secrets`, `handler_name`, `imports`, `target_path`, `null_input_behavior`
+... Which is to say: provide all parameters as a single string enclosed in quotes. Use the same format as you would for native SQL.
 
-#### Python UDF
+#### Javascript
+
+To create a user defined function using Javascript, you need to add the following config to the top of your model:
 
 ```sql
-{{ config(materialized='user_defined_function', meta={'preferred_language': 'python', 'runtime_version': '3.8', 'packages': ['numpy'], 'handler_name': 'udf', 'return_type': 'variant'}) }}
+{{
+    config(materialized='user_defined_function',
+    preferred_language = 'javascript',
+    is_secure = True,
+    immutable = false,
+    return_type = 'float')
+}}
 ```
 
-Additional config: `runtime_version`, `packages`, `handler_name`, `external_access_integrations`, `secrets`, `imports`, `null_input_behavior`
+| property              | description                                                     | required | default                 |
+|-----------------------|-----------------------------------------------------------------|----------|-------------------------|
+| `materialized`        | specifies the type of materialisation to run                    | yes      | `user_defined_function` |
+| `preferred_language`  | specifies the landuage for the UDF function                     | yes      | `javascript`            |
+| `is_secure`           | specifies the function whether it is secure or not?             | no       | `false`                 |
+| `immutable`           | specifies the function is mutable or immutable                  | no       | `false`                 |
+| `return_type`         | specifies the datatype for the return value                     | yes      |                         |
+| `parameters`          | specifies the parameter for the function                        | no       |                         |
+| `null_input_behavior` | specifies the behavior of the function when passed a NULL value | no       | `CALLED ON NULL INPUT`  |
 
-#### External Functions
+#### Java
+
+To create a user defined function using Java, you need to add the following config to the top of your model:
 
 ```sql
-{{ config(materialized='user_defined_function', meta={'is_external': true, 'api_integration_dev': 'DEV_INT', 'api_integration_prod': 'PROD_INT', 'api_uri_dev': 'https://dev.example.com', 'api_uri_prod': 'https://prod.example.com', 'return_type': 'variant'}) }}
+{{
+    config(materialized='user_defined_function',
+    preferred_language = 'java',
+    is_secure = false,
+    handler_name = "'testfunction.echoVarchar'",
+    target_path = "'@~/testfunction.jar'",
+    external_access_integrations = ["your_access_integration"],
+    secrets = ["\'cred\' = oauth_token"]
+    return_type = 'varchar',
+    parameters = 'my_string varchar')
+}}
 ```
 
-Config options (external only):
+| property                           | description                                                                   | type    | required | default                 |
+|------------------------------------|-------------------------------------------------------------------------------|---------|----------|-------------------------|
+| `materialized`                     | specifies the type of materialisation to run                                  | string  | yes      | `user_defined_function` |
+| `preferred_language`               | specifies the landuage for the UDF function                                   | string  | yes      | `java`                  |
+| `is_secure`                        | specifies the function whether it is secure or not?                           | boolean | no       | `false`                 |
+| `immutable`                        | specifies the function is mutable or immutable                                | boolean | no       | `false`                 |
+| `runtime_version`                  | specifies the version of java                                                 | string  | yes      |                         |
+| `packages`                         | specifies an array of packages required for the java function                 | array   | yes      |                         |
+| `external_access_integrations`     | specifies the name of the external access integration to be used              | array   | no       |                         |
+| `external_access_integrations_ref` | specifies the name of the external access integration (ref object) to be used | array   | no       |                         |
+| `secrets`                          | specifies an array of secrets that are to be used by the function             | array   | no       |                         |
+| `handler_name`                     | specifies the combination of class and the function name                      | string  | yes      |                         |
+| `imports`                          | specifies an array of imports required for the java function                  | array   | no       |                         |
+| `target_path`                      | specifies the path for the jar file                                           | string  | yes      |                         |
+| `return_type`                      | specifies the datatype for the return value                                   | string  | yes      |                         |
+| `parameters`                       | specifies the parameter for the function                                      | string  | no       |                         |
+| `null_input_behavior`              | specifies the behavior of the function when passed a NULL value               | string  | no       | `CALLED ON NULL INPUT`  |
 
-| property | description | default |
-|---|---|---|
-| `is_external` | external function | `false` |
-| `api_integration_dev` | API integration for dev | `unknown` |
-| `api_integration_prod` | API integration for prod | `unknown` |
-| `api_uri_dev` | API URI for dev | `unknown` |
-| `api_uri_prod` | API URI for prod | `unknown` |
+> The external_access_integrations_ref name will append the `target.name` to the end with the exception of deployling to a `local-dev` target in which case it will append the database name configrued for deployment replacing the text described in the variable `target_database_replacement` with ''
 
-----
+#### Python
 
-### Data Metric Functions
-
-Materialization name: `data_metric_function`
-
-Data Metric Functions (DMFs) are used for Snowflake data quality monitoring. They accept one or more TABLE arguments and always return a NUMBER. The model body provides the SQL expression.
+To create a user defined function using Python, you need to add the following config to the top of your model:
 
 ```sql
-{{ config(
-    materialized='data_metric_function',
-    meta={
-        'table_arguments': 'arg_t TABLE(arg_c1 NUMBER, arg_c2 NUMBER)',
-        'is_secure': false,
-        'comment': 'Count rows with NULL values'
-    }
-) }}
-
-SELECT COUNT(*) FROM arg_t WHERE arg_c1 IS NULL OR arg_c2 IS NULL
+{{
+    config(materialized='user_defined_function',
+    preferred_language = 'python',
+    is_secure= false,
+    immutable=false,
+    runtime_version = '3.8',
+    packages = ['numpy','pandas','xgboost==1.5.0'],
+    external_access_integrations = ["your_access_integration"],
+    secrets = ["\'cred\' = oauth_token"]
+    handler_name = 'udf',
+    return_type = 'variant')
+}}
 ```
 
-Config options:
+| property                       | description                                                       | Type    | required | default                 |
+|--------------------------------|-------------------------------------------------------------------|---------|----------|-------------------------|
+| `materialized`                 | specifies the type of materialisation to run                      | string  | yes      | `user_defined_function` |
+| `preferred_language`           | specifies the landuage for the UDF function                       | string  | yes      | `python`                |
+| `is_secure`                    | specifies the function whether it is secure or not?               | boolean | no       | `false`                 |
+| `immutable`                    | specifies the function is mutable or immutable                    | boolean | no       | `false`                 |
+| `return_type`                  | specifies the datatype for the return value                       | string  | yes      |                         |
+| `parameters`                   | specifies the parameter for the function                          | string  | no       |                         |
+| `runtime_version`              | specifies the version of python                                   | string  | yes      |                         |
+| `packages`                     | specifies an array of packages required for the python function   | array   | yes      |                         |
+| `handler_name`                 | specifies the handler name for the function                       | string  | yes      |                         |
+| `external_access_integrations` | specifies the name of the external access integration to be used  | array   | no       |                         |
+| `secrets`                      | specifies an array of secrets that are to be used by the function | array   | no       |                         |
+| `imports`                      | specifies an array of imports required for the python function    | array   | no       |                         |
+| `null_input_behavior`          | specifies the behavior of the function when passed a NULL value   | string  | no       | `CALLED ON NULL INPUT`  |
 
-| property | description | default |
-|---|---|---|
-| `table_arguments` | TABLE argument signature (required) | *(required)* |
-| `is_secure` | create as secure DMF | `false` |
-| `comment` | comment for the DMF | none |
-| `override_name` | override DMF name | `model['alias']` |
-
-Multiple table arguments are supported for referential checks:
-
-```sql
-{{ config(
-    materialized='data_metric_function',
-    meta={
-        'table_arguments': 'arg_t1 TABLE(arg_c1 INT), arg_t2 TABLE(arg_c2 INT)'
-    }
-) }}
-
-SELECT COUNT(*) FROM arg_t1 WHERE arg_c1 NOT IN (SELECT arg_c2 FROM arg_t2)
-```
-
-Reference: [Snowflake Custom DMF docs](https://docs.snowflake.com/en/user-guide/data-quality-custom-dmfs)
-
-> DMFs require Enterprise Edition accounts.
-
-----
 
 ### Materialized View
 
-Materialization name: `snowflake_materialized_view`
+To create a Materialized View, you need to add the following config to the top of your model:
+
 
 ```sql
-{{ config(materialized='snowflake_materialized_view', cluster_by='field_1, field_2', meta={'secure': false, 'automatic_clustering': false}) }}
+{{
+    config(materialized='snowflake_materialized_view',
+    secure = false,
+    cluster_by="<<your list of fields>>",
+    automatic_clustering = false)
+}}
 ```
 
-Config options:
+| property               | description                                                                 | required | default             |
+|------------------------|-----------------------------------------------------------------------------|----------|---------------------|
+| `materialized`         | specifies the type of materialisation to run                                | yes      | `materialized_view` |
+| `secure`               | specifies that the view is secure.                                          | no       | false               |
+| `cluster_by`           | specifies an expression on which to cluster the materialized view.          | no       | none                |
+| `automatic_clustering` | specifies if reclustering of the materialized view is automatically resumed | no       | false               |
 
-| property | description | default |
-|---|---|---|
-| `secure` | secure view | `false` |
-| `cluster_by` | clustering expression | none |
-| `automatic_clustering` | auto-resume reclustering | `false` |
 
-Supports `persist_docs` (relation only). Reference: [Snowflake MV docs](https://docs.snowflake.com/en/user-guide/views-materialized.html)
+Supported model configs: secure, cluster_by, automatic_clustering, persist_docs (relation only)
 
-> MVs require enterprise accounts. If base table is recreated, MV must also be recreated.
+[Snowflake Documentation for Materialized Views](https://docs.snowflake.com/en/user-guide/views-materialized.html)
 
-----
+:exclamation: Note: Snowflake MVs are only enabled on enterprise accounts
+
+:exclamation: Although Snowflake does not have drop ... cascade, if the base table table of a MV is dropped and recreated, the MV also needs to be dropped and recreated, otherwise the following error will appear:
+
+> Failure during expansion of view 'TEST_MV': SQL compilation error: Materialized View TEST_MV is invalid.
+
+---
 
 ## Comments
 
-Enhanced `snowflake__alter_column_comment` and `snowflake__alter_relation_comment` macros support comments on materialized views and dynamic tables. Enabled via the dispatch config in [Complete Setup](#complete-setup).
+We have enhanced the `snowflake__alter_column_comment` and `snowflake__alter_relation_comment` macros to cater for comments on materialized views. This means that when you use these macros to alter comments on columns or relations within a materialized view, the changes will be properly applied.
+
+To be able to take advantage of these, please add the following to your `dbt_project.yml` file
+
+```yml
+dispatch:
+ - macro_namespace: dbt
+   search_order: [dbt_dataengineers_materializations, dbt]
+```

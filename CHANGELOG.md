@@ -1,5 +1,18 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.2.0 - Scope Hook Macros to Current Selection/Project
+
+### Added
+* `enable_tasks`, `enable_alerts`, `enable_monitorial_monitors`, `stage_file_formats`, and `stage_stages` no longer scan every node in the manifest regardless of which package defined it. They now restrict the graph nodes they operate on via a new shared helper, `scope_nodes_to_selection`, so a task/alert/monitor/stage/file-format node belonging to an *installed package* is no longer swept up into bulk suspend/resume/stage operations unless it is actually part of the current invocation.
+* `scope_nodes_to_selection(nodes)` first tries dbt's own built-in `selected_resources` context variable (reflecting the current invocation's `--select`/`--exclude`), keeping only nodes whose `unique_id` is in that selection. `selected_resources` is empty both during parsing and when the command is `run-operation` (dbt does not populate it in that case) -- and this project's hook macros are explicitly also invoked via `dbt run-operation` directly (e.g. by CI). In either case the helper falls back to scoping by `node.package_name == project_name` (nodes owned by the current/root project), which is always available regardless of invocation command.
+
+### Notes
+* Two other `graph.nodes.values()` call sites were reviewed and intentionally left unchanged: `resolve_relation_ref` (external_access_integration) resolves one specific named ref and already has its own same-package-wins-else-any-package precedence mirroring `ref()`'s own resolution order; `get_task_node_by_id` looks up a single node by exact `unique_id`. Neither does a type-based bulk scan across all nodes in the graph, so project/selection scoping does not apply.
+
+### Testing
+* Added `integration_tests/dummy_package`, a local test dependency with a single `task`-materialized model (`dummy_task`, `enabled_targets=[target.name]`), installed alongside the main package in `integration_tests/packages.yml`. CI now suspends `dummy_task` after its own creation (`suspend_dummy_task` run-operation) and then asserts (`assert_dummy_task_not_resumed.sql`) that `dbt run-operation enable_tasks` does *not* resume it again -- proving the `package_name == project_name` fallback branch of `scope_nodes_to_selection` (the only branch CI's `run-operation`-based invocations ever exercise).
+* Added `test_scope_nodes_to_selection` (tagged `scope_test_only`, excluded from the main build steps) with a `post_hook` calling `assert_scope_nodes_to_selection`, run via a dedicated `dbt run --select test_scope_nodes_to_selection` CI step so `selected_resources` contains exactly that one node -- proving the `selected_resources` branch of `scope_nodes_to_selection` keeps the selected node and excludes `dummy_task`.
+
 ## 1.1.1 - CI Schema Race Condition Fix
 
 ### CI

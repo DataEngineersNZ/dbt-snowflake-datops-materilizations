@@ -32,3 +32,21 @@ macros:
       ```
     docs:
       show: true
+
+  - name: scope_nodes_to_selection
+    description: |
+      Restricts a list of graph nodes to those actually selected by the current dbt invocation
+      (`--select` / `--exclude`), via dbt's built-in `selected_resources` context variable. Used
+      by `enable_tasks`, `enable_alerts`, `enable_monitorial_monitors`, `stage_file_formats`, and
+      `stage_stages` so bulk hook operations don't sweep up nodes outside the current selection,
+      including same-materialization nodes defined by installed packages.
+
+      `selected_resources` is empty both during parsing and when the command is
+      `run-operation` (dbt does not populate it for that command). In either case this macro
+      falls back to scoping by `node.package_name == project_name` (nodes owned by the
+      current/root project), since that is always available regardless of invocation command.
+
+      **Parameters:**
+      - `nodes` (list) — Graph nodes to filter
+    docs:
+      show: true
