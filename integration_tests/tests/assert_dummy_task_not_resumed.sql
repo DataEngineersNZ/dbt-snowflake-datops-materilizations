@@ -8,12 +8,10 @@
 {% endcall %}
 {% set dummy_tasks = load_result('show_dummy_task') %}
 
-{% for row in dummy_tasks.table %}
-    {% if row['state'] != 'suspended' %}
-SELECT 'DUMMY_TASK should remain suspended (excluded by package scoping) but is {{ row["state"] }}' AS failure_reason
-{{ 'UNION ALL' if not loop.last else '' }}
-    {% endif %}
-{% endfor %}
-
--- Fallback: if no rows matched (correctly excluded/suspended), return nothing
+{% if dummy_tasks.table | length != 1 %}
+SELECT 'Expected exactly one DUMMY_TASK row, found {{ dummy_tasks.table | length }}' AS failure_reason
+{% elif dummy_tasks.table[0]['state'] != 'suspended' %}
+SELECT 'DUMMY_TASK should remain suspended (excluded by package scoping) but is {{ dummy_tasks.table[0]["state"] }}' AS failure_reason
+{% else %}
 SELECT NULL AS failure_reason WHERE 1=0
+{% endif %}

@@ -41,10 +41,14 @@ macros:
       `stage_stages` so bulk hook operations don't sweep up nodes outside the current selection,
       including same-materialization nodes defined by installed packages.
 
-      `selected_resources` is empty both during parsing and when the command is
-      `run-operation` (dbt does not populate it for that command). In either case this macro
-      falls back to scoping by `node.package_name == project_name` (nodes owned by the
-      current/root project), since that is always available regardless of invocation command.
+      `selected_resources` is only trusted when the invoking command is `run` or `build`
+      (checked via `flags.WHICH`) -- that's the only case where it reliably reflects the actual
+      `--select`/`--exclude` selection, including a genuinely empty one (e.g. `--select
+      tag:nonexistent`, which correctly scopes to zero nodes rather than falling back). For every
+      other command -- `run-operation` (which dbt does not populate `selected_resources` for),
+      `parse`, `compile`, `list`, `debug`, etc. -- this macro falls back to scoping by
+      `node.package_name == project_name` (nodes owned by the current/root project), since that
+      is always available regardless of invocation command.
 
       **Parameters:**
       - `nodes` (list) — Graph nodes to filter
