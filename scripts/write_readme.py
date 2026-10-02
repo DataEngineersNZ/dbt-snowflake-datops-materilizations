@@ -20,7 +20,7 @@ Add the following to your `packages.yml` file:
 ```yaml
 packages:
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.1.0"
+    revision: "1.1.1"
 ```
 
 For Snowflake Cortex Materializations add the following to your `packages.yml` file:

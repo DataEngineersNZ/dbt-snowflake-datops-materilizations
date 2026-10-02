@@ -1,5 +1,11 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.1.1 - CI Schema Race Condition Fix
+
+### CI
+* Fixed a real race condition between `integration-tests` and `integration-tests-fusion` (confirmed on the first push to `main` after both jobs existed): both hardcoded the same `DBT_INTEGRATION_TEST` schema, so one job's `cleanup` step (`DROP SCHEMA ... CASCADE`) could drop the schema out from under the other job's in-progress run. Each job now uses a schema name unique to the workflow run, attempt, and job (`DBT_INTEGRATION_TEST_<run_id>_<run_attempt>_CORE`/`_FUSION`), which also protects against collisions between concurrent workflow runs (e.g. two open PRs).
+* Added a `create_test_schema` run-operation and wired it in as the first infra step in both jobs. With schema names now unique per run, the schema can no longer be assumed to already exist from a previous run's leftover state — it must be created explicitly before `stage_file_formats`/`stage_stages`/`stage_table_sources` (which don't create schemas themselves) can use it.
+
 ## 1.1.0 - dbt 2.0 (Fusion) Compatibility Fix for enable_tasks
 
 ### Bug Fixes

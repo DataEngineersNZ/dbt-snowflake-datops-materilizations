@@ -19,12 +19,18 @@ env:
   SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
   SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
   SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
-  SNOWFLAKE_SCHEMA: DBT_INTEGRATION_TEST
   INTEGRATION_TEST_SECRET: "test-secret-value"
 
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
+    env:
+      # Unique per workflow run+attempt+job so concurrent runs/jobs never share a schema.
+      # Previously both jobs hardcoded the same DBT_INTEGRATION_TEST schema, so one job's
+      # `cleanup` (DROP SCHEMA ... CASCADE) could drop the schema out from under the other
+      # job's in-progress run — confirmed happening on the very first push to main after
+      # merging this workflow's Fusion job.
+      SNOWFLAKE_SCHEMA: DBT_INTEGRATION_TEST_${{ github.run_id }}_${{ github.run_attempt }}_CORE
     defaults:
       run:
         working-directory: integration_tests
@@ -59,6 +65,9 @@ jobs:
 
       - name: Install dbt packages
         run: dbt deps --profiles-dir .
+
+      - name: Create test schema
+        run: dbt run-operation create_test_schema --profiles-dir .
 
       - name: Pre-create infrastructure (on-run-start hooks)
         run: |
@@ -118,6 +127,11 @@ jobs:
   integration-tests-fusion:
     runs-on: ubuntu-latest
     continue-on-error: true
+    env:
+      # See the comment on integration-tests' env.SNOWFLAKE_SCHEMA above — this must be
+      # distinct from that job's schema, not just unique per run, since both jobs run
+      # concurrently within the same workflow run.
+      SNOWFLAKE_SCHEMA: DBT_INTEGRATION_TEST_${{ github.run_id }}_${{ github.run_attempt }}_FUSION
     defaults:
       run:
         working-directory: integration_tests
@@ -147,6 +161,9 @@ jobs:
         run: |
           dbt parse --profiles-dir .
           dbt compile --exclude resource_type:test --profiles-dir .
+
+      - name: Create test schema
+        run: dbt run-operation create_test_schema --profiles-dir .
 
       - name: Pre-create infrastructure (on-run-start hooks)
         run: |
