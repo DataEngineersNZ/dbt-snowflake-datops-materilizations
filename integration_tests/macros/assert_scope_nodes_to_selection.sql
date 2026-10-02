@@ -17,6 +17,14 @@
     {% if dummy_unique_id in scoped_ids %}
       {% do exceptions.raise_compiler_error("assert_scope_nodes_to_selection: expected '" ~ dummy_unique_id ~ "' to be excluded by the current --select, got: " ~ scoped_ids) %}
     {% endif %}
+    {#-- The two checks above would also pass if the helper had instead taken its project-fallback
+         branch (every current-project node, which happens to include this model and exclude
+         dummy_task too, since dummy_task lives in a different package). Assert the exact,
+         single-node result that only the selected_resources branch can produce, so this test
+         actually distinguishes the two branches rather than coincidentally passing on either. --#}
+    {% if scoped_ids != [own_unique_id] %}
+      {% do exceptions.raise_compiler_error("assert_scope_nodes_to_selection: expected scoped_ids to be exactly ['" ~ own_unique_id ~ "'] (proving the selected_resources branch ran, not the project fallback), got: " ~ scoped_ids) %}
+    {% endif %}
 
     {{ log("assert_scope_nodes_to_selection: OK — selected_resources correctly scoped the node list to " ~ scoped_ids, info=True) }}
   {% endif %}

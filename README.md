@@ -44,7 +44,7 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.1.1"
+    revision: "1.2.0"
 ```
 
 For Snowflake Cortex Materializations add the following:
