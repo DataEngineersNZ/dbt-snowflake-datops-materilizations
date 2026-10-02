@@ -35,6 +35,12 @@ macros:
       on-run-end:
         - "{% raw %}{{ dbt_dataengineers_materializations.enable_monitorial_monitors() }}{% endraw %}"
       ```
+
+      Only monitors within the current dbt invocation's node selection (`--select`/`--exclude`)
+      are resumed; a monitor that exists solely because an installed package defines a
+      `monitorial`-materialized node outside that selection is left untouched. When selection
+      information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping
+      by the current/root project instead. See `scope_nodes_to_selection`.
     docs:
       show: true
 

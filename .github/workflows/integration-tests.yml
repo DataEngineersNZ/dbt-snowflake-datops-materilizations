@@ -76,15 +76,21 @@ jobs:
           dbt run-operation stage_table_sources --profiles-dir .
 
       - name: Run models (first run - full refresh)
-        run: dbt run --full-refresh --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
+        run: dbt run --full-refresh --exclude tag:enterprise_only --exclude tag:requires_account_admin --exclude tag:scope_test_only --profiles-dir .
 
       - name: Run models (second run - idempotency)
-        run: dbt run --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
+        run: dbt run --exclude tag:enterprise_only --exclude tag:requires_account_admin --exclude tag:scope_test_only --profiles-dir .
+
+      - name: Suspend dummy_task (scope_nodes_to_selection test setup)
+        run: dbt run-operation suspend_dummy_task --profiles-dir .
 
       - name: Post-run enable (on-run-end hooks)
         run: |
           dbt run-operation enable_tasks --profiles-dir .
           dbt run-operation enable_alerts --profiles-dir .
+
+      - name: Verify scope_nodes_to_selection honors --select (Path A)
+        run: dbt run --select test_scope_nodes_to_selection --profiles-dir .
 
       - name: Verify resolve_relation_ref resolver (no ACCOUNTADMIN needed)
         run: dbt run-operation assert_resolve_relation_ref --profiles-dir .
@@ -172,15 +178,21 @@ jobs:
           dbt run-operation stage_table_sources --profiles-dir .
 
       - name: Run models (first run - full refresh)
-        run: dbt run --full-refresh --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
+        run: dbt run --full-refresh --exclude tag:enterprise_only --exclude tag:requires_account_admin --exclude tag:scope_test_only --profiles-dir .
 
       - name: Run models (second run - idempotency)
-        run: dbt run --exclude tag:enterprise_only --exclude tag:requires_account_admin --profiles-dir .
+        run: dbt run --exclude tag:enterprise_only --exclude tag:requires_account_admin --exclude tag:scope_test_only --profiles-dir .
+
+      - name: Suspend dummy_task (scope_nodes_to_selection test setup)
+        run: dbt run-operation suspend_dummy_task --profiles-dir .
 
       - name: Post-run enable (on-run-end hooks)
         run: |
           dbt run-operation enable_tasks --profiles-dir .
           dbt run-operation enable_alerts --profiles-dir .
+
+      - name: Verify scope_nodes_to_selection honors --select (Path A)
+        run: dbt run --select test_scope_nodes_to_selection --profiles-dir .
 
       - name: Verify resolve_relation_ref resolver (no ACCOUNTADMIN needed)
         run: dbt run-operation assert_resolve_relation_ref --profiles-dir .

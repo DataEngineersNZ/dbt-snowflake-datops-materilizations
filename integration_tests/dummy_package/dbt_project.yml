@@ -1,0 +1,11 @@
+name: 'dbt_dummy_package'
+version: '1.0.0'
+config-version: 2
+
+model-paths: ["models"]
+
+# Not a standalone, runnable dbt project (no profile/run outside the parent).
+# Exists purely so integration_tests can install it as a local dependency and
+# prove that enable_tasks/enable_alerts/etc. correctly exclude nodes owned by an
+# installed package other than the current/root project (see
+# scope_nodes_to_selection in dbt_dataengineers_materializations).

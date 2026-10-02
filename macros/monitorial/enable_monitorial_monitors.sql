@@ -7,6 +7,7 @@
         {% set alerts = [] %}
         {% set tasks = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+        {% set nodes = dbt_dataengineers_materializations.scope_nodes_to_selection(nodes) %}
         {% for node in nodes %}
             {% if node.config.materialized == "monitorial" %}
                 {% set is_serverless = dbt_dataengineers_materializations.node_config_get(node, 'is_serverless', false) %}

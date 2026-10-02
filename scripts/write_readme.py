@@ -20,7 +20,7 @@ Add the following to your `packages.yml` file:
 ```yaml
 packages:
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.1.1"
+    revision: "1.2.0"
 ```
 
 For Snowflake Cortex Materializations add the following to your `packages.yml` file:
@@ -154,6 +154,8 @@ Pre-creates file format objects before model execution so that tables and stages
 | `enabled_targets` | List of target names where this hook should run | `[target.name]` |
 | `enabled_profiles` | List of profile names where this hook should run | `[target.profile_name]` |
 
+Only file formats within the current dbt invocation's node selection (`--select`/`--exclude`) are staged; a file format that exists solely because an installed package defines a `file_format`-materialized node outside that selection is left untouched. When selection information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping by the current/root project instead.
+
 ```yaml
 on-run-start:
   - "{{ dbt_dataengineers_materializations.stage_file_formats(['prod', 'test']) }}"
@@ -167,6 +169,8 @@ Pre-creates stage objects. Should run before `stage_table_sources` if your table
 |---|---|---|
 | `enabled_targets` | List of target names where this hook should run | `[target.name]` |
 | `enabled_profiles` | List of profile names where this hook should run | `[target.profile_name]` |
+
+Only stages within the current dbt invocation's node selection (`--select`/`--exclude`) are staged; a stage that exists solely because an installed package defines a `stage`-materialized node outside that selection is left untouched. When selection information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping by the current/root project instead.
 
 ```yaml
 on-run-start:
@@ -197,7 +201,7 @@ Resumes task objects after deployment. Handles Snowflake task DAG ordering autom
 2. Resumes child tasks (those with `task_after`)
 3. Resumes root tasks last
 
-Only tasks whose `enabled_targets` include the current `target.name` are resumed.
+Only tasks whose `enabled_targets` include the current `target.name` are resumed, and only tasks within the current dbt invocation's node selection (`--select`/`--exclude`) are considered; a task that exists solely because an installed package defines a `task`-materialized node outside that selection is left untouched. When selection information isn't available (e.g. invoked via `dbt run-operation`), falls back to scoping by the current/root project instead.
 
 ```yaml
 on-run-end:
@@ -206,7 +210,7 @@ on-run-end:
 
 #### `enable_alerts()`
 
-Resumes alert objects after deployment. Only alerts whose `enabled_targets` include the current `target.name` are resumed.
+Resumes alert objects after deployment. Only alerts whose `enabled_targets` include the current `target.name` are resumed, and only alerts within the current dbt invocation's node selection (`--select`/`--exclude`) are considered, with the same current-project fallback as `enable_tasks`.
 
 ```yaml
 on-run-end:
@@ -215,7 +219,7 @@ on-run-end:
 
 #### `enable_monitorial_monitors()`
 
-Resumes monitorial alert and task objects after deployment. Separates serverless (task-based) monitors from dedicated (alert-based) monitors and resumes each appropriately.
+Resumes monitorial alert and task objects after deployment. Separates serverless (task-based) monitors from dedicated (alert-based) monitors and resumes each appropriately. Only monitors within the current dbt invocation's node selection (`--select`/`--exclude`) are considered, with the same current-project fallback as `enable_tasks`.
 
 ```yaml
 on-run-end:

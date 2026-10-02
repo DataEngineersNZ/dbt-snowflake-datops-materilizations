@@ -2,7 +2,7 @@
 
 <!-- OVERVIEW -->
 Package name: `dbt_dataengineers_materializations`
-Version: 1.1.1
+Version: 1.2.0
 Platform: Snowflake
 Engines: dbt Core (>=1.9.4), dbt Fusion (2.x)
 Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
@@ -44,7 +44,7 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.1.1"
+    revision: "1.2.0"
 ```
 
 For Snowflake Cortex Materializations add the following:
@@ -119,6 +119,8 @@ vars:
 | `enable_monitorial_monitors` | on-run-end | Resumes monitorial objects |
 
 All on-run-start hooks accept `enabled_targets` and `enabled_profiles` parameters. They run during `dbt run` and `dbt build`. Add only the hooks you need.
+
+`enable_tasks`, `enable_alerts`, `enable_monitorial_monitors`, `stage_file_formats`, and `stage_stages` only operate on nodes within the current invocation's `--select`/`--exclude` selection; when selection data isn't available (e.g. invoked via `dbt run-operation`), they fall back to the current/root project, so nodes belonging to an installed package dependency are never swept up.
 
 ----
 

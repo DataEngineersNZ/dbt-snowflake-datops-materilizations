@@ -11,6 +11,7 @@
         {% set child_tasks = [] %}
         {% set seen_root_ids = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+        {% set nodes = dbt_dataengineers_materializations.scope_nodes_to_selection(nodes) %}
 
         {% for node in nodes %}
             {% if node.config.materialized == "task" %}

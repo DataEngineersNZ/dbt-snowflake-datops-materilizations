@@ -6,6 +6,7 @@
         {% do log("START: Locating alerts to resume", info=True) %}
         {% set alerts = [] %}
         {% set nodes = graph.nodes.values() if graph.nodes else [] %}
+        {% set nodes = dbt_dataengineers_materializations.scope_nodes_to_selection(nodes) %}
         {% for node in nodes %}
             {% if node.config.materialized == "alert" %}
                 {% do alerts.append(node) %}
