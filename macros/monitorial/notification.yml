@@ -5,7 +5,7 @@ macros:
     description: |
       Materialization for managing Monitorial alert and task objects in Snowflake via dbt.
       Creates alerts or serverless tasks that evaluate a SQL condition and dispatch notifications
-      via API or email when the condition is met. Supports both warehouse-based alerts and serverless tasks.
+      through Monitorial Pulse (API) or email when the condition is met. Supports both warehouse-based alerts and serverless tasks.
 
       **Config options (set under `meta` for Fusion compatibility):**
       - `is_serverless` (bool, default: false) — Use a serverless task instead of a warehouse-based alert
@@ -16,11 +16,11 @@ macros:
       - `environment` (string, default: target.name) — Environment identifier included in the notification
       - `display_message` (string, default: model alias) — Message displayed in the notification
       - `prereq` (string, default: '') — Prerequisite SQL executed before the condition check
-      - `api_key` (string) — API key for Monitorial API delivery
+      - `api_key` (string) — Monitorial API key, used in the email subject (email delivery)
       - `message_type` (string, default: 'USER_ALERT') — Monitorial message type
       - `delivery_type` (string, default: 'api') — Delivery method: 'api' or 'email'
       - `email_integration` (string) — Snowflake notification integration for email delivery
-      - `api_function` (string) — Fully qualified Snowflake function for API dispatch
+      - `api_procedure` (string, default: 'MONITORIAL_PULSE.api.send_notification') — Monitorial Pulse's notification procedure for API delivery; the owning role needs Pulse's MONITORIAL_ADMINISTRATOR application role
       - `error_integration` (string) — Error notification integration for serverless tasks
       - `enabled_targets` (list, default: [target.name]) — Target environments where the monitor is active
     docs:

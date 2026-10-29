@@ -1,5 +1,18 @@
 # dbt_dataengineers_materializations Changelog
 
+## 1.3.0 - Monitorial Pulse Notifications
+
+### Changed
+* **API delivery of `monitorial` alerts and tasks now goes through Monitorial Pulse.** The Monitorial database's `utils.monitorial_dispatch` external function is gone; Pulse provides a procedure, `<Pulse app>.api.send_notification(payload)`, which a `SELECT` can't call. Both API statements (`snowflake_create_or_replace_monitorial_alert_api_statement`, `snowflake_create_or_replace_monitorial_task_api_statement`) now build a Pulse notification payload (`source: dbt`, `message_type`, `severity`, `environment`, `object_name`, `message`, each row the monitor query returns as key/value pairs in `message_details`, and `metadata`) and `CALL` the procedure. The shared block is the new `monitorial_pulse_notification_block` macro.
+* **`api_function` / `default_monitorial_api_function` are replaced by `api_procedure` / `default_monitorial_api_procedure`** (default `MONITORIAL_PULSE.api.send_notification`). Projects still setting the old var get the new default.
+* The role that owns the alerts and tasks needs Pulse's `MONITORIAL_ADMINISTRATOR` application role (`GRANT APPLICATION ROLE MONITORIAL_PULSE.MONITORIAL_ADMINISTRATOR TO ROLE <dbt role>`).
+
+### Fixed
+* The email alert statement (`snowflake_create_or_replace_monitorial_alert_email_statement`) didn't compile: the `alert_integration` declaration was missing its `;` and `SYSTEM$SEND_EMAIL` was passed an undeclared `:error_alert_payload`. It now sends the alert payload as JSON.
+
+### Removed
+* `default_monitorial_api_integration` from the README examples: no macro reads it.
+
 ## 1.2.0 - Scope Hook Macros to Current Selection/Project
 
 ### Added

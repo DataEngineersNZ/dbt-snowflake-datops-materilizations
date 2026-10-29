@@ -2,7 +2,7 @@
 
 <!-- OVERVIEW -->
 Package name: `dbt_dataengineers_materializations`
-Version: 1.2.0
+Version: 1.3.0
 Platform: Snowflake
 Engines: dbt Core (>=1.9.4), dbt Fusion (2.x)
 Purpose: Custom dbt materializations for managing Snowflake infrastructure objects (tasks, streams, stages, file formats, stored procedures, UDFs, data metric functions, alerts, secrets, network rules, external access integrations, materialized views, immutable tables, external tables, and snowpipes).
@@ -44,7 +44,7 @@ Purpose: Custom dbt materializations for managing Snowflake infrastructure objec
 Add the following to your `packages.yml` file:
 ```yaml
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.2.0"
+    revision: "1.3.0"
 ```
 
 For Snowflake Cortex Materializations add the following:
@@ -100,7 +100,7 @@ on-run-end:
 vars:
   default_monitorial_email_integration: "EXT_EMAIL_MONITORIAL_INTEGRATION"
   default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
-  default_monitorial_api_function: "pc_monitorial_db.utils.monitorial_dispatch"
+  default_monitorial_api_procedure: "MONITORIAL_PULSE.api.send_notification"
   default_monitorial_serverless: false
   default_monitorial_warehouse_name_or_size: "pc_monitorial_wh"
   default_monitorial_api_key: "your-api-key"
@@ -218,16 +218,28 @@ Config options:
 | `environment` | target environment | no | `target.name` |
 | `display_message` | message to send | yes | |
 | `prereq` | pre-requisite statement | no | |
-| `api_key` | monitorial api key | no * | |
+| `api_key` | monitorial api key (email delivery: in the subject) | no * | |
 | `message_type` | message type | no | `USER_ALERT` |
 | `delivery_type` | `api` or `email` | no | `api` |
 | `email_integration` | email integration name | no * | `EXT_EMAIL_MONITORIAL_INTEGRATION` |
 | `notification_email` | override email destination | no * | `notifications@monitorial.io` |
-| `api_function` | external function for api delivery | no * | `pc_monitorial_db.utils.monitorial_dispatch` |
+| `api_procedure` | Monitorial Pulse notification procedure for api delivery | no * | `MONITORIAL_PULSE.api.send_notification` |
 | `error_integration` | error integration for serverless | no * | `EXT_ERROR_MONITORIAL_INTEGRATION` |
 | `enabled_targets` | targets where active | no | `[target.name]` |
 
 Properties marked * can be set as global variables. See [Complete Setup](#complete-setup).
+
+API delivery sends each notification through [Monitorial Pulse](https://www.monitorial.io/): the alert or task calls
+`<Pulse app>.api.send_notification(payload)` with a Pulse notification (`source: dbt`, `message_type`, `severity`,
+`environment`, `object_name`, `message`, and each row the query returns as key/value pairs in `message_details`).
+The role that owns the alert or task needs Pulse's application role:
+
+```sql
+GRANT APPLICATION ROLE MONITORIAL_PULSE.MONITORIAL_ADMINISTRATOR TO ROLE <dbt role>;
+```
+
+Upgrading from the Monitorial database (`pc_monitorial_db.utils.monitorial_dispatch`): replace
+`default_monitorial_api_function` with `default_monitorial_api_procedure` (and a model's `api_function` with `api_procedure`).
 
 For more information visit [https://www.monitorial.io/](https://www.monitorial.io/)
 
