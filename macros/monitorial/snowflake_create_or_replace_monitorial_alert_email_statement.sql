@@ -20,7 +20,7 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                 alert_name VARCHAR DEFAULT '{{ target_relation.include(database=(not temporary), schema=(not temporary)) }}';
                 alert_severity VARCHAR DEFAULT '{{ severity }}';
                 alert_environment VARCHAR DEFAULT '{{ environment }}';
-                alert_integration VARCHAR DEFAULT '{{ email_integration }}'
+                alert_integration VARCHAR DEFAULT '{{ email_integration }}';
                 alert_email VARCHAR DEFAULT '{{ notification_email }}';
             BEGIN
                 {% if prereq_statement | length > 0 %}
@@ -45,7 +45,7 @@ CREATE OR REPLACE ALERT {{ target_relation.include(database=(not temporary), sch
                     )
                     SELECT alert_body INTO :alert_payload FROM arrayCreation;
                 IF (:alert_payload != []) THEN
-                    CALL SYSTEM$SEND_EMAIL(:alert_integration, :alert_email, :alert_subject, :error_alert_payload);
+                    CALL SYSTEM$SEND_EMAIL(:alert_integration, :alert_email, :alert_subject, TO_JSON(:alert_payload));
                     RETURN 'notification fired';
                 ELSE
                     RETURN 'No notification fired';

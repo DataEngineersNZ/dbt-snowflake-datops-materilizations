@@ -20,7 +20,7 @@ Add the following to your `packages.yml` file:
 ```yaml
 packages:
   - git: https://github.com/DataEngineersNZ/dbt-snowflake-datops-materilizations.git
-    revision: "1.2.0"
+    revision: "1.3.0"
 ```
 
 For Snowflake Cortex Materializations add the following to your `packages.yml` file:
@@ -83,7 +83,7 @@ on-run-end:
 vars:
   default_monitorial_email_integration: "EXT_EMAIL_MONITORIAL_INTEGRATION"
   default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
-  default_monitorial_api_function: "pc_monitorial_db.utils.monitorial_dispatch"
+  default_monitorial_api_procedure: "MONITORIAL_PULSE.api.send_notification"
   default_monitorial_serverless: false
   default_monitorial_warehouse_name_or_size: "pc_monitorial_wh"
   default_monitorial_api_key: "your-api-key"
@@ -259,8 +259,8 @@ Usage
 | `message_type`           | specifes the type of message to be sent, for example `User Login Failure`                                    | no       | `USER_ALERT`                                 |
 | `delivery_type`          | specifies the type of delivery mechanism for the alert (options are `api` or `email`)                        | no       | `api`                                        |
 | `email_integration`      | specifies the email intgeration that should be used                                                          | no *     | `EXT_EMAIL_MONITORIAL_INTEGRATION`           |
-| `notification_email`     | specifies an override for where the alerts should be emailed to                                              | no *     | `pc_monitorial_db.utils.monitorial_dispatch` |
-| `api_function`           | specifies the external function  that should be used when sending via api                                    | no *     | `EXT_ERROR_INTEGRATION`                      |
+| `notification_email`     | specifies an override for where the alerts should be emailed to                                              | no *     | `notifications@monitorial.io`                |
+| `api_procedure`          | specifies the Monitorial Pulse notification procedure used when sending via api                              | no *     | `MONITORIAL_PULSE.api.send_notification`     |
 | `error_integration`      | specifies the error intgeration that should be used when using serverless alerts                             | no *     | `EXT_ERROR_MONITORIAL_INTEGRATION`           |
 | `enabled_targets`        | specifies if the targets which the alert should be enabled for                                               | no       | `[target.name]`                              |
 
@@ -270,7 +270,7 @@ Usage
 * `api_key` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_key` variable
 * `delivery_type` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_delivery_type` variable
 * `email_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_email_integration` variable
-* `api_function` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_function` variable
+* `api_procedure` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_api_procedure` variable
 * `error_integration` can be set as a global variable in the `dbt_project.yml` file using the `default_monitorial_error_integration` variable
 
 
@@ -282,9 +282,8 @@ vars:
   ### dbt_dataengineers_materializations variables ###
   ####################################################
   default_monitorial_email_integration: "EXT_EMAIL_MONITORIAL_INTEGRATION"
-  default_monitorial_api_integration: "EXT_API_MONITORIAL_INTEGRATION"
   default_monitorial_error_integration: "EXT_ERROR_MONITORIAL_INTEGRATION"
-  default_monitorial_api_function: "pc_monitorial_db.utils.monitorial_dispatch"
+  default_monitorial_api_procedure: "MONITORIAL_PULSE.api.send_notification"
   default_monitorial_serverless: false
   default_monitorial_object_type: "alert"
   default_monitorial_notification_email: "notifications@monitorial.io"
